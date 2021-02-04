@@ -7,12 +7,18 @@ import os
 import platform
 import typing
 
-name = "arlulaapi"
+# Package Name
+name = "arlulacore"
+
+# User agent setting
 sdk_version = "1.0.0"
 py_version = sys.version.split(' ')[0]
 os_version = platform.platform()
-def_ua = "arlula-core-sdk " + \
+def_ua = "core-sdk " + \
     sdk_version + " python " + py_version + " OS " + os_version
+
+# Expected API version
+x_api_version = '2020-12'
 
 # Object generator that converts returned JSON into a Python object
 
@@ -59,9 +65,10 @@ class Session:
             key + ':' + secret)).decode('utf-8')
         self.header = {
             'Authorization': "Basic "+self.token,
-            'User-Agent': user_agent
+            'User-Agent': user_agent,
+            'X-API-Version': x_api_version
         }
-        self.baseURL = "https://api.arlula.com"
+        self.baseURL = "https://api.arlula.com/testing"
         self.validate_creds()
 
     # Check the credentials are valid
@@ -89,7 +96,7 @@ class Archive:
     def search(self,
                start: typing.Optional[str] = None,
                end: typing.Optional[str] = None,
-               res: typing.Optional[float, str] = None,
+               res: typing.Optional[typing.Union[float, str]] = None,
                lat: typing.Optional[float] = None,
                long: typing.Optional[float] = None,
                north: typing.Optional[float] = None,
@@ -152,13 +159,13 @@ class Archive:
 class Orders:
 
     def __init__(self,
-                 session: ArlulaSession):
+                 session: Session):
         self.session = session
-        self.url = self.session.baseURL + "/api/archive"
+        self.url = self.session.baseURL + "/api/order"
 
     # Gets a single order
     def get(self,
-                  id: typing.Optional[str] = None):
+            id: typing.Optional[str] = None):
 
         url = self.url + "/get"
 
@@ -181,15 +188,14 @@ class Orders:
         url = self.url+"/list"
 
         response = requests.request(
-            "GET", 
-            url, 
+            "GET",
+            url,
             headers=self.session.header)
 
         if response.status_code != 200:
             raise ArlulaSessionError(response.text)
         else:
-            return [ArlulaObj(json.loads(str(r).replace("\'", "\"")))
-                    for r in eval(response.text, {'__builtins__': None}, {})]
+            return [ArlulaObj(r) for r in json.loads(response.text)]
 
     # Downloads an order resource to the specified filepath
     def get_resource(self,
@@ -198,27 +204,27 @@ class Orders:
                      suppress: bool = False,
                      # an optional generator that yields float or None
                      progress_generator: typing.Optional[typing.Generator[typing.Optional[float], None, None]] = None):
-        
+
         url = self.url + "/resource/get"
-        
+
         if filepath is None:
             raise ArlulaSessionError(
                 "You must specify a filepath for the download")
-            
+
         if progress_generator is not None:
             next(progress_generator)
-            
+
         with open(filepath, 'wb') as f:
             querystring = {"id": id}
 
             # Stream response
             response = requests.request(
-                "GET", 
+                "GET",
                 url,
                 headers=self.session.header,
-                params=querystring, 
+                params=querystring,
                 stream=True)
-            
+
             total = response.headers.get('content-length')
 
             if response.status_code != 200:
@@ -234,7 +240,7 @@ class Orders:
                 for data in response.iter_content(chunk_size=max(int(total/1000), 1024*1024)):
                     downloaded += len(data)
                     f.write(data)
-                    
+
                     # Track progress of download
                     done = int(50*downloaded/total)
                     if not suppress:
@@ -243,7 +249,7 @@ class Orders:
                         sys.stdout.flush()
                     if progress_generator is not None:
                         progress_generator.send(downloaded/total)
-                        
+
         if not suppress:
             sys.stdout.write('\n')
             sys.stdout.write('download complete\n')
