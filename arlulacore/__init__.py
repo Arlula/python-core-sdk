@@ -11,7 +11,7 @@ import typing
 name = "arlulacore"
 
 # User agent setting
-sdk_version = "1.0.0"
+sdk_version = "1.0.1"
 py_version = sys.version.split(' ')[0]
 os_version = platform.platform()
 def_ua = "core-sdk " + \
