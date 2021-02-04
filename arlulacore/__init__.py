@@ -68,7 +68,7 @@ class Session:
             'User-Agent': user_agent,
             'X-API-Version': x_api_version
         }
-        self.baseURL = "https://api.arlula.com/testing"
+        self.baseURL = "https://api.arlula.com"
         self.validate_creds()
 
     # Check the credentials are valid
