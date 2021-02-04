@@ -12,7 +12,7 @@ setuptools.setup(
 
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/Arlula/python-sdk.git",
+    url="https://github.com/Arlula/python-core-sdk.git",
     packages=["arlulacore"],
     install_requires=['requests'],
     classifiers=[
