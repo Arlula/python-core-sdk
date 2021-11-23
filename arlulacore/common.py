@@ -77,6 +77,3 @@ class DetailedOrderResult(ArlulaObject):
         self.type = data["type"]
         self.expiration = data["expiration"]
         self.resources = [Resource(x) for x in data["resources"]]
-        print("A")
-        print(self.resources)
-        print("A")
