@@ -2,10 +2,11 @@ import base64
 import requests
 import json
 import sys
-import warnings
-import os
 import platform
 import typing
+
+from archive import SearchResult
+from common import DetailedOrderResult, OrderResult
 
 # Package Name
 name = "arlulacore"
@@ -20,23 +21,7 @@ def_ua = "core-sdk " + \
 # Expected API version
 x_api_version = '2020-12'
 
-# Object generator that converts returned JSON into a Python object
-
-
-class ArlulaObj(object):
-    def __init__(self, d):
-        for a, b in d.items():
-            if isinstance(b, (list, tuple)):
-                setattr(self, a, [ArlulaObj(x) if isinstance(
-                    x, dict) else x for x in b])
-            else:
-                setattr(self, a, ArlulaObj(b) if isinstance(b, dict) else b)
-
-    def __repr__(self):
-        return str(['{}: {}'.format(attr, value) for attr, value in self.__dict__.items()])[1:-1].replace('\'', '')
-
 # Custom Exception Class
-
 
 class ArlulaSessionError(Exception):
     def __init__(self, value):
@@ -68,7 +53,7 @@ class Session:
             'User-Agent': user_agent,
             'X-API-Version': x_api_version
         }
-        self.baseURL = "https://api.arlula.com"
+        self.baseURL = "https://api.arlula.com/testing"
         self.validate_creds()
 
     # Check the credentials are valid
@@ -102,7 +87,7 @@ class Archive:
                north: typing.Optional[float] = None,
                south: typing.Optional[float] = None,
                east: typing.Optional[float] = None,
-               west: typing.Optional[float] = None):
+               west: typing.Optional[float] = None) -> typing.List[SearchResult]:
 
         url = self.url+"/search"
 
@@ -122,7 +107,7 @@ class Archive:
             raise ArlulaSessionError(response.text)
         else:
             # Break result into a list of objects
-            return [ArlulaObj(x) for x in json.loads(response.text)]
+            return [SearchResult(x) for x in json.loads(response.text)]
 
     # Orders from the Arlula Archive
     def order(self,
@@ -130,7 +115,7 @@ class Archive:
               eula: typing.Optional[str] = None,
               seats: typing.Optional[int] = None,
               webhooks: typing.List[str] = [],
-              emails: typing.List[str] = []):
+              emails: typing.List[str] = []) -> DetailedOrderResult:
 
         url = self.url+"/order"
 
@@ -151,7 +136,7 @@ class Archive:
         if response.status_code != 200:
             raise ArlulaSessionError(response.text)
         else:
-            return ArlulaObj(json.loads(response.text))
+            return DetailedOrderResult(json.loads(response.text))
 
 # Orders uses the Session class to interface with the Arlula Orders API
 
@@ -165,7 +150,7 @@ class Orders:
 
     # Gets a single order
     def get(self,
-            id: typing.Optional[str] = None):
+            id: typing.Optional[str] = None) -> DetailedOrderResult:
 
         url = self.url + "/get"
 
@@ -180,10 +165,10 @@ class Orders:
         if response.status_code != 200:
             raise ArlulaSessionError(response.text)
         else:
-            return ArlulaObj(json.loads(response.text))
+            return DetailedOrderResult(json.loads(response.text))
 
     # Lists all orders
-    def list(self):
+    def list(self) -> typing.List[OrderResult]:
 
         url = self.url+"/list"
 
@@ -195,7 +180,7 @@ class Orders:
         if response.status_code != 200:
             raise ArlulaSessionError(response.text)
         else:
-            return [ArlulaObj(r) for r in json.loads(response.text)]
+            return [OrderResult(r) for r in json.loads(response.text)]
 
     # Downloads an order resource to the specified filepath
     def get_resource(self,
