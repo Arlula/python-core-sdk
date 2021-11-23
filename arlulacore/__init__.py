@@ -79,22 +79,25 @@ class Archive:
 
     # Searches the Arlula Archive
     def search(self,
-               start: typing.Optional[str] = None,
+               start: str,
+               res: typing.Union[float, str],
                end: typing.Optional[str] = None,
-               res: typing.Optional[typing.Union[float, str]] = None,
                lat: typing.Optional[float] = None,
                long: typing.Optional[float] = None,
                north: typing.Optional[float] = None,
                south: typing.Optional[float] = None,
                east: typing.Optional[float] = None,
-               west: typing.Optional[float] = None) -> typing.List[SearchResult]:
+               west: typing.Optional[float] = None,
+               supplier: typing.Optional[str] = None,
+               off_nadir: typing.Optional[float] = None) -> typing.List[SearchResult]:
 
         url = self.url+"/search"
 
         # Build a dict of non-None query parameters
         param_dict = {"start": start, "end": end,
                       "res": res, "lat": lat, "long": long,
-                      "north": north, "south": south, "east": east, "west": west}
+                      "north": north, "south": south, "east": east, 
+                      "west": west, "supplier": supplier, "off-nadir": off_nadir}
         query_params = {k: v for k, v in param_dict.items()
                         if v is not None or v == 0}
 
@@ -111,9 +114,9 @@ class Archive:
 
     # Orders from the Arlula Archive
     def order(self,
-              id: typing.Optional[str] = None,
-              eula: typing.Optional[str] = None,
-              seats: typing.Optional[int] = None,
+              id: str,
+              eula: str,
+              seats: int,
               webhooks: typing.List[str] = [],
               emails: typing.List[str] = []) -> DetailedOrderResult:
 
