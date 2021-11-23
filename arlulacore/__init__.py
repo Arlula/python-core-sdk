@@ -153,7 +153,7 @@ class Orders:
 
     # Gets a single order
     def get(self,
-            id: typing.Optional[str] = None) -> DetailedOrderResult:
+            id: str) -> DetailedOrderResult:
 
         url = self.url + "/get"
 
@@ -187,8 +187,8 @@ class Orders:
 
     # Downloads an order resource to the specified filepath
     def get_resource(self,
-                     id: typing.Optional[str] = None,
-                     filepath: typing.Optional[str] = None,
+                     id: str,
+                     filepath: str,
                      suppress: bool = False,
                      # an optional generator that yields float or None
                      progress_generator: typing.Optional[typing.Generator[typing.Optional[float], None, None]] = None):
