@@ -5,7 +5,7 @@ import sys
 import platform
 import typing
 
-from archive import SearchResult
+from archive import OrderRequest, SearchResult, SearchRequest
 from common import DetailedOrderResult, OrderResult
 
 # Package Name
@@ -77,63 +77,36 @@ class Archive:
         self.session = session
         self.url = self.session.baseURL + "/api/archive"
 
-    # Searches the Arlula Archive
-    def search(self,
-               start: str,
-               res: typing.Union[float, str],
-               end: typing.Optional[str] = None,
-               lat: typing.Optional[float] = None,
-               long: typing.Optional[float] = None,
-               north: typing.Optional[float] = None,
-               south: typing.Optional[float] = None,
-               east: typing.Optional[float] = None,
-               west: typing.Optional[float] = None,
-               supplier: typing.Optional[str] = None,
-               off_nadir: typing.Optional[float] = None) -> typing.List[SearchResult]:
+    def search(self, request: SearchRequest) -> typing.List[SearchResult]:
+        '''
+            Search the Arlula imagery archive.
+            Requires one of (lat, long) or (north, south, east, west).
+        '''
 
         url = self.url+"/search"
-
-        # Build a dict of non-None query parameters
-        param_dict = {"start": start, "end": end,
-                      "res": res, "lat": lat, "long": long,
-                      "north": north, "south": south, "east": east, 
-                      "west": west, "supplier": supplier, "off-nadir": off_nadir}
-        query_params = {k: v for k, v in param_dict.items()
-                        if v is not None or v == 0}
 
         # Send request and handle responses
         response = requests.request(
             "GET", url,
             headers=self.session.header,
-            params=query_params)
+            params=request.dict())
         if response.status_code != 200:
             raise ArlulaSessionError(response.text)
         else:
             # Break result into a list of objects
             return [SearchResult(x) for x in json.loads(response.text)]
 
-    # Orders from the Arlula Archive
-    def order(self,
-              id: str,
-              eula: str,
-              seats: int,
-              webhooks: typing.List[str] = [],
-              emails: typing.List[str] = []) -> DetailedOrderResult:
+    def order(self, request: OrderRequest) -> DetailedOrderResult:
+        '''
+            Order from the Arlula imagery archive
+        '''
 
-        url = self.url+"/order"
-
-        payload = json.dumps({
-            "id": id,
-            "eula": eula,
-            "seats": seats,
-            "webhooks": webhooks,
-            "emails": emails
-        })
+        url = self.url + "/order"
 
         response = requests.request(
             "POST",
             url,
-            data=payload,
+            data=request.dumps(),
             headers=self.session.header)
 
         if response.status_code != 200:
@@ -151,9 +124,11 @@ class Orders:
         self.session = session
         self.url = self.session.baseURL + "/api/order"
 
-    # Gets a single order
     def get(self,
             id: str) -> DetailedOrderResult:
+        '''
+            Get details on a prior order by it's id.
+        '''
 
         url = self.url + "/get"
 
@@ -170,8 +145,10 @@ class Orders:
         else:
             return DetailedOrderResult(json.loads(response.text))
 
-    # Lists all orders
     def list(self) -> typing.List[OrderResult]:
+        '''
+            List all orders made
+        '''
 
         url = self.url+"/list"
 
@@ -186,58 +163,81 @@ class Orders:
             return [OrderResult(r) for r in json.loads(response.text)]
 
     # Downloads an order resource to the specified filepath
-    def get_resource(self,
+    def get_resource_as_file(self,
                      id: str,
                      filepath: str,
                      suppress: bool = False,
                      # an optional generator that yields float or None
-                     progress_generator: typing.Optional[typing.Generator[typing.Optional[float], None, None]] = None):
-
+                     progress_generator: typing.Optional[typing.Generator[typing.Optional[float], None, None]] = None) -> typing.BinaryIO:
+        '''
+            Get a resource. If filepath is specified, it will be streamed to that file. If filepath is omitted it will
+            be stored in memory (not recommended for large files).
+        '''
         url = self.url + "/resource/get"
 
         if filepath is None:
             raise ArlulaSessionError(
                 "You must specify a filepath for the download")
-
+        
+        querystring = {"id": id}
         if progress_generator is not None:
             next(progress_generator)
 
-        with open(filepath, 'wb') as f:
-            querystring = {"id": id}
+        f = open(filepath, 'wb')
 
-            # Stream response
-            response = requests.request(
-                "GET",
-                url,
-                headers=self.session.header,
-                params=querystring,
-                stream=True)
+        # Stream response
+        response = requests.request(
+            "GET",
+            url,
+            headers=self.session.header,
+            params=querystring,
+            stream=True)
 
-            total = response.headers.get('content-length')
+        total = response.headers.get('content-length')
 
-            if response.status_code != 200:
-                raise ArlulaSessionError(response.text)
+        if response.status_code != 200:
+            raise ArlulaSessionError(response.text)
 
-            if total is None:
-                f.write(response.content)
-            else:
-                # Write the response in chunks
-                # Chunk size is the larger of 0.1% of the filesize or 1MB
-                downloaded = 0
-                total = int(total)
-                for data in response.iter_content(chunk_size=max(int(total/1000), 1024*1024)):
-                    downloaded += len(data)
-                    f.write(data)
+        if total is None:
+            f.write(response.content)
+        else:
+            # Write the response in chunks
+            # Chunk size is the larger of 0.1% of the filesize or 1MB
+            downloaded = 0
+            total = int(total)
+            
+            for data in response.iter_content(chunk_size=max(int(total/1000), 1024*1024)):
+                downloaded += len(data)
+                f.write(data)
 
-                    # Track progress of download
-                    done = int(50*downloaded/total)
-                    if not suppress:
-                        sys.stdout.write('\r[{}{}]{:.2%}'.format(
-                            '█' * done, '.' * (50-done), downloaded/total))
-                        sys.stdout.flush()
-                    if progress_generator is not None:
-                        progress_generator.send(downloaded/total)
+                # Track progress of download
+                done = int(50*downloaded/total)
+                if not suppress:
+                    sys.stdout.write('\r[{}{}]{:.2%}'.format(
+                        '█' * done, '.' * (50-done), downloaded/total))
+                    sys.stdout.flush()
+                if progress_generator is not None:
+                    progress_generator.send(downloaded/total)
 
         if not suppress:
             sys.stdout.write('\n')
             sys.stdout.write('download complete\n')
+        
+        return f
+
+    def get_resource_as_memory(self, id: str):
+        '''
+            Get a resource. If filepath is specified, it will be streamed to that file. If filepath is omitted it will
+            be stored in memory (not recommended for large files).
+        '''
+        url = self.url + "/resource/get"
+
+        querystring = {"id": id}
+
+        response = requests.request(
+            "GET",
+            url,
+            headers=self.session.header,
+            params=querystring)
+        
+        return response.content
