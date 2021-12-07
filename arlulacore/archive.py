@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 import json
 from common import ArlulaObject, Resource
 import typing
@@ -37,7 +37,7 @@ class SearchResult(ArlulaObject):
     id: str
     scene_id: str
     platform: str
-    date: str
+    date: datetime
     center: CenterPoint
     bounding: typing.List[typing.List[float]]
     area: float
@@ -55,7 +55,8 @@ class SearchResult(ArlulaObject):
         self.id = data["id"]
         self.scene_id = data["sceneID"]
         self.platform = data["platform"]
-        self.date = data["date"]
+        if str(data["date"]).endswith("Z"):
+            self.date = datetime.fromisoformat(data["date"][:-1])
         self.center = CenterPoint(**data["center"])
         self.bounding = data["bounding"]
         self.area = data["area"]
