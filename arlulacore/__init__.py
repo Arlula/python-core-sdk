@@ -1,4 +1,5 @@
 from .auth import Session
+
 from .archive import (
     CenterPoint,
     Percent,
@@ -10,7 +11,10 @@ from .archive import (
     OrderRequest,
     ArchiveAPI
 )
-from .orders import OrdersAPI
+from .orders import (
+    OrderResult,
+    OrdersAPI
+)
 
 class ArlulaAPI:
     '''

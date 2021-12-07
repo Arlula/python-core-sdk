@@ -7,7 +7,7 @@ from datetime import date, datetime
 from .common import ArlulaObject
 from .auth import Session
 from .exception import ArlulaSessionError
-from .common import DetailedOrderResult
+from .orders import DetailedOrderResult
 
 
 @dataclass
