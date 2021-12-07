@@ -34,8 +34,10 @@ class ArlulaSessionWarning(Warning):
     pass
 
 
-# ArlulaSession handles the authentication method and holds subclasses for each
 class Session:
+    '''
+        Session handles authentication for the arlula API.
+    '''
 
     def __init__(self,
                  key: str,
