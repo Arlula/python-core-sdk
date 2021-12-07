@@ -163,17 +163,16 @@ class Orders:
         else:
             return [OrderResult(r) for r in json.loads(response.text)]
 
-    # Downloads an order resource to the specified filepath
     def get_resource_as_file(self,
                      id: str,
                      filepath: str,
                      suppress: bool = False,
-                     # an optional generator that yields float or None
                      progress_generator: typing.Optional[typing.Generator[typing.Optional[float], None, None]] = None) -> typing.BinaryIO:
         '''
-            Get a resource. If filepath is specified, it will be streamed to that file. If filepath is omitted it will
-            be stored in memory (not recommended for large files).
+            Get a resource and stream it to the specified file. If supress is true, it will output extra information to standard output.
+            This is recommended for large files. Returns the file, which must be closed.
         '''
+
         url = self.url + "/resource/get"
 
         if filepath is None:
@@ -249,11 +248,11 @@ class Arlula:
     '''
 
     def __init__(self, session: Session):
-        self.archive = Archive(session)
-        self.orders = Orders(session)
+        self._archive = Archive(session)
+        self._orders = Orders(session)
     
     def archive(self) -> Archive:
-        return self.archive
+        return self._archive
 
     def orders(self) -> Orders:
-        return self.orders
+        return self._orders
