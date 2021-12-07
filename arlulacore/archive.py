@@ -54,7 +54,7 @@ class SearchResult(ArlulaObject):
         self.eula = data["eula"]
         self.id = data["id"]
         self.scene_id = data["sceneID"]
-        # self.platform = data["platform"]
+        self.platform = data["platform"]
         self.date = data["date"]
         self.center = CenterPoint(**data["center"])
         self.bounding = data["bounding"]
