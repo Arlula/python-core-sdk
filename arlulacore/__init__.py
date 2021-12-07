@@ -1,18 +1,34 @@
-from .auth import *
-from .archive import *
-from .orders import *
+from .auth import Session
+from .archive import (
+    CenterPoint,
+    Percent,
+    Overlap,
+    Seat,
+    Price,
+    SearchResult,
+    SearchRequest,
+    OrderRequest,
+    ArchiveAPI
+)
+from .orders import OrdersAPI
 
-class Arlula:
+class ArlulaAPI:
     '''
         Main class for Arlula API Calls. Contains an instance of the archive and orders APIs.
     '''
 
     def __init__(self, session: Session):
-        self._archive = Archive(session)
-        self._orders = Orders(session)
+        self._archive = ArchiveAPI(session)
+        self._orders = OrdersAPI(session)
     
-    def archive(self) -> Archive:
+    def archiveAPI(self) -> ArchiveAPI:
+        '''
+            Returns the archive api instance, used for searching and ordering imagery.
+        '''
         return self._archive
 
-    def orders(self) -> Orders:
+    def ordersAPI(self) -> OrdersAPI:
+        '''
+            Returns the orders api instance, used for maintaining orders and getting resources.
+        '''
         return self._orders

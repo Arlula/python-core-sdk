@@ -9,10 +9,9 @@ import sys
 
 from .auth import Session
 from .exception import ArlulaSessionError
-from .common import DetailedOrderResult
-from .common import OrderResult
+from .common import DetailedOrderResult, OrderResult
 
-class Orders:
+class OrdersAPI:
     '''
         Orders is used to interface with the Arlula Orders API
     '''

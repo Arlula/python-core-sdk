@@ -203,7 +203,7 @@ class OrderRequest:
         })
 
 
-class Archive:
+class ArchiveAPI:
     '''
         Archive is used to interface with the Arlula Archive API
     '''
