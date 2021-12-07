@@ -1,8 +1,14 @@
+import json
+import typing
+import requests
+
 from dataclasses import dataclass
 from datetime import date, datetime
-import json
-from common import ArlulaObject, Resource
-import typing
+from .common import ArlulaObject
+from .auth import Session
+from .exception import ArlulaSessionError
+from .common import DetailedOrderResult
+
 
 @dataclass
 class CenterPoint(ArlulaObject):
@@ -195,3 +201,51 @@ class OrderRequest:
             "webhooks": self.webhooks,
             "emails": self.emails
         })
+
+
+class Archive:
+    '''
+        Archive is used to interface with the Arlula Archive API
+    '''
+
+    def __init__(self,
+                 session: Session):
+        self.session = session
+        self.url = self.session.baseURL + "/api/archive"
+
+    def search(self, request: SearchRequest) -> typing.List[SearchResult]:
+        '''
+            Search the Arlula imagery archive.
+            Requires one of (lat, long) or (north, south, east, west).
+        '''
+
+        url = self.url+"/search"
+
+        # Send request and handle responses
+        response = requests.request(
+            "GET", url,
+            headers=self.session.header,
+            params=request.dict())
+        if response.status_code != 200:
+            raise ArlulaSessionError(response.text)
+        else:
+            # Break result into a list of objects
+            return [SearchResult(x) for x in json.loads(response.text)]
+
+    def order(self, request: OrderRequest) -> DetailedOrderResult:
+        '''
+            Order from the Arlula imagery archive
+        '''
+
+        url = self.url + "/order"
+
+        response = requests.request(
+            "POST",
+            url,
+            data=request.dumps(),
+            headers=self.session.header)
+
+        if response.status_code != 200:
+            raise ArlulaSessionError(response.text)
+        else:
+            return DetailedOrderResult(json.loads(response.text))
