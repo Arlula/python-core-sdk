@@ -225,7 +225,7 @@ class Orders:
         
         return f
 
-    def get_resource_as_memory(self, id: str):
+    def get_resource_as_memory(self, id: str) -> bytes:
         '''
             Get a resource. If filepath is specified, it will be streamed to that file. If filepath is omitted it will
             be stored in memory (not recommended for large files).
