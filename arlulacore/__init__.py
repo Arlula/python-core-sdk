@@ -22,7 +22,6 @@ def_ua = "core-sdk " + \
 x_api_version = '2020-12'
 
 # Custom Exception Class
-
 class ArlulaSessionError(Exception):
     def __init__(self, value):
         self.value = value
@@ -31,8 +30,6 @@ class ArlulaSessionError(Exception):
         return self.value
 
 # Custom Warning Class
-
-
 class ArlulaSessionWarning(Warning):
     pass
 
@@ -67,10 +64,10 @@ class Session:
         if response.status_code != 200:
             raise ArlulaSessionError(response.text)
 
-# Archive uses the Session class to interface with the Arlula Archive API
-
-
 class Archive:
+    '''
+        Archive is used to interface with the Arlula Archive API
+    '''
 
     def __init__(self,
                  session: Session):
@@ -114,10 +111,12 @@ class Archive:
         else:
             return DetailedOrderResult(json.loads(response.text))
 
-# Orders uses the Session class to interface with the Arlula Orders API
 
 
 class Orders:
+    '''
+        Orders is used to interface with the Arlula Orders API
+    '''
 
     def __init__(self,
                  session: Session):
@@ -241,3 +240,18 @@ class Orders:
             params=querystring)
         
         return response.content
+
+class Arlula:
+    '''
+        Main class for Arlula API Calls. Contains an instance of the archive and orders APIs.
+    '''
+
+    def __init__(self, session: Session):
+        self.archive = Archive(session)
+        self.orders = Orders(session)
+    
+    def archive(self) -> Archive:
+        return self.archive
+
+    def orders(self) -> Orders:
+        return self.orders
