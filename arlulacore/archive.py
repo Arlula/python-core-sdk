@@ -122,7 +122,11 @@ class SearchRequest(ArlulaObject):
         self.res = res
         return self
 
-    def set_to(self, end: date) -> "SearchRequest":
+    def set_start(self, start: date) -> "SearchRequest":
+        self.start = start
+        return self
+
+    def set_end(self, end: date) -> "SearchRequest":
         self.end = end
         return self
     
