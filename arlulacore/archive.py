@@ -85,9 +85,11 @@ class SearchRequest(ArlulaObject):
     west: float
     supplier: str
     off_nadir: float
+    cloud: float
 
     def __init__(self, start: date,
             res: typing.Optional[float],
+            cloud: typing.Optional[float] = None,
             end: typing.Optional[date] = None,
             lat: typing.Optional[float] = None,
             long: typing.Optional[float] = None,
@@ -98,6 +100,7 @@ class SearchRequest(ArlulaObject):
             supplier: typing.Optional[str] = None,
             off_nadir: typing.Optional[float] = None):
         self.start = start
+        self.cloud = cloud
         self.res = res
         self.end = end
         self.lat = lat
@@ -148,7 +151,8 @@ class SearchRequest(ArlulaObject):
     
     def dict(self):
         param_dict = {"start": str(self.start), "end": str(self.end),
-            "res": self.res, "lat": self.lat, "long": self.long,
+            "res": self.res, "cloud": self.cloud,
+            "lat": self.lat, "long": self.long,
             "north": self.north, "south": self.south, "east": self.east, 
             "west": self.west, "supplier": self.supplier, "off-nadir": self.off_nadir}
 
