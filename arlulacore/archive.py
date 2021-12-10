@@ -148,6 +148,10 @@ class SearchRequest(ArlulaObject):
     def set_maximum_off_nadir(self, off_nadir: float) -> "SearchRequest":
         self.off_nadir = off_nadir
         return self
+
+    def set_maximum_cloud_cover(self, cloud: float) -> "SearchRequest":
+        self.cloud = cloud
+        return self
     
     def dict(self):
         param_dict = {"start": str(self.start), "end": str(self.end),
