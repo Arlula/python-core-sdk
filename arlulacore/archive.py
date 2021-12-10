@@ -83,7 +83,7 @@ class SearchRequest(ArlulaObject):
     south: float
     east: float
     west: float
-    supplier: float
+    supplier: str
     off_nadir: float
 
     def __init__(self, start: date,
@@ -95,7 +95,7 @@ class SearchRequest(ArlulaObject):
             south: typing.Optional[float] = None,
             east: typing.Optional[float] = None,
             west: typing.Optional[float] = None,
-            supplier: typing.Optional[float] = None,
+            supplier: typing.Optional[str] = None,
             off_nadir: typing.Optional[float] = None):
         self.start = start
         self.res = res
