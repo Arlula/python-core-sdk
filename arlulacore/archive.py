@@ -52,6 +52,7 @@ class SearchResult(ArlulaObject):
     fulfillment_time: float
     resolution: float
     thumbnail: str
+    cloud: float
     off_nadir: float
     annotations: typing.List[str]
 
@@ -70,6 +71,8 @@ class SearchResult(ArlulaObject):
         self.price = Price(**data["price"])
         self.fulfillment_time = data["fulfillmentTime"]
         self.resolution = data["resolution"]
+        self.thumbnail = data["thumbnail"]
+        self.cloud = data["cloud"]
         self.off_nadir = data["offNadir"]
         self.annotations = data["annotations"]
 
