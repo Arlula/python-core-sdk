@@ -91,7 +91,7 @@ class SearchRequest(ArlulaObject):
     cloud: float
 
     def __init__(self, start: date,
-            res: float,
+            res: typing.Optional[float],
             cloud: typing.Optional[float] = None,
             end: typing.Optional[date] = None,
             lat: typing.Optional[float] = None,
@@ -164,7 +164,7 @@ class SearchRequest(ArlulaObject):
             "west": self.west, "supplier": self.supplier, "off-nadir": self.off_nadir}
 
         query_params = {k: v for k, v in param_dict.items()
-            if v is not None or v == 0}
+            if v is not None or v == "None"}
 
         return query_params
 
