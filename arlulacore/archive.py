@@ -91,7 +91,7 @@ class SearchRequest(ArlulaObject):
     cloud: float
 
     def __init__(self, start: date,
-            res: typing.Optional[float],
+            res: float,
             cloud: typing.Optional[float] = None,
             end: typing.Optional[date] = None,
             lat: typing.Optional[float] = None,
