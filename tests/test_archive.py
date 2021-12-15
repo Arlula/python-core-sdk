@@ -8,7 +8,7 @@ class TestSearchRequest(unittest.TestCase):
         '''
             Tests SearchRequest construction methods
         '''
-        
+
         self.assertEqual(
             arlulacore.SearchRequest(date(2021, 1, 1), 100)
             .dict(), 
@@ -83,4 +83,5 @@ class TestSearchRequest(unittest.TestCase):
             }
         )
 
-        
+    def test_search(self):
+        pass
