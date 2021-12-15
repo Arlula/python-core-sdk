@@ -157,7 +157,9 @@ class SearchRequest(ArlulaObject):
         return self
     
     def dict(self):
-        param_dict = {"start": str(self.start), "end": str(self.end),
+        param_dict = {
+            "start": str(self.start) if self.start != None else None, 
+            "end": str(self.end) if self.end != None else None,
             "res": self.res, "cloud": self.cloud,
             "lat": self.lat, "long": self.long,
             "north": self.north, "south": self.south, "east": self.east, 
