@@ -199,11 +199,11 @@ class OrderRequest:
         return self
 
     def add_email(self, email: str) -> "OrderRequest":
-        self.webhooks.append(email)
+        self.emails.append(email)
         return self
     
     def set_emails(self, emails: typing.List[str]) -> "OrderRequest":
-        self.webhooks = emails
+        self.emails = emails
         return self
 
     def dumps(self):
