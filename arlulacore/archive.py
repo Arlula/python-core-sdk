@@ -190,7 +190,7 @@ class OrderRequest:
         self.webhooks = webhooks
         self.emails = emails
     
-    def set_webhook(self, webhook: str) -> "OrderRequest":
+    def add_webhook(self, webhook: str) -> "OrderRequest":
         self.webhooks.append(webhook)
         return self
     
@@ -198,7 +198,7 @@ class OrderRequest:
         self.webhooks = webhooks
         return self
 
-    def set_email(self, email: str) -> "OrderRequest":
+    def add_email(self, email: str) -> "OrderRequest":
         self.webhooks.append(email)
         return self
     
