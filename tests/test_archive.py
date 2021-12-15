@@ -1,6 +1,8 @@
 from datetime import date
 import unittest
 import arlulacore
+from arlulacore import arlula
+from tests.util import create_test_session
 
 class TestSearchRequest(unittest.TestCase):
 
@@ -84,4 +86,14 @@ class TestSearchRequest(unittest.TestCase):
         )
 
     def test_search(self):
-        pass
+        session = create_test_session()
+        api = arlulacore.ArlulaAPI(session)
+        result = api.archiveAPI().search(
+            arlulacore.SearchRequest(date(2020, 1, 1), 100)
+            .set_point_of_interest(-33, 151)
+            .set_end(date(2020, 2, 1))
+        )
+                
+        self.assertTrue(
+            len(result) > 0
+        )
