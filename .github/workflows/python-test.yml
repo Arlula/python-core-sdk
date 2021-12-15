@@ -1,0 +1,32 @@
+name: Test Python Package
+
+on:
+  workflow_call:
+    secrets:
+      TEST_API_KEY:
+        required: true
+      TEST_API_SECRET:
+        required: true
+      TEST_API_ORDER_ID:
+        required: true
+      TEST_API_ORDER_EULA:
+        required: true
+  release:
+    types: [published]
+  
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps: 
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - run: pip3 install -r requirements.txt
+      - run: python3 -m unittest tests/test_archive.py tests/test_orders.py
+        env:
+          API_KEY: ${{ secrets.TEST_API_KEY }}
+          API_SECRET: ${{ secrets.TEST_API_SECRET }}
+          API_ORDER_ID: ${{ secrets.TEST_API_ORDER_ID }}
+          API_ORDER_EULA: ${{ secrets.TEST_API_ORDER_EULA }}
+        
