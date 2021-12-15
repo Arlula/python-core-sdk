@@ -1,4 +1,6 @@
 from datetime import date
+import json
+import os
 import unittest
 import arlulacore
 from arlulacore import arlula
@@ -97,3 +99,47 @@ class TestSearchRequest(unittest.TestCase):
         self.assertTrue(
             len(result) > 0
         )
+
+class TestOrderRequest(unittest.TestCase):
+
+    def test_dumps(self):
+        
+        self.assertEqual(arlulacore.OrderRequest("id", "eula", 1).dumps(), 
+            json.dumps({
+                "id": "id",
+                "eula": "eula",
+                "seats": 1,
+                "webhooks": [],
+                "emails": [],
+            })
+        )
+        
+        self.assertEqual(arlulacore.OrderRequest("id", "eula", 1, ["https://test1.com", "https://test2.com"], ["test1@gmail.com", "test2@gmail.com"]).dumps(),
+            json.dumps({
+                "id": "id",
+                "eula": "eula",
+                "seats": 1,
+                "webhooks": ["https://test1.com", "https://test2.com"],
+                "emails": ["test1@gmail.com", "test2@gmail.com"],
+            })
+        )
+
+        self.assertEqual(arlulacore.OrderRequest("id", "eula", 1, ["https://test1.com"], ["test1@gmail.com"])
+            .add_email("test2@gmail.com")
+            .add_webhook("https://test2.com")
+            .dumps(),
+            json.dumps({
+                "id": "id",
+                "eula": "eula",
+                "seats": 1,
+                "webhooks": ["https://test1.com", "https://test2.com"],
+                "emails": ["test1@gmail.com", "test2@gmail.com"],
+            })
+        )
+    
+    def test_order(self):
+
+        # This will throw an exception on failure
+        session = create_test_session()
+        api = arlulacore.ArlulaAPI(session)
+        response = api.archiveAPI().order(arlulacore.OrderRequest(os.getenv("API_ORDER_ID"), os.getenv("API_ORDER_EULA"), 1, ["https://example.com"], ["example@gmail.com"]))
