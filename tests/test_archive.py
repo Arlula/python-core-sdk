@@ -3,8 +3,7 @@ import json
 import os
 import unittest
 import arlulacore
-from arlulacore import arlula
-from tests.util import create_test_session
+from .util import create_test_session
 
 class TestSearchRequest(unittest.TestCase):
 
