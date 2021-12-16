@@ -1,6 +1,7 @@
 import sys
 import platform
 import base64
+import typing
 import requests
 
 from .exception import ArlulaSessionError
@@ -26,7 +27,9 @@ class Session:
     def __init__(self,
                  key: str,
                  secret: str,
-                 user_agent: str = def_ua):
+                 user_agent: typing.Optional[str] = def_ua,
+                 url: typing.Optional[str] = "https://api.arlula.com"
+                 ):
         # Encode the key and secret
         def atob(x): return x.encode('utf-8')
         self.token = base64.b64encode(atob(
@@ -36,7 +39,7 @@ class Session:
             'User-Agent': user_agent,
             'X-API-Version': x_api_version
         }
-        self.baseURL = "https://api.arlula.com"
+        self.baseURL = url
         self.validate_creds()
 
     # Check the credentials are valid
