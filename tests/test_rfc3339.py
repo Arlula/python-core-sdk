@@ -35,13 +35,21 @@ class TestRFC3339(unittest.TestCase):
         )
     
     def test_positive_offset(self):
-        self.assertEqual(str(parse_rfc3339("2021-10-18t22:38:10.123456+04:45")),
+        self.assertEqual(str(parse_rfc3339("2021-10-18T22:38:10.123456+04:45")),
             "2021-10-18 22:38:10.123456+04:45"
         )
     
     def test_negative_offset(self):
-        self.assertEqual(str(parse_rfc3339("2021-10-18t22:38:10.123456-04:45")),
+        self.assertEqual(str(parse_rfc3339("2021-10-18T22:38:10.123456-04:45")),
             "2021-10-18 22:38:10.123456-04:45"
         )
+
+    # Most error cases should be handled by python itself
+
+    def test_offset_too_big(self):
+        self.assertEqual(parse_rfc3339("2021-10-18T22:38:10.123456+25:00"), None)
+
+    def test_no_input(self):
+        self.assertEqual(parse_rfc3339(""), None)
     
     
