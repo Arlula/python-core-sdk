@@ -155,7 +155,7 @@ class OrdersAPI:
         if progress_generator is not None:
             next(progress_generator)
 
-        f = open(filepath, 'wb')
+        f = open(filepath, "w+b")
 
         # Stream response
         response = requests.request(
@@ -194,6 +194,7 @@ class OrdersAPI:
         if not suppress:
             sys.stdout.write('\n')
             sys.stdout.write('download complete\n')
+        f.seek(0)
         
         return f
 
