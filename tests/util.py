@@ -3,4 +3,4 @@ import arlulacore
 import os
 
 def create_test_session() -> arlulacore.Session:
-    return arlulacore.Session(os.getenv("API_KEY"), os.getenv("API_SECRET"))
+    return arlulacore.Session(os.getenv("API_KEY"), os.getenv("API_SECRET"), os.getenv("API_HOST"))

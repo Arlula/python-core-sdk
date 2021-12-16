@@ -11,6 +11,8 @@ on:
         required: true
       TEST_API_ORDER_EULA:
         required: true
+      TEST_API_HOST:
+        required: true
   release:
     types: [published]
   
@@ -29,4 +31,4 @@ jobs:
           API_SECRET: ${{ secrets.TEST_API_SECRET }}
           API_ORDER_ID: ${{ secrets.TEST_API_ORDER_ID }}
           API_ORDER_EULA: ${{ secrets.TEST_API_ORDER_EULA }}
-        
+          API_HOST: ${{ secrets.TEST_API_HOST }}
