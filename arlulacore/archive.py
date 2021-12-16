@@ -8,6 +8,7 @@ from .common import ArlulaObject
 from .auth import Session
 from .exception import ArlulaSessionError
 from .orders import DetailedOrderResult
+from .util import parse_rfc3339
 
 
 @dataclass
@@ -62,8 +63,7 @@ class SearchResult(ArlulaObject):
         self.id = data["id"]
         self.scene_id = data["sceneID"]
         self.platform = data["platform"]
-        if str(data["date"]).endswith("Z"):
-            self.date = datetime.fromisoformat(data["date"][:-1])
+        self.date = parse_rfc3339(data["date"])
         self.center = CenterPoint(**data["center"])
         self.bounding = data["bounding"]
         self.area = data["area"]

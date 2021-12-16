@@ -2,6 +2,7 @@
     Objects specific to the orders api
 '''
 
+from datetime import datetime
 import typing
 import json
 import requests
@@ -10,11 +11,12 @@ import sys
 from .auth import Session
 from .exception import ArlulaSessionError
 from .common import ArlulaObject
+from .util import parse_rfc3339
 
 class Resource(ArlulaObject):
     id: str
-    created_at: str
-    updated_at: str
+    created_at: datetime
+    updated_at: datetime
     order: str
     name: str
     type: str
@@ -25,8 +27,8 @@ class Resource(ArlulaObject):
 
     def __init__(self, data):
         self.id = data["id"]
-        self.created_at = data["createdAt"]
-        self.updated_at = data["updatedAt"]
+        self.created_at = parse_rfc3339(data["createdAt"])
+        self.updated_at = parse_rfc3339(data["updatedAt"])
         self.order = data["order"]
         self.name = data["name"]
         self.type = data["type"]
@@ -37,8 +39,8 @@ class Resource(ArlulaObject):
 
 class OrderResult(ArlulaObject):
     id: str
-    created_at: str
-    updated_at: str
+    created_at: datetime
+    updated_at: datetime
     supplier: str
     imagery_id: str
     scene_id: str
@@ -49,8 +51,8 @@ class OrderResult(ArlulaObject):
 
     def __init__(self, data):
         self.id = data["id"]
-        self.created_at = data["createdAt"]
-        self.updated_at = data["updatedAt"]
+        self.created_at = parse_rfc3339(data["createdAt"])
+        self.updated_at = parse_rfc3339(data["updatedAt"])
         self.supplier = data["supplier"]
         self.imagery_id = data["imageryID"]
         self.scene_id = data["sceneID"]
@@ -61,8 +63,8 @@ class OrderResult(ArlulaObject):
 
 class DetailedOrderResult(ArlulaObject):
     id: str
-    created_at: str
-    updated_at: str
+    created_at: datetime
+    updated_at: datetime
     supplier: str
     imagery_id: str
     scene_id: str
@@ -74,8 +76,8 @@ class DetailedOrderResult(ArlulaObject):
 
     def __init__(self, data):
         self.id = data["id"]
-        self.created_at = data["createdAt"]
-        self.updated_at = data["updatedAt"]
+        self.created_at = parse_rfc3339(data["createdAt"])
+        self.updated_at = parse_rfc3339(data["updatedAt"])
         self.supplier = data["supplier"]
         self.imagery_id = data["imageryID"]
         self.scene_id = data["sceneID"]
