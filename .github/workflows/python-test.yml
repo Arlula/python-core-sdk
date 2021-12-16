@@ -1,6 +1,7 @@
 name: Test Python Package
 
 on:
+  workflow_dispatch:
   workflow_call:
     secrets:
       TEST_API_KEY:
@@ -17,8 +18,8 @@ on:
         required: true
       TEST_API_RESOURCE_ID:
         required: true
-  release:
-    types: [published]
+  pull_request:
+    types: [opened,edited,synchronize,reopened,ready_for_review,review_requested,]
   
 jobs:
   test:
