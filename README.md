@@ -60,7 +60,7 @@ order = orders.get(
 
 # Get a specific resource, for example thumbnails, tiffs, json metadata.
 # Streams to a file and returns the file handle.
-with f as orders.get_resource_as_file(id="b7adb198-3e6e-4217-9e67-fb26eb355cc4",filepath="downloads/thumbnail.jpg"):
+with orders.get_resource_as_file(id="b7adb198-3e6e-4217-9e67-fb26eb355cc4",filepath="downloads/thumbnail.jpg") as f:
     f.read(...)
 
 # Get a specific resource, for example thumbnails, tiffs, json metadata.
