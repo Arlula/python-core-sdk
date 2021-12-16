@@ -166,7 +166,7 @@ class SearchRequest(ArlulaObject):
             "west": self.west, "supplier": self.supplier, "off-nadir": self.off_nadir}
 
         query_params = {k: v for k, v in param_dict.items()
-            if v is not None or v == 0}
+            if v is not None}
 
         return query_params
 
