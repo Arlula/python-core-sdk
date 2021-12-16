@@ -8,10 +8,20 @@ on:
     types: [published]
 
 jobs:
+  test:
+    uses: Arlula/nodejs-core-sdk/.github/workflows/test-pr.yml@main
+    secrets:
+      TEST_HOST: ${{ secrets.TEST_HOST }}
+      TEST_API_KEY: ${{ secrets.TEST_API_KEY }}
+      TEST_API_SECRET: ${{ secrets.TEST_API_SECRET }}
+      TEST_ORDER_KEY: ${{ secrets.TEST_ORDER_KEY }}
+      TEST_ORDER_EULA: ${{ secrets.TEST_ORDER_EULA }}
+      TEST_ORDER_ID: ${{ secrets.TEST_ORDER_ID }}
+      TEST_RESOURCE_ID: ${{ secrets.TEST_RESOURCE_ID }}
+
   deploy:
-
+    needs: test
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python
