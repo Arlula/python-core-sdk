@@ -1,0 +1,41 @@
+name: Test Python Package
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    secrets:
+      TEST_API_KEY:
+        required: true
+      TEST_API_SECRET:
+        required: true
+      TEST_API_ORDER_KEY:
+        required: true
+      TEST_API_ORDER_EULA:
+        required: true
+      TEST_API_HOST:
+        required: true
+      TEST_API_ORDER_ID:
+        required: true
+      TEST_API_RESOURCE_ID:
+        required: true
+  pull_request:
+    types: [opened,edited,synchronize,reopened,ready_for_review,review_requested,]
+  
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps: 
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - run: pip3 install -r requirements.txt
+      - run: python3 -m unittest tests/test_archive.py tests/test_orders.py tests/test_rfc3339.py
+        env:
+          API_KEY: ${{ secrets.TEST_API_KEY }}
+          API_SECRET: ${{ secrets.TEST_API_SECRET }}
+          API_ORDER_KEY: ${{ secrets.TEST_API_ORDER_KEY}}
+          API_ORDER_EULA: ${{ secrets.TEST_API_ORDER_EULA }}
+          API_HOST: ${{ secrets.TEST_API_HOST }}
+          API_ORDER_ID: ${{ secrets.TEST_API_ORDER_ID }}
+          API_RESOURCE_ID: ${{ secrets.TEST_API_RESOURCE_ID }}

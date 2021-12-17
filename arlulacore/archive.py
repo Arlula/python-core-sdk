@@ -8,6 +8,7 @@ from .common import ArlulaObject
 from .auth import Session
 from .exception import ArlulaSessionError
 from .orders import DetailedOrderResult
+from .util import parse_rfc3339
 
 
 @dataclass
@@ -62,8 +63,7 @@ class SearchResult(ArlulaObject):
         self.id = data["id"]
         self.scene_id = data["sceneID"]
         self.platform = data["platform"]
-        if str(data["date"]).endswith("Z"):
-            self.date = datetime.fromisoformat(data["date"][:-1])
+        self.date = parse_rfc3339(data["date"])
         self.center = CenterPoint(**data["center"])
         self.bounding = data["bounding"]
         self.area = data["area"]
@@ -157,14 +157,16 @@ class SearchRequest(ArlulaObject):
         return self
     
     def dict(self):
-        param_dict = {"start": str(self.start), "end": str(self.end),
+        param_dict = {
+            "start": str(self.start) if self.start != None else None, 
+            "end": str(self.end) if self.end != None else None,
             "res": self.res, "cloud": self.cloud,
             "lat": self.lat, "long": self.long,
             "north": self.north, "south": self.south, "east": self.east, 
             "west": self.west, "supplier": self.supplier, "off-nadir": self.off_nadir}
 
         query_params = {k: v for k, v in param_dict.items()
-            if v is not None or v == 0}
+            if v is not None}
 
         return query_params
 
@@ -188,7 +190,7 @@ class OrderRequest:
         self.webhooks = webhooks
         self.emails = emails
     
-    def set_webhook(self, webhook: str) -> "OrderRequest":
+    def add_webhook(self, webhook: str) -> "OrderRequest":
         self.webhooks.append(webhook)
         return self
     
@@ -196,12 +198,12 @@ class OrderRequest:
         self.webhooks = webhooks
         return self
 
-    def set_email(self, email: str) -> "OrderRequest":
-        self.webhooks.append(email)
+    def add_email(self, email: str) -> "OrderRequest":
+        self.emails.append(email)
         return self
     
     def set_emails(self, emails: typing.List[str]) -> "OrderRequest":
-        self.webhooks = emails
+        self.emails = emails
         return self
 
     def dumps(self):

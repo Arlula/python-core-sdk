@@ -2,6 +2,7 @@
     Objects specific to the orders api
 '''
 
+from datetime import datetime
 import typing
 import json
 import requests
@@ -10,11 +11,12 @@ import sys
 from .auth import Session
 from .exception import ArlulaSessionError
 from .common import ArlulaObject
+from .util import parse_rfc3339
 
 class Resource(ArlulaObject):
     id: str
-    created_at: str
-    updated_at: str
+    created_at: datetime
+    updated_at: datetime
     order: str
     name: str
     type: str
@@ -25,8 +27,8 @@ class Resource(ArlulaObject):
 
     def __init__(self, data):
         self.id = data["id"]
-        self.created_at = data["createdAt"]
-        self.updated_at = data["updatedAt"]
+        self.created_at = parse_rfc3339(data["createdAt"])
+        self.updated_at = parse_rfc3339(data["updatedAt"])
         self.order = data["order"]
         self.name = data["name"]
         self.type = data["type"]
@@ -37,8 +39,8 @@ class Resource(ArlulaObject):
 
 class OrderResult(ArlulaObject):
     id: str
-    created_at: str
-    updated_at: str
+    created_at: datetime
+    updated_at: datetime
     supplier: str
     imagery_id: str
     scene_id: str
@@ -49,8 +51,8 @@ class OrderResult(ArlulaObject):
 
     def __init__(self, data):
         self.id = data["id"]
-        self.created_at = data["createdAt"]
-        self.updated_at = data["updatedAt"]
+        self.created_at = parse_rfc3339(data["createdAt"])
+        self.updated_at = parse_rfc3339(data["updatedAt"])
         self.supplier = data["supplier"]
         self.imagery_id = data["imageryID"]
         self.scene_id = data["sceneID"]
@@ -61,8 +63,8 @@ class OrderResult(ArlulaObject):
 
 class DetailedOrderResult(ArlulaObject):
     id: str
-    created_at: str
-    updated_at: str
+    created_at: datetime
+    updated_at: datetime
     supplier: str
     imagery_id: str
     scene_id: str
@@ -74,8 +76,8 @@ class DetailedOrderResult(ArlulaObject):
 
     def __init__(self, data):
         self.id = data["id"]
-        self.created_at = data["createdAt"]
-        self.updated_at = data["updatedAt"]
+        self.created_at = parse_rfc3339(data["createdAt"])
+        self.updated_at = parse_rfc3339(data["updatedAt"])
         self.supplier = data["supplier"]
         self.imagery_id = data["imageryID"]
         self.scene_id = data["sceneID"]
@@ -140,7 +142,7 @@ class OrdersAPI:
                      progress_generator: typing.Optional[typing.Generator[typing.Optional[float], None, None]] = None) -> typing.BinaryIO:
         '''
             Get a resource and stream it to the specified file. If supress is true, it will output extra information to standard output.
-            This is recommended for large files. Returns the file, which must be closed.
+            This is recommended for large files. Returns the file, which must be closed. The returned file is seeked back to it's beginning.
         '''
 
         url = self.url + "/resource/get"
@@ -153,7 +155,7 @@ class OrdersAPI:
         if progress_generator is not None:
             next(progress_generator)
 
-        f = open(filepath, 'wb')
+        f = open(filepath, "w+b")
 
         # Stream response
         response = requests.request(
@@ -192,6 +194,9 @@ class OrdersAPI:
         if not suppress:
             sys.stdout.write('\n')
             sys.stdout.write('download complete\n')
+
+        # So the file is able to be read from the beginning.
+        f.seek(0)
         
         return f
 

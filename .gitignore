@@ -6,3 +6,4 @@ __pycache__
 arlulaapi.egg-info
 test.py
 credentials.json
+.env
