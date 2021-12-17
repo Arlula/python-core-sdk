@@ -142,7 +142,7 @@ class OrdersAPI:
                      progress_generator: typing.Optional[typing.Generator[typing.Optional[float], None, None]] = None) -> typing.BinaryIO:
         '''
             Get a resource and stream it to the specified file. If supress is true, it will output extra information to standard output.
-            This is recommended for large files. Returns the file, which must be closed.
+            This is recommended for large files. Returns the file, which must be closed. The returned file is seeked back to it's beginning.
         '''
 
         url = self.url + "/resource/get"
@@ -194,6 +194,8 @@ class OrdersAPI:
         if not suppress:
             sys.stdout.write('\n')
             sys.stdout.write('download complete\n')
+
+        # So the file is able to be read from the beginning.
         f.seek(0)
         
         return f
