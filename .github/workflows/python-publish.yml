@@ -9,7 +9,7 @@ on:
 
 jobs:
   test:
-    uses: Arlula/python-core-sdk/.github/workflows/python-test.yml@main
+    uses: Arlula/python-core-sdk/.github/workflows/python-test.yml@master
     secrets:
       TEST_API_HOST: ${{ secrets.TEST_API_HOST }}
       TEST_API_KEY: ${{ secrets.TEST_API_KEY }}
