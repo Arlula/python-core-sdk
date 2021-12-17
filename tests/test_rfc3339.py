@@ -51,5 +51,3 @@ class TestRFC3339(unittest.TestCase):
 
     def test_no_input(self):
         self.assertEqual(parse_rfc3339(""), None)
-    
-    

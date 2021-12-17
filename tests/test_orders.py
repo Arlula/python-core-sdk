@@ -28,4 +28,3 @@ class TestOrders(unittest.TestCase):
         session = create_test_session()
         api = arlulacore.ArlulaAPI(session)
         b = api.ordersAPI().get_resource_as_memory(os.getenv("API_RESOURCE_ID"))
-
