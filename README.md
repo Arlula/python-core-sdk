@@ -2,6 +2,7 @@
 ## About
 This package provides a core interface for interacting with the [Arlula API](https://www.arlula.com/documentation/).
 This package can be found on [PyPI](https://pypi.org/project/arlulacore/).
+Documentation for this package can be found below, but for extensive documentation see the [wiki](https://github.com/Arlula/python-core-sdk/wiki).
 
 ## Prerequisites
 This package requires an active Arlula account and access to the API credentials. If you don't have an account, you can create one at [api.arlula.com/signup](https://api.arlula.com/signup).
