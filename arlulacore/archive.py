@@ -246,19 +246,19 @@ class OrderRequest:
 
     id: str
     eula: str
-    seats: int
+    bundle_key: str
     webhooks: typing.List[str]
     emails: typing.List[str]
 
     def __init__(self,
             id: str,
             eula: str,
-            seats: int,
+            bundle_key: str,
             webhooks: typing.List[str] = [],
             emails: typing.List[str] = []):
         self.id = id
         self.eula = eula
-        self.seats = seats
+        self.bundle_key = bundle_key
         self.webhooks = webhooks
         self.emails = emails
     
@@ -282,7 +282,8 @@ class OrderRequest:
         return json.dumps({
             "id": self.id,
             "eula": self.eula,
-            "seats": self.seats,
+            "bundle_key": self.bundle_key,
+            "seats": 1, # For legacy support
             "webhooks": self.webhooks,
             "emails": self.emails
         })
