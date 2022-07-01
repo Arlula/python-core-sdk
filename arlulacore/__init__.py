@@ -6,9 +6,13 @@ from .archive import (
     CenterPoint,
     Percent,
     Overlap,
+    License,
+    Band,
+    BundleOption,
     Seat,
     Price,
     SearchResult,
+    SearchResponse,
     SearchRequest,
     OrderRequest,
     ArchiveAPI

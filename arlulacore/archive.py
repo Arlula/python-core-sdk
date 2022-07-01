@@ -1,4 +1,5 @@
 import json
+import string
 import typing
 import requests
 
@@ -25,8 +26,29 @@ class Percent(ArlulaObject):
 class Overlap(ArlulaObject):
     area: float
     percent: Percent
-    polygon: typing.List[typing.List[float]]
+    polygon: typing.List[typing.List[typing.List[float]]]
 
+@dataclass
+class License(ArlulaObject):
+    name: str
+    href: str
+    loading_percent: float
+    loading_amount: int
+
+@dataclass
+class Band(ArlulaObject):
+    name: str
+    id: str
+    min: float
+    max: float
+
+@dataclass
+class BundleOption(ArlulaObject):
+    key: str
+    bands: typing.List[str]
+    price: int
+
+# Legacy Dataclasses
 @dataclass
 class Seat(ArlulaObject):
     min: int
@@ -39,42 +61,92 @@ class Price(ArlulaObject):
     seats: typing.List[Seat]
 
 class SearchResult(ArlulaObject):
-    supplier: str
-    eula: str
-    id: str
     scene_id: str
+    supplier: str
     platform: str
     date: datetime
-    center: CenterPoint
-    bounding: typing.List[typing.List[float]]
-    area: float
-    overlap: Overlap
-    price: Price
-    fulfillment_time: float
-    resolution: float
     thumbnail: str
     cloud: float
     off_nadir: float
+    gsd: float
+    bands: typing.List[Band]
+    area: float
+    center: CenterPoint
+    bounding: typing.List[typing.List[typing.List[float]]]
+    overlap: Overlap
+    fulfillment_time: float
+    ordering_id: str
+    bundles: typing.List[BundleOption]
+    license: typing.List[License]
     annotations: typing.List[str]
 
     def __init__(self, data):
-        self.supplier = data["supplier"]
-        self.eula = data["eula"]
-        self.id = data["id"]
         self.scene_id = data["sceneID"]
+        self.supplier = data["supplier"]
         self.platform = data["platform"]
         self.date = parse_rfc3339(data["date"])
-        self.center = CenterPoint(**data["center"])
-        self.bounding = data["bounding"]
-        self.area = data["area"]
-        self.overlap = data["overlap"]
-        self.price = Price(**data["price"])
-        self.fulfillment_time = data["fulfillmentTime"]
-        self.resolution = data["resolution"]
         self.thumbnail = data["thumbnail"]
         self.cloud = data["cloud"]
         self.off_nadir = data["offNadir"]
+
+        if ("gsd" in data):
+            self.spatial_resolution = data["gsd"]
+        else:
+            self.spatial_resolution = data["resolution"] # legacy
+
+        self.bands = []
+        if ("bands" in data):
+            self.bands += [Band(**e) for e in data["bands"]]
+
+        self.area = data["area"]
+        self.center = CenterPoint(**data["center"])
+        self.bounding = data["bounding"]
+        self.overlap = data["overlap"]
+        self.fulfillment_time = data["fulfillmentTime"]
+
+        if ("orderingID" in data):
+            self.ordering_id = data["orderingID"]
+        else:
+            self.ordering_id = data["id"] # legacy
+            
+        self.bundles = []
+        if ("bundles" in data):
+            self.bundles += [BundleOption(**e) for e in data["bundles"]]
+        self.license = []
+        if ("license" in data):
+            self.license += [License(**e) for e in data["license"]]
+
         self.annotations = data["annotations"]
+
+        # Legacy properties (include in new structure if present)
+        if ("price" in data):
+            tmp = Price(**data["price"])
+            self.bundles.append(BundleOption("default", [], tmp.base))
+        if ("eula" in data):
+            self.license.append(License("default", data["eula"], 0, 0))
+
+class SearchResponse(ArlulaObject):
+    state: string
+    errors: typing.List[str]
+    warnings: typing.List[str]
+    results: typing.List[SearchResult]
+
+    def __init__(self, data):
+        self.state = ""
+        self.errors = []
+        self.warnings = []
+
+        if (type(data) == list):
+            self.results = data
+            return
+
+        if ("state" in data):
+            self.state = data["state"]
+        if ("errors" in data):
+            self.errors += data["errors"]
+        if ("warnings" in data):
+            self.warnings += data["warnings"]
+        self.results = [SearchResult(e) for e in data["results"]]
 
 class SearchRequest(ArlulaObject):
     start: date
@@ -242,8 +314,13 @@ class ArchiveAPI:
         if response.status_code != 200:
             raise ArlulaSessionError(response.text)
         else:
-            # Break result into a list of objects
-            return [SearchResult(x) for x in json.loads(response.text)]
+            resp_data = json.loads(response.text)
+            # Break result into a list of objects (Legacy)
+            if (type(resp_data) == list):
+                lst = [SearchResult(x) for x in resp_data]
+                return SearchResponse(lst)
+            # Construct an instance of `SearchResponse`
+            return SearchResponse(resp_data)
 
     def order(self, request: OrderRequest) -> DetailedOrderResult:
         '''
