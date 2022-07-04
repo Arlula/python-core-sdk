@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='arlulacore',
-    version='3.0.0',
+    version='3.0.1',
     author="Arlula",
     author_email="tech@arlula.com",
     description="A package to facilitate access to the Arlula Imagery Marketplace API",
