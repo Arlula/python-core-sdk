@@ -90,9 +90,9 @@ class SearchResult(ArlulaObject):
         self.off_nadir = data["offNadir"]
 
         if ("gsd" in data):
-            self.spatial_resolution = data["gsd"]
+            self.gsd = data["gsd"]
         else:
-            self.spatial_resolution = data["resolution"] # legacy
+            self.gsd = data["resolution"] # legacy
 
         self.bands = []
         if ("bands" in data):
