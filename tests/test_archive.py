@@ -17,7 +17,9 @@ class TestSearchRequest(unittest.TestCase):
             .dict(), 
             {
                 "start": "2021-01-01",
-                "res": 100
+                # TODO backwards compatibility, remove after update 2022-07
+                "res": 100,
+                "gsd": 100
             }
         )
 
@@ -32,6 +34,7 @@ class TestSearchRequest(unittest.TestCase):
                 "east": 10,
                 "west": 20,
                 "res": 100,
+                "gsd": 100,
             }
         )
 
@@ -41,7 +44,9 @@ class TestSearchRequest(unittest.TestCase):
             .dict(),
             {
                 "start": "2021-01-01",
+                # TODO backwards compatibility, remove after update 2022-07
                 "res": 100,
+                "gsd": 100,
                 "lat": 0,
                 "long": 10,
             }
@@ -58,7 +63,9 @@ class TestSearchRequest(unittest.TestCase):
             {
                 "start": "2021-01-01",
                 "end": "2021-02-01",
+                # TODO backwards compatibility, remove after update 2022-07
                 "res": 100,
+                "gsd": 100,
                 "lat": 0,
                 "long": 10,
                 "cloud": 10,
@@ -73,7 +80,9 @@ class TestSearchRequest(unittest.TestCase):
             {
                 "start": "2021-01-01",
                 "end": "2021-02-01",
+                # TODO backwards compatibility, remove after update 2022-07
                 "res": 0,
+                "gsd": 0,
                 "cloud": 10,
                 "lat": 20,
                 "long": 30,
