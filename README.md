@@ -45,7 +45,7 @@ order_result = archive.order(
     arlulacore.OrderRequest(
         id="cade11f4-8b4d-43e1-8cb1-3bce85111a01",
         eula="Supplier's EULA",
-        seats=1,
+        bundle_key="default",
     )
     .set_emails(["john.smith@gmail.com", "jane.doe@gmail.com"])
 )
