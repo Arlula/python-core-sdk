@@ -29,11 +29,11 @@ api = arlulacore.ArlulaAPI(arlula_session)
 archive = api.archiveAPI()
 
 # Search for imagery around sydney between 2020-Jan-1 and 2020-Feb-1
-# With at least 10m resolution
+# With at least 10m resolution (gsd)
 search_result = archive.search(
     arlulacore.SearchRequest(
         start=date(2020, 1, 1), 
-        res=10,
+        gsd=10,
     )
     .set_point_of_interest(-33.8688, 151.2093)
     .set_end(date(2020, 2, 1))

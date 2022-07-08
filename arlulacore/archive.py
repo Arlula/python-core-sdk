@@ -150,7 +150,7 @@ class SearchResponse(ArlulaObject):
 
 class SearchRequest(ArlulaObject):
     start: date
-    res: float
+    gsd: float
     end: date
     lat: float
     long: float
@@ -163,7 +163,7 @@ class SearchRequest(ArlulaObject):
     cloud: float
 
     def __init__(self, start: date,
-            res: float,
+            gsd: float,
             cloud: typing.Optional[float] = None,
             end: typing.Optional[date] = None,
             lat: typing.Optional[float] = None,
@@ -176,7 +176,7 @@ class SearchRequest(ArlulaObject):
             off_nadir: typing.Optional[float] = None):
         self.start = start
         self.cloud = cloud
-        self.res = res
+        self.gsd = gsd
         self.end = end
         self.lat = lat
         self.long = long
@@ -203,8 +203,8 @@ class SearchRequest(ArlulaObject):
         self.supplier = supplier
         return self
 
-    def set_maximum_resolution(self, res: float) -> "SearchRequest":
-        self.res = res
+    def set_maximum_gsd(self, gsd: float) -> "SearchRequest":
+        self.gsd = gsd
         return self
 
     def set_start(self, start: date) -> "SearchRequest":
@@ -232,7 +232,8 @@ class SearchRequest(ArlulaObject):
         param_dict = {
             "start": str(self.start) if self.start != None else None, 
             "end": str(self.end) if self.end != None else None,
-            "res": self.res, "cloud": self.cloud,
+            # TODO remove res later, included for backwards compatibility
+            "gsd": self.gsd, "res": self.gsd, "cloud": self.cloud,
             "lat": self.lat, "long": self.long,
             "north": self.north, "south": self.south, "east": self.east, 
             "west": self.west, "supplier": self.supplier, "off-nadir": self.off_nadir}
