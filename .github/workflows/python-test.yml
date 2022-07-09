@@ -12,6 +12,8 @@ on:
         required: true
       TEST_API_ORDER_EULA:
         required: true
+      TEST_API_ORDER_BUNDLE:
+        required: true
       TEST_API_HOST:
         required: true
       TEST_API_ORDER_ID:
