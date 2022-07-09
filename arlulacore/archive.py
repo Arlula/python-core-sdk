@@ -44,6 +44,7 @@ class Band(ArlulaObject):
 
 @dataclass
 class BundleOption(ArlulaObject):
+    name: str
     key: str
     bands: typing.List[str]
     price: int
