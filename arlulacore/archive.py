@@ -283,7 +283,7 @@ class OrderRequest:
         return json.dumps({
             "id": self.id,
             "eula": self.eula,
-            "bundle_key": self.bundle_key,
+            "bundleKey": self.bundle_key,
             "seats": 1, # For legacy support
             "webhooks": self.webhooks,
             "emails": self.emails
