@@ -36,6 +36,7 @@ jobs:
           API_SECRET: ${{ secrets.TEST_API_SECRET }}
           API_ORDER_KEY: ${{ secrets.TEST_API_ORDER_KEY}}
           API_ORDER_EULA: ${{ secrets.TEST_API_ORDER_EULA }}
+          API_ORDER_BUNDLE: ${{ secrets.TEST_API_ORDER_BUNDLE }}
           API_HOST: ${{ secrets.TEST_API_HOST }}
           API_ORDER_ID: ${{ secrets.TEST_API_ORDER_ID }}
           API_RESOURCE_ID: ${{ secrets.TEST_API_RESOURCE_ID }}
