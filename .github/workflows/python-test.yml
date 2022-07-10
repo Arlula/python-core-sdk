@@ -8,11 +8,11 @@ on:
         required: true
       TEST_API_SECRET:
         required: true
-      TEST_API_ORDER_KEY:
+      TEST_API_ORDERING_ID:
         required: true
-      TEST_API_ORDER_EULA:
+      TEST_API_ORDER_LICENSE_HREF:
         required: true
-      TEST_API_ORDER_BUNDLE:
+      TEST_API_ORDER_BUNDLE_KEY:
         required: true
       TEST_API_HOST:
         required: true
@@ -36,9 +36,9 @@ jobs:
         env:
           API_KEY: ${{ secrets.TEST_API_KEY }}
           API_SECRET: ${{ secrets.TEST_API_SECRET }}
-          API_ORDER_KEY: ${{ secrets.TEST_API_ORDER_KEY}}
-          API_ORDER_EULA: ${{ secrets.TEST_API_ORDER_EULA }}
-          API_ORDER_BUNDLE: ${{ secrets.TEST_API_ORDER_BUNDLE }}
+          API_ORDERING_ID: ${{ secrets.TEST_API_ORDERING_ID }}
+          API_ORDER_LICENSE_HREF: ${{ secrets.TEST_API_ORDER_LICENSE_HREF }}
+          API_ORDER_BUNDLE_KEY: ${{ secrets.TEST_API_ORDER_BUNDLE_KEY }}
           API_HOST: ${{ secrets.TEST_API_HOST }}
           API_ORDER_ID: ${{ secrets.TEST_API_ORDER_ID }}
           API_RESOURCE_ID: ${{ secrets.TEST_API_RESOURCE_ID }}

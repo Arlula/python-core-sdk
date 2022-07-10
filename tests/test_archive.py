@@ -144,4 +144,4 @@ class TestOrderRequest(unittest.TestCase):
         # This will throw an exception on failure
         session = create_test_session()
         api = arlulacore.ArlulaAPI(session)
-        response = api.archiveAPI().order(arlulacore.OrderRequest(os.getenv("API_ORDER_KEY"), os.getenv("API_ORDER_EULA"), os.getenv("API_ORDER_BUNDLE")))
+        response = api.archiveAPI().order(arlulacore.OrderRequest(os.getenv("API_ORDERING_ID"), os.getenv("API_ORDER_LICENSE_HREF"), os.getenv("API_ORDER_BUNDLE_KEY")))
