@@ -54,18 +54,6 @@ class BundleOption(ArlulaObject):
     bands: typing.List[str]
     price: int
 
-# Legacy Dataclasses
-@dataclass
-class Seat(ArlulaObject):
-    min: int
-    max: int
-    additional: int
-
-@dataclass
-class Price(ArlulaObject):
-    base: float
-    seats: typing.List[Seat]
-
 class SearchResult(ArlulaObject):
     scene_id: str
     supplier: str
@@ -95,14 +83,10 @@ class SearchResult(ArlulaObject):
         self.cloud = data["cloud"]
         self.off_nadir = data["offNadir"]
 
-        if ("gsd" in data):
-            self.gsd = data["gsd"]
-        else:
-            self.gsd = data["resolution"] # legacy
+        self.gsd = data["gsd"]
 
         self.bands = []
-        if ("bands" in data):
-            self.bands += [Band(**e) for e in data["bands"]]
+        self.bands += [Band(**b) for b in data["bands"]]
 
         self.area = data["area"]
         self.center = CenterPoint(**data["center"])
@@ -110,26 +94,15 @@ class SearchResult(ArlulaObject):
         self.overlap = data["overlap"]
         self.fulfillment_time = data["fulfillmentTime"]
 
-        if ("orderingID" in data):
-            self.ordering_id = data["orderingID"]
-        else:
-            self.ordering_id = data["id"] # legacy
+        self.ordering_id = data["orderingID"]
             
         self.bundles = []
-        if ("bundles" in data):
-            self.bundles += [BundleOption(**e) for e in data["bundles"]]
+        self.bundles += [BundleOption(**b) for b in data["bundles"]]
         self.license = []
-        if ("license" in data):
-            self.license += [License(**e) for e in data["license"]]
+        self.license += [License(**l) for l in data["license"]]
 
         self.annotations = data["annotations"]
 
-        # Legacy properties (include in new structure if present)
-        if ("price" in data):
-            tmp = Price(**data["price"])
-            self.bundles.append(BundleOption("default", [], tmp.base))
-        if ("eula" in data):
-            self.license.append(License("default", data["eula"], 0, 0))
 
 class SearchResponse(ArlulaObject):
     state: string
