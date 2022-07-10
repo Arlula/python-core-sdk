@@ -39,7 +39,8 @@ search_result = archive.search(
     .set_end(date(2020, 2, 1))
 )
 
-# Order a specific image from the archive, using the id from above, and (optionally) 
+# Order a specific image from the archive, using the id from above, 
+# the eula that applies to you, the bundle you want, and (optionally) 
 # email jane.doe@gmail.com and john.smith@gmail.com when it is complete.
 order_result = archive.order(
     arlulacore.OrderRequest(
