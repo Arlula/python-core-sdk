@@ -149,17 +149,10 @@ class SearchResponse(ArlulaObject):
         self.state = ""
         self.errors = []
         self.warnings = []
-
-        if (type(data) == list):
-            self.results = data
-            return
-
-        if ("state" in data):
-            self.state = data["state"]
-        if ("errors" in data):
-            self.errors += data["errors"]
-        if ("warnings" in data):
-            self.warnings += data["warnings"]
+        
+        self.state = data["state"]
+        self.errors += data["errors"]
+        self.warnings += data["warnings"]
         self.results = [SearchResult(e) for e in data["results"]]
 
 class SearchRequest(ArlulaObject):
