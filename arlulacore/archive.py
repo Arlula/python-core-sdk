@@ -28,12 +28,17 @@ class Overlap(ArlulaObject):
     percent: Percent
     polygon: typing.List[typing.List[typing.List[float]]]
 
-@dataclass
 class License(ArlulaObject):
     name: str
     href: str
     loading_percent: float
     loading_amount: int
+
+    def __init__(self, data):
+        self.name = data["name"]
+        self.href = data["href"]
+        self.loading_percent = data["loadingPercent"]
+        self.loading_amount = data["loadingAmount"]
 
 @dataclass
 class Band(ArlulaObject):
