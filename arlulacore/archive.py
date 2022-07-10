@@ -111,7 +111,7 @@ class SearchResult(ArlulaObject):
         self.bundles = []
         self.bundles += [Bundle(**b) for b in data["bundles"]]
         self.license = []
-        self.license += [License(**l) for l in data["license"]]
+        self.license += [License(l) for l in data["license"]]
 
         self.annotations = data["annotations"]
 
