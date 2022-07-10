@@ -47,6 +47,18 @@ class Band(ArlulaObject):
     min: float
     max: float
 
+    def centre(self) -> float:
+        '''
+            Get the band centre wavelength
+        '''
+        return (self.max - self.min)/2
+
+    def width(self) -> float:
+        '''
+            Get the band width
+        '''
+        return self.max - self.min
+
 @dataclass
 class Bundle(ArlulaObject):
     name: str
