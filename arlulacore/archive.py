@@ -113,7 +113,9 @@ class SearchResult(ArlulaObject):
         self.license = []
         self.license += [License(l) for l in data["license"]]
 
-        self.annotations = data["annotations"]
+        self.annotations = []
+        if "annotations" in data:
+            self.annotations = data["annotations"]
 
     def calculate_price(self, license_href: string, bundle_key: string) -> int:
         '''
