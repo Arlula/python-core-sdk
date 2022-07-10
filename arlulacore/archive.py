@@ -211,8 +211,7 @@ class SearchRequest(ArlulaObject):
         param_dict = {
             "start": str(self.start) if self.start != None else None, 
             "end": str(self.end) if self.end != None else None,
-            # TODO remove res later, included for backwards compatibility
-            "gsd": self.gsd, "res": self.gsd, "cloud": self.cloud,
+            "gsd": self.gsd, "cloud": self.cloud,
             "lat": self.lat, "long": self.long,
             "north": self.north, "south": self.south, "east": self.east, 
             "west": self.west, "supplier": self.supplier, "off-nadir": self.off_nadir}
