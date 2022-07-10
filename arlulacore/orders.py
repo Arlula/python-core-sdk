@@ -54,11 +54,7 @@ class OrderResult(ArlulaObject):
         self.created_at = parse_rfc3339(data["createdAt"])
         self.updated_at = parse_rfc3339(data["updatedAt"])
         self.supplier = data["supplier"]
-        # TODO For backwards compatibility
-        if "orderingID" in data:
-            self.ordering_id = data["orderingID"]
-        elif "imageryID" in data:
-            self.ordering_id = data["imageryID"]
+        self.ordering_id = data["orderingID"]
         self.scene_id = data["sceneID"]
         self.status = data["status"]
         self.total = data["total"]
@@ -83,12 +79,7 @@ class DetailedOrderResult(ArlulaObject):
         self.created_at = parse_rfc3339(data["createdAt"])
         self.updated_at = parse_rfc3339(data["updatedAt"])
         self.supplier = data["supplier"]
-        # TODO For backwards compatibility
-        if "orderingID" in data:
-            self.ordering_id = data["orderingID"]
-        elif "imageryID" in data:
-            self.ordering_id = data["imageryID"]
-
+        self.ordering_id = data["orderingID"]
         self.scene_id = data["sceneID"]
         self.status = data["status"]
         self.total = data["total"]
