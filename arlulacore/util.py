@@ -1,3 +1,4 @@
+import math
 import re
 from datetime import datetime, timezone, timedelta
 
@@ -42,3 +43,19 @@ def parse_rfc3339(dt_str: str) -> datetime:
         )
     except:
         return None
+
+def calculate_price(bundle_price: int, loading_percent: float, loading_amount: int) -> int:
+    """
+    Calculates the price for a scene in US Cents.
+
+    Parameters:
+        bundle_price (int): The price of the bundle (taken from a Bundle)
+        loading_percent (float): The percentage loading of the license (taken from a License)
+        loading_amoutn (int): The flat loading of the license (taken from a License)
+    
+    Returns:
+        price (int): The price in US Cents
+    """
+    price = bundle_price * (1 + (loading_percent/100))
+    price = price + loading_amount
+    return math.ceil(price/100)*100

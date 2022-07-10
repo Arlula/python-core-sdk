@@ -9,7 +9,7 @@ from .common import ArlulaObject
 from .auth import Session
 from .exception import ArlulaSessionError
 from .orders import DetailedOrderResult
-from .util import parse_rfc3339
+from .util import parse_rfc3339, calculate_price
 
 
 @dataclass
@@ -48,7 +48,7 @@ class Band(ArlulaObject):
     max: float
 
 @dataclass
-class BundleOption(ArlulaObject):
+class Bundle(ArlulaObject):
     name: str
     key: str
     bands: typing.List[str]
@@ -70,7 +70,7 @@ class SearchResult(ArlulaObject):
     overlap: Overlap
     fulfillment_time: float
     ordering_id: str
-    bundles: typing.List[BundleOption]
+    bundles: typing.List[Bundle]
     license: typing.List[License]
     annotations: typing.List[str]
 
@@ -97,12 +97,35 @@ class SearchResult(ArlulaObject):
         self.ordering_id = data["orderingID"]
             
         self.bundles = []
-        self.bundles += [BundleOption(**b) for b in data["bundles"]]
+        self.bundles += [Bundle(**b) for b in data["bundles"]]
         self.license = []
         self.license += [License(**l) for l in data["license"]]
 
         self.annotations = data["annotations"]
 
+    def calculate_price(self, license_name: string, bundle_key: string) -> int:
+        '''
+            Wrapper for util.calculate_price, returns price in US Cents. Raises error in the case of invalid license_name or bundle_key
+        '''
+        
+        bundle = None
+        license = None
+        
+        for b in self.bundles:
+            if bundle.key == bundle_key:
+                bundle = b
+        
+        for l in self.license:
+            if license.key == license_name:
+                license = l
+
+        if bundle == None:
+            raise ValueError("Invalid bundle_key")
+
+        if license == None:
+            raise ValueError("Invalid license_name")
+
+        return calculate_price(bundle.price, license.loading_percent, license.loading_amount)
 
 class SearchResponse(ArlulaObject):
     state: string
