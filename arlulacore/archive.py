@@ -115,7 +115,7 @@ class SearchResult(ArlulaObject):
 
         self.annotations = data["annotations"]
 
-    def calculate_price(self, license_name: string, bundle_key: string) -> int:
+    def calculate_price(self, license_href: string, bundle_key: string) -> int:
         '''
             Wrapper for util.calculate_price, returns price in US Cents. Raises error in the case of invalid license_name or bundle_key
         '''
@@ -128,14 +128,14 @@ class SearchResult(ArlulaObject):
                 bundle = b
         
         for l in self.license:
-            if license.key == license_name:
+            if license.href == license_href:
                 license = l
 
         if bundle == None:
             raise ValueError("Invalid bundle_key")
 
         if license == None:
-            raise ValueError("Invalid license_name")
+            raise ValueError("Invalid license_href")
 
         return calculate_price(bundle.price, license.loading_percent, license.loading_amount)
 
