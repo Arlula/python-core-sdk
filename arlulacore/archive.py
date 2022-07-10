@@ -149,7 +149,7 @@ class SearchResponse(ArlulaObject):
         self.state = ""
         self.errors = []
         self.warnings = []
-        
+
         self.state = data["state"]
         self.errors += data["errors"]
         self.warnings += data["warnings"]
@@ -306,7 +306,7 @@ class ArchiveAPI:
         self.session = session
         self.url = self.session.baseURL + "/api/archive"
 
-    def search(self, request: SearchRequest) -> typing.List[SearchResult]:
+    def search(self, request: SearchRequest) -> SearchResponse:
         '''
             Search the Arlula imagery archive.
             Requires one of (lat, long) or (north, south, east, west).
