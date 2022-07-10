@@ -12,7 +12,7 @@ This package requires an active Arlula account and access to the API credentials
 pip install arlulacore
 ```
 ## Initiation
-Instantiate a Session object using your API credentials as below. This will validate your credentials and store them for the remainder of the session.
+Instantiate a Session object using your API credentials as below. This will validate your credentials and store them for the remainder of the session. This can be re-used for numerous requests or be instantiated numerous times with different credentials for concurrent access to different sessions.
 ```python
 import arlulacore
 
