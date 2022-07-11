@@ -9,7 +9,7 @@ from .common import ArlulaObject
 from .auth import Session
 from .exception import ArlulaSessionError
 from .orders import DetailedOrderResult
-from .util import parse_rfc3339
+from .util import parse_rfc3339, calculate_price
 
 
 @dataclass
@@ -28,12 +28,17 @@ class Overlap(ArlulaObject):
     percent: Percent
     polygon: typing.List[typing.List[typing.List[float]]]
 
-@dataclass
 class License(ArlulaObject):
     name: str
     href: str
     loading_percent: float
     loading_amount: int
+
+    def __init__(self, data):
+        self.name = data["name"]
+        self.href = data["href"]
+        self.loading_percent = data["loadingPercent"]
+        self.loading_amount = data["loadingAmount"]
 
 @dataclass
 class Band(ArlulaObject):
@@ -42,24 +47,24 @@ class Band(ArlulaObject):
     min: float
     max: float
 
+    def centre(self) -> float:
+        '''
+            Get the band centre wavelength
+        '''
+        return (self.max - self.min)/2
+
+    def width(self) -> float:
+        '''
+            Get the band width
+        '''
+        return self.max - self.min
+
 @dataclass
-class BundleOption(ArlulaObject):
+class Bundle(ArlulaObject):
     name: str
     key: str
     bands: typing.List[str]
     price: int
-
-# Legacy Dataclasses
-@dataclass
-class Seat(ArlulaObject):
-    min: int
-    max: int
-    additional: int
-
-@dataclass
-class Price(ArlulaObject):
-    base: float
-    seats: typing.List[Seat]
 
 class SearchResult(ArlulaObject):
     scene_id: str
@@ -77,7 +82,7 @@ class SearchResult(ArlulaObject):
     overlap: Overlap
     fulfillment_time: float
     ordering_id: str
-    bundles: typing.List[BundleOption]
+    bundles: typing.List[Bundle]
     license: typing.List[License]
     annotations: typing.List[str]
 
@@ -90,14 +95,10 @@ class SearchResult(ArlulaObject):
         self.cloud = data["cloud"]
         self.off_nadir = data["offNadir"]
 
-        if ("gsd" in data):
-            self.gsd = data["gsd"]
-        else:
-            self.gsd = data["resolution"] # legacy
+        self.gsd = data["gsd"]
 
         self.bands = []
-        if ("bands" in data):
-            self.bands += [Band(**e) for e in data["bands"]]
+        self.bands += [Band(**b) for b in data["bands"]]
 
         self.area = data["area"]
         self.center = CenterPoint(**data["center"])
@@ -105,26 +106,40 @@ class SearchResult(ArlulaObject):
         self.overlap = data["overlap"]
         self.fulfillment_time = data["fulfillmentTime"]
 
-        if ("orderingID" in data):
-            self.ordering_id = data["orderingID"]
-        else:
-            self.ordering_id = data["id"] # legacy
+        self.ordering_id = data["orderingID"]
             
         self.bundles = []
-        if ("bundles" in data):
-            self.bundles += [BundleOption(**e) for e in data["bundles"]]
+        self.bundles += [Bundle(**b) for b in data["bundles"]]
         self.license = []
-        if ("license" in data):
-            self.license += [License(**e) for e in data["license"]]
+        self.license += [License(l) for l in data["license"]]
 
-        self.annotations = data["annotations"]
+        self.annotations = []
+        if "annotations" in data:
+            self.annotations = data["annotations"]
 
-        # Legacy properties (include in new structure if present)
-        if ("price" in data):
-            tmp = Price(**data["price"])
-            self.bundles.append(BundleOption("default", [], tmp.base))
-        if ("eula" in data):
-            self.license.append(License("default", data["eula"], 0, 0))
+    def calculate_price(self, license_href: string, bundle_key: string) -> int:
+        '''
+            Wrapper for util.calculate_price, returns price in US Cents. Raises error in the case of invalid license_name or bundle_key
+        '''
+        
+        bundle = None
+        license = None
+        
+        for b in self.bundles:
+            if bundle.key == bundle_key:
+                bundle = b
+        
+        for l in self.license:
+            if license.href == license_href:
+                license = l
+
+        if bundle == None:
+            raise ValueError("Invalid bundle_key")
+
+        if license == None:
+            raise ValueError("Invalid license_href")
+
+        return calculate_price(bundle.price, license.loading_percent, license.loading_amount)
 
 class SearchResponse(ArlulaObject):
     state: string
@@ -137,17 +152,14 @@ class SearchResponse(ArlulaObject):
         self.errors = []
         self.warnings = []
 
-        if (type(data) == list):
-            self.results = data
-            return
-
-        if ("state" in data):
+        if "state" in data:
             self.state = data["state"]
-        if ("errors" in data):
+        if "errors" in data:
             self.errors += data["errors"]
-        if ("warnings" in data):
+        if "warnings" in data:
             self.warnings += data["warnings"]
-        self.results = [SearchResult(e) for e in data["results"]]
+        if "results" in data:
+            self.results = [SearchResult(e) for e in data["results"]]
 
 class SearchRequest(ArlulaObject):
     start: date
@@ -233,8 +245,7 @@ class SearchRequest(ArlulaObject):
         param_dict = {
             "start": str(self.start) if self.start != None else None, 
             "end": str(self.end) if self.end != None else None,
-            # TODO remove res later, included for backwards compatibility
-            "gsd": self.gsd, "res": self.gsd, "cloud": self.cloud,
+            "gsd": self.gsd, "cloud": self.cloud,
             "lat": self.lat, "long": self.long,
             "north": self.north, "south": self.south, "east": self.east, 
             "west": self.west, "supplier": self.supplier, "off-nadir": self.off_nadir}
@@ -301,7 +312,7 @@ class ArchiveAPI:
         self.session = session
         self.url = self.session.baseURL + "/api/archive"
 
-    def search(self, request: SearchRequest) -> typing.List[SearchResult]:
+    def search(self, request: SearchRequest) -> SearchResponse:
         '''
             Search the Arlula imagery archive.
             Requires one of (lat, long) or (north, south, east, west).

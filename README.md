@@ -12,7 +12,7 @@ This package requires an active Arlula account and access to the API credentials
 pip install arlulacore
 ```
 ## Initiation
-Instantiate a Session object using your API credentials as below. This will validate your credentials and store them for the remainder of the session.
+Instantiate a Session object using your API credentials as below. This will validate your credentials and store them for the remainder of the session. This can be re-used for numerous requests or be instantiated numerous times with different credentials for concurrent access to different sessions.
 ```python
 import arlulacore
 
@@ -39,7 +39,8 @@ search_result = archive.search(
     .set_end(date(2020, 2, 1))
 )
 
-# Order a specific image from the archive, using the id from above, and (optionally) 
+# Order a specific image from the archive, using the id from above, 
+# the eula that applies to you, the bundle you want, and (optionally) 
 # email jane.doe@gmail.com and john.smith@gmail.com when it is complete.
 order_result = archive.order(
     arlulacore.OrderRequest(

@@ -8,9 +8,7 @@ from .archive import (
     Overlap,
     License,
     Band,
-    BundleOption,
-    Seat,
-    Price,
+    Bundle,
     SearchResult,
     SearchResponse,
     SearchRequest,
@@ -35,5 +33,6 @@ from .exception import (
 )
 
 from .util import (
-    parse_rfc3339
+    parse_rfc3339,
+    calculate_price
 )
