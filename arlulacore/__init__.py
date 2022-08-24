@@ -1,5 +1,5 @@
 from .auth import (
-    Session
+    Session,
 )
 
 from .archive import (
@@ -13,26 +13,27 @@ from .archive import (
     SearchResponse,
     SearchRequest,
     OrderRequest,
-    ArchiveAPI
+    ArchiveAPI,
 )
 from .orders import (
     OrderResult,
-    OrdersAPI
+    OrdersAPI,
+    DetailedOrderResult,
 )
 
 from .arlula import (
-    ArlulaAPI
+    ArlulaAPI,
 )
 
 from .common import (
-    ArlulaObject
+    ArlulaObject,
 )
 
 from .exception import (
-    ArlulaSessionError
+    ArlulaSessionError,
 )
 
 from .util import (
     parse_rfc3339,
-    calculate_price
+    calculate_price,
 )
