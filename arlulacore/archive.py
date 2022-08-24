@@ -240,6 +240,15 @@ class SearchRequest(ArlulaObject):
     def set_maximum_cloud_cover(self, cloud: float) -> "SearchRequest":
         self.cloud = cloud
         return self
+
+    def valid_point_of_interest(self) -> bool:
+        return self.lat != None and self.long != None
+
+    def valid_area_of_interest(self) -> bool:
+        return self.north != None and self.south != None and self.east != None and self.west != None
+    
+    def valid(self) -> bool:
+        return (self.valid_area_of_interest() or self.valid_point_of_interest) and self.start != None and self.gsd != None
     
     def dict(self):
         param_dict = {
@@ -290,6 +299,9 @@ class OrderRequest:
     def set_emails(self, emails: typing.List[str]) -> "OrderRequest":
         self.emails = emails
         return self
+
+    def valid(self) -> bool:
+        return self.id != None and self.eula != None and self.bundle_key != None
 
     def dumps(self):
         return json.dumps({
