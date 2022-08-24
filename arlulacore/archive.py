@@ -296,7 +296,6 @@ class OrderRequest:
             "id": self.id,
             "eula": self.eula,
             "bundleKey": self.bundle_key,
-            "seats": 1, # For legacy support
             "webhooks": self.webhooks,
             "emails": self.emails
         })
