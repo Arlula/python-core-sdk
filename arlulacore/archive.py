@@ -329,10 +329,6 @@ class ArchiveAPI:
             raise ArlulaSessionError(response.text)
         else:
             resp_data = json.loads(response.text)
-            # Break result into a list of objects (Legacy)
-            if (type(resp_data) == list):
-                lst = [SearchResult(x) for x in resp_data]
-                return SearchResponse(lst)
             # Construct an instance of `SearchResponse`
             return SearchResponse(resp_data)
 
