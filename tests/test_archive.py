@@ -108,7 +108,6 @@ class TestOrderRequest(unittest.TestCase):
                 "id": "id",
                 "eula": "eula",
                 "bundleKey": "bundle_key",
-                "seats": 1,
                 "webhooks": [],
                 "emails": [],
             })
@@ -119,7 +118,6 @@ class TestOrderRequest(unittest.TestCase):
                 "id": "id",
                 "eula": "eula",
                 "bundleKey": "bundle_key",
-                "seats": 1,
                 "webhooks": ["https://test1.com", "https://test2.com"],
                 "emails": ["test1@gmail.com", "test2@gmail.com"],
             })
@@ -133,7 +131,6 @@ class TestOrderRequest(unittest.TestCase):
                 "id": "id",
                 "eula": "eula",
                 "bundleKey": "bundle_key",
-                "seats": 1,
                 "webhooks": ["https://test1.com", "https://test2.com"],
                 "emails": ["test1@gmail.com", "test2@gmail.com"],
             })
