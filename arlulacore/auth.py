@@ -28,7 +28,8 @@ class Session:
                  key: str,
                  secret: str,
                  user_agent: typing.Optional[str] = def_ua,
-                 url: typing.Optional[str] = "https://api.arlula.com"
+                 url: typing.Optional[str] = "https://api.arlula.com",
+                 test: typing.Optional[bool] = True,
                  ):
         # Encode the key and secret
         def atob(x): return x.encode('utf-8')
@@ -40,7 +41,8 @@ class Session:
             'X-API-Version': x_api_version
         }
         self.baseURL = url
-        self.validate_creds()
+        if test:
+            self.validate_creds()
 
     # Check the credentials are valid
     def validate_creds(self):
