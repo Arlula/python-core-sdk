@@ -150,10 +150,10 @@ class SearchResult(ArlulaObject):
         self.gsd = data["gsd"]
 
         self.bands = []
-        self.bands += [Band(**b) for b in data["bands"]]
+        self.bands += [Band(b) for b in data["bands"]]
 
         self.area = data["area"]
-        self.center = CenterPoint(**data["center"])
+        self.center = CenterPoint(data["center"])
         self.bounding = data["bounding"]
         self.overlap = data["overlap"]
         self.fulfillment_time = data["fulfillmentTime"]
@@ -161,7 +161,7 @@ class SearchResult(ArlulaObject):
         self.ordering_id = data["orderingID"]
             
         self.bundles = []
-        self.bundles += [Bundle(**b) for b in data["bundles"]]
+        self.bundles += [Bundle(b) for b in data["bundles"]]
         self.license = []
         self.license += [License(l) for l in data["license"]]
 
@@ -323,7 +323,7 @@ class SearchRequest():
         query_params = {k: v for k, v in param_dict.items()
             if v is not None}
 
-        return query_params
+        return remove_none(query_params)
 
 class OrderRequest(ArlulaObject):
 
