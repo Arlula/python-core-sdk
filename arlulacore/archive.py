@@ -8,9 +8,9 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from .common import ArlulaObject
 from .auth import Session
-from .exception import ArlulaSessionError
+from .exception import ArlulaAPIException, ArlulaSessionError
 from .orders import DetailedOrderResult
-from .util import parse_rfc3339, calculate_price, remove_none
+from .util import get_error_message, parse_rfc3339, calculate_price, remove_none
 
 class CenterPoint(ArlulaObject):
     data: dict
@@ -398,7 +398,7 @@ class ArchiveAPI:
             headers=self.session.header,
             params=request.dict())
         if response.status_code != 200:
-            raise ArlulaSessionError(response.text)
+            raise ArlulaAPIException(response)
         else:
             resp_data = json.loads(response.text)
             # Construct an instance of `SearchResponse`
@@ -418,6 +418,6 @@ class ArchiveAPI:
             headers=self.session.header)
 
         if response.status_code != 200:
-            raise ArlulaSessionError(response.text)
+            raise ArlulaAPIException(response)
         else:
             return DetailedOrderResult(json.loads(response.text))

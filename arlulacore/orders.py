@@ -9,7 +9,7 @@ import requests
 import sys
 
 from .auth import Session
-from .exception import ArlulaSessionError
+from .exception import ArlulaAPIException, ArlulaSessionError
 from .common import ArlulaObject
 from .util import parse_rfc3339
 
@@ -129,7 +129,7 @@ class OrdersAPI:
             params=querystring)
 
         if response.status_code != 200:
-            raise ArlulaSessionError(response.text)
+            raise ArlulaAPIException(response)
         else:
             return DetailedOrderResult(json.loads(response.text))
 
@@ -146,7 +146,7 @@ class OrdersAPI:
             headers=self.session.header)
 
         if response.status_code != 200:
-            raise ArlulaSessionError(response.text)
+            raise ArlulaAPIException(response)
         else:
             return [OrderResult(r) for r in json.loads(response.text)]
 
@@ -183,7 +183,7 @@ class OrdersAPI:
         total = response.headers.get('content-length')
 
         if response.status_code != 200:
-            raise ArlulaSessionError(response.text)
+            raise ArlulaAPIException(response)
 
         if total is None:
             f.write(response.content)
