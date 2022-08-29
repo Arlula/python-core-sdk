@@ -364,8 +364,8 @@ class OrderRequest(ArlulaObject):
     def valid(self) -> bool:
         return self.id != None and self.eula != None and self.bundle_key != None
 
-    def dumps(self):
-        return json.dumps({
+    def dict(self):
+        return remove_none({
             "id": self.id,
             "eula": self.eula,
             "bundleKey": self.bundle_key,
@@ -414,7 +414,7 @@ class ArchiveAPI:
         response = requests.request(
             "POST",
             url,
-            data=request.dumps(),
+            data=json.dumps(request.dict()),
             headers=self.session.header)
 
         if response.status_code != 200:
