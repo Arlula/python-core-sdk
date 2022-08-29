@@ -14,6 +14,7 @@ from .common import ArlulaObject
 from .util import parse_rfc3339
 
 class Resource(ArlulaObject):
+    data: dict
     id: str
     created_at: datetime
     updated_at: datetime
@@ -26,6 +27,7 @@ class Resource(ArlulaObject):
     checksum: str
 
     def __init__(self, data):
+        self.data = data
         self.id = data["id"]
         self.created_at = parse_rfc3339(data["createdAt"])
         self.updated_at = parse_rfc3339(data["updatedAt"])
@@ -37,7 +39,11 @@ class Resource(ArlulaObject):
         self.size = data["size"]
         self.checksum = data["checksum"]
 
+    def dict(self):
+        return self.data
+
 class OrderResult(ArlulaObject):
+    data: dict
     id: str
     created_at: datetime
     updated_at: datetime
@@ -50,6 +56,7 @@ class OrderResult(ArlulaObject):
     expiration: typing.Optional[str]
 
     def __init__(self, data):
+        self.data = data
         self.id = data["id"]
         self.created_at = parse_rfc3339(data["createdAt"])
         self.updated_at = parse_rfc3339(data["updatedAt"])
@@ -61,7 +68,11 @@ class OrderResult(ArlulaObject):
         self.type = data["type"]
         self.expiration = data["expiration"]
 
+    def dict(self) -> dict:
+        return self.data
+
 class DetailedOrderResult(ArlulaObject):
+    data: dict
     id: str
     created_at: datetime
     updated_at: datetime
@@ -75,6 +86,7 @@ class DetailedOrderResult(ArlulaObject):
     resources: typing.List[Resource]
 
     def __init__(self, data):
+        self.data = data
         self.id = data["id"]
         self.created_at = parse_rfc3339(data["createdAt"])
         self.updated_at = parse_rfc3339(data["updatedAt"])
@@ -86,6 +98,9 @@ class DetailedOrderResult(ArlulaObject):
         self.type = data["type"]
         self.expiration = data["expiration"]
         self.resources = [Resource(x) for x in data["resources"]]
+
+    def dict(self) -> dict:
+        return self.data
 
 class OrdersAPI:
     '''
