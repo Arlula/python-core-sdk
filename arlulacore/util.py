@@ -4,6 +4,9 @@ from datetime import datetime, timezone, timedelta
 
 __date_rx__ = re.compile(r"^(?P<year>\d{4})-(?P<month>\d\d)-(?P<day>\d\d)[Tt](?P<hour>\d\d):(?P<minute>\d\d):(?P<second>\d\d)(?:\.(?P<sec_frac>\d+))?(?P<offset>(?:[zZ]|(?P<offset_sign>[+-])(?P<offset_hour>\d{2}):(?P<offset_minute>\d{2})))$")
 
+def remove_none(d: dict) -> dict:
+    return {k: v for k, v in d.items() if v is not None}
+
 def parse_rfc3339(dt_str: str) -> datetime:
     try:
         result = re.search(__date_rx__, dt_str)
