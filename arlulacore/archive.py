@@ -1,3 +1,4 @@
+from __future__ import annotations
 import json
 import string
 import typing
@@ -9,43 +10,79 @@ from .common import ArlulaObject
 from .auth import Session
 from .exception import ArlulaSessionError
 from .orders import DetailedOrderResult
-from .util import parse_rfc3339, calculate_price
+from .util import parse_rfc3339, calculate_price, remove_none
 
-
-@dataclass
 class CenterPoint(ArlulaObject):
+    data: dict
     long: float
     lat: float
 
-@dataclass
+    def __init__(self, data):
+        self.data = data
+        self.long = data["long"]
+        self.lat = data["lat"]
+
+    def dict(self) -> dict:
+        return self.data
+
 class Percent(ArlulaObject):
+    data: dict
     scene: float
     search: float
 
-@dataclass
+    def __init__(self, data):
+        self.data = data
+        self.scene = data["scene"]
+        self.search = data["search"]
+
+    def dict(self) -> dict:
+        return self.data
+
 class Overlap(ArlulaObject):
+    data: dict
     area: float
     percent: Percent
     polygon: typing.List[typing.List[typing.List[float]]]
 
+    def __init__(self, data):
+        self.data = data
+        self.area = data["area"]
+        self.percent = data["percent"]
+        self.polygon = data["polygon"]
+
+    def dict(self) -> dict:
+        return self.data
+
 class License(ArlulaObject):
+    data: dict
     name: str
     href: str
     loading_percent: float
     loading_amount: int
 
     def __init__(self, data):
+        self.data = data
         self.name = data["name"]
         self.href = data["href"]
         self.loading_percent = data["loadingPercent"]
         self.loading_amount = data["loadingAmount"]
 
-@dataclass
+    def dict(self) -> dict:
+        return self.data
+
 class Band(ArlulaObject):
+    data: dict
     name: str
     id: str
     min: float
     max: float
+
+    def __init__(self, data):
+        self.data = data
+        self.name = data["name"]
+        self.id = data["id"]
+        self.min = data["min"]
+        self.max = data["max"]
 
     def centre(self) -> float:
         '''
@@ -59,14 +96,28 @@ class Band(ArlulaObject):
         '''
         return self.max - self.min
 
-@dataclass
+    def dict(self) -> dict:
+        return self.data
+
 class Bundle(ArlulaObject):
+    data: dict
     name: str
     key: str
     bands: typing.List[str]
     price: int
 
+    def __init__(self, data):
+        self.data = data
+        self.name = data["name"]
+        self.key = data["key"]
+        self.bands = data["bands"]
+        self.price = data["price"]
+
+    def dict(self) -> dict:
+        return self.data
+
 class SearchResult(ArlulaObject):
+    data: dict
     scene_id: str
     supplier: str
     platform: str
@@ -87,6 +138,7 @@ class SearchResult(ArlulaObject):
     annotations: typing.List[str]
 
     def __init__(self, data):
+        self.data = data
         self.scene_id = data["sceneID"]
         self.supplier = data["supplier"]
         self.platform = data["platform"]
@@ -141,16 +193,22 @@ class SearchResult(ArlulaObject):
 
         return calculate_price(bundle.price, license.loading_percent, license.loading_amount)
 
+    def dict(self) -> dict:
+        return self.data
+
 class SearchResponse(ArlulaObject):
+    data: dict
     state: string
     errors: typing.List[str]
     warnings: typing.List[str]
     results: typing.List[SearchResult]
 
     def __init__(self, data):
+        self.data = data
         self.state = ""
         self.errors = []
         self.warnings = []
+        self.results = []
 
         if "state" in data:
             self.state = data["state"]
@@ -161,7 +219,10 @@ class SearchResponse(ArlulaObject):
         if "results" in data:
             self.results = [SearchResult(e) for e in data["results"]]
 
-class SearchRequest(ArlulaObject):
+    def dict(self) -> dict:
+        return self.data
+
+class SearchRequest():
     start: date
     gsd: float
     end: date
@@ -264,7 +325,7 @@ class SearchRequest(ArlulaObject):
 
         return query_params
 
-class OrderRequest:
+class OrderRequest(ArlulaObject):
 
     id: str
     eula: str
