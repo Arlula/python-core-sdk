@@ -8,9 +8,9 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from .common import ArlulaObject
 from .auth import Session
-from .exception import ArlulaAPIException, ArlulaSessionError
+from .exception import ArlulaAPIException
 from .orders import DetailedOrderResult
-from .util import get_error_message, parse_rfc3339, calculate_price, remove_none
+from .util import parse_rfc3339, calculate_price, remove_none
 
 class CenterPoint(ArlulaObject):
     data: dict
