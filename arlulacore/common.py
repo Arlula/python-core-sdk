@@ -13,6 +13,8 @@ class ArlulaObject(abc.ABC):
         if format == "json":
             return json.dumps(self.dict())
         if format == "text":
-            return self
+            return str(self)
+        if format == "pretty-json":
+            return json.dumps(self.dict(), indent=1)
         if format == "table":
-            return self
+            return str(self)
