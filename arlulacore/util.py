@@ -13,6 +13,17 @@ def remove_none(d: dict) -> dict:
 def get_error(resp: requests.Response):
     return ArlulaSessionError(f"{resp.status_code}: {resp.text}")
 
+def simple_indent(s: str, first_amount: int, following_amount: int) -> str:
+    lines = s.splitlines()
+    out = [""]*len(lines)
+
+    for i, l in enumerate(lines):
+        if i == 0:
+            out[i] = first_amount*' ' + l
+        else:
+            out[i] = following_amount*' ' + l
+    return '\n'.join(out) + '\n'
+
 def parse_rfc3339(dt_str: str) -> datetime:
     try:
         result = re.search(__date_rx__, dt_str)

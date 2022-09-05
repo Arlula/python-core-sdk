@@ -7,11 +7,12 @@ import typing
 import json
 import requests
 import sys
+import textwrap
 
 from .auth import Session
 from .exception import ArlulaAPIException, ArlulaSessionError
 from .common import ArlulaObject
-from .util import parse_rfc3339
+from .util import parse_rfc3339, simple_indent
 
 class Resource(ArlulaObject):
     data: dict
@@ -38,6 +39,20 @@ class Resource(ArlulaObject):
         self.roles = data["roles"]
         self.size = data["size"]
         self.checksum = data["checksum"]
+
+    def __str__(self) -> str:
+        text = simple_indent(
+            f"Resource {self.id}\n"\
+            f"Created At: {self.created_at.isoformat()}\n"\
+            f"Updated At: {self.updated_at.isoformat()}\n"\
+            f"Order ID: {self.order}\n"\
+            f"Name: {self.name}\n"\
+            f"Type: {self.type}\n"\
+            f"Format: {self.format}\n"\
+            f"Roles: {self.roles}\n"\
+            f"Size: {self.size} Bytes\n"\
+            f"Checksum: {self.checksum}\n", 0, 2)
+        return text
 
     def dict(self):
         return self.data
@@ -67,6 +82,20 @@ class OrderResult(ArlulaObject):
         self.total = data["total"]
         self.type = data["type"]
         self.expiration = data["expiration"]
+
+    def __str__(self) -> str:
+        text = simple_indent(
+            f"Order ({self.id})\n"\
+            f"Created At: {self.created_at}\n"\
+            f"Updated At: {self.updated_at}\n"\
+            f"Supplier: {self.supplier}\n"\
+            f"Ordering ID: {self.ordering_id}\n"\
+            f"Scene ID: {self.scene_id}\n"\
+            f"Status: {self.status}\n"\
+            f"Total: {self.total}\n"\
+            f"Type: {self.type}\n"\
+            f"Expiration: {self.expiration}\n", 0, 2)
+        return text
 
     def dict(self) -> dict:
         return self.data
@@ -98,6 +127,22 @@ class DetailedOrderResult(ArlulaObject):
         self.type = data["type"]
         self.expiration = data["expiration"]
         self.resources = [Resource(x) for x in data["resources"]]
+    
+    def __str__(self) -> dict:
+        text = simple_indent(
+            f"Detailed Order ({self.id})\n"\
+            f"Created At: {self.created_at}\n"\
+            f"Updated At: {self.updated_at}\n"\
+            f"Supplier: {self.supplier}\n"\
+            f"Ordering ID: {self.ordering_id}\n"\
+            f"Scene ID: {self.scene_id}\n"\
+            f"Status: {self.status}\n"\
+            f"Total: {self.total}\n"\
+            f"Type: {self.type}\n"\
+            f"Expiration: {self.expiration}\n", 0, 2)
+        for r in self.resources:
+            text += simple_indent(str(r), 4, 4)   
+        return text
 
     def dict(self) -> dict:
         return self.data
