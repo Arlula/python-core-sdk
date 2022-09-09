@@ -3,16 +3,19 @@
 '''
 
 from datetime import datetime
+import os
 import typing
 import json
 import requests
 import sys
-import textwrap
+import re
 
 from .auth import Session
 from .exception import ArlulaAPIException, ArlulaSessionError
 from .common import ArlulaObject
 from .util import parse_rfc3339, simple_indent
+
+disposition_name_regex = re.compile(r"\"([\w\.]+)\"")
 
 class Resource(ArlulaObject):
     data: dict
@@ -43,8 +46,8 @@ class Resource(ArlulaObject):
     def __str__(self) -> str:
         text = simple_indent(
             f"Resource {self.id}\n"\
-            f"Created At: {self.created_at.isoformat()}\n"\
-            f"Updated At: {self.updated_at.isoformat()}\n"\
+            # f"Created At: {self.created_at.isoformat()}\n"\
+            # f"Updated At: {self.updated_at.isoformat()}\n"\
             f"Order ID: {self.order}\n"\
             f"Name: {self.name}\n"\
             f"Type: {self.type}\n"\
@@ -86,10 +89,10 @@ class OrderResult(ArlulaObject):
     def __str__(self) -> str:
         text = simple_indent(
             f"Order ({self.id})\n"\
-            f"Created At: {self.created_at}\n"\
-            f"Updated At: {self.updated_at}\n"\
+            # f"Created At: {self.created_at}\n"\
+            # f"Updated At: {self.updated_at}\n"\
             f"Supplier: {self.supplier}\n"\
-            f"Ordering ID: {self.ordering_id}\n"\
+            # f"Ordering ID: {self.ordering_id}\n"\
             f"Scene ID: {self.scene_id}\n"\
             f"Status: {self.status}\n"\
             f"Total: {self.total}\n"\
@@ -131,10 +134,10 @@ class DetailedOrderResult(ArlulaObject):
     def __str__(self) -> dict:
         text = simple_indent(
             f"Detailed Order ({self.id})\n"\
-            f"Created At: {self.created_at}\n"\
-            f"Updated At: {self.updated_at}\n"\
+            # f"Created At: {self.created_at}\n"\
+            # f"Updated At: {self.updated_at}\n"\
             f"Supplier: {self.supplier}\n"\
-            f"Ordering ID: {self.ordering_id}\n"\
+            # f"Ordering ID: {self.ordering_id}\n"\
             f"Scene ID: {self.scene_id}\n"\
             f"Status: {self.status}\n"\
             f"Total: {self.total}\n"\
@@ -195,27 +198,30 @@ class OrdersAPI:
         else:
             return [OrderResult(r) for r in json.loads(response.text)]
 
+    def download_order(self, id: str, directory: typing.Optional[str], suppress: typing.Optional[bool]=False) -> None:
+        order = self.get(id)
+        for r in order.resources:
+            self.get_resource_as_file(r.id, suppress=suppress, directory=directory).close()
+
     def get_resource_as_file(self,
                      id: str,
-                     filepath: str,
-                     suppress: bool = False,
-                     progress_generator: typing.Optional[typing.Generator[typing.Optional[float], None, None]] = None) -> typing.BinaryIO:
+                     filepath: typing.Optional[str] = None,
+                     suppress: typing.Optional[bool] = False,
+                     progress_generator: typing.Optional[typing.Generator[typing.Optional[float], None, None]] = None,
+                     directory: typing.Optional[str] = None) -> typing.BinaryIO:
         '''
             Get a resource and stream it to the specified file. If supress is true, it will output extra information to standard output.
+            If filename is not supplied, it will use the file specified by the supplier through the Content-Disposition header. If a filename
+            is not supplied and a directory is then the default named file will be placed in the specified directory, otherwise it is ignored.
             This is recommended for large files. Returns the file, which must be closed. The returned file is seeked back to it's beginning.
         '''
 
         url = self.url + "/resource/get"
 
-        if filepath is None:
-            raise ArlulaSessionError(
-                "You must specify a filepath for the download")
         
         querystring = {"id": id}
         if progress_generator is not None:
             next(progress_generator)
-
-        f = open(filepath, "w+b")
 
         # Stream response
         response = requests.request(
@@ -224,11 +230,20 @@ class OrdersAPI:
             headers=self.session.header,
             params=querystring,
             stream=True)
+        
+        if response.status_code != 200:
+            raise ArlulaAPIException(response)
+
+        if filepath is None:
+            # As requests follows redirects, need to use the history
+            content_disposition = response.history[0].headers.get("content-disposition")
+            filename = disposition_name_regex.findall(content_disposition)[0]
+            dir = directory or os.getcwd()
+            filepath = os.path.join(dir, filename)
+        f = open(filepath, "w+b")
 
         total = response.headers.get('content-length')
 
-        if response.status_code != 200:
-            raise ArlulaAPIException(response)
 
         if total is None:
             f.write(response.content)
