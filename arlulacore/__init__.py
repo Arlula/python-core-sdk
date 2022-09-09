@@ -31,6 +31,7 @@ from .common import (
 
 from .exception import (
     ArlulaSessionError,
+    ArlulaAPIException,
 )
 
 from .util import (
