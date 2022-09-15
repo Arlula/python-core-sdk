@@ -45,7 +45,7 @@ class Resource(ArlulaObject):
 
     def __str__(self) -> str:
         text = simple_indent(
-            f"Resource ({self.id})\n"\
+            f"Resource ({self.id}):\n"\
             # f"Created At: {self.created_at.isoformat()}\n"\
             # f"Updated At: {self.updated_at.isoformat()}\n"\
             # f"Order ID: {self.order}\n"\
@@ -88,7 +88,7 @@ class OrderResult(ArlulaObject):
 
     def __str__(self) -> str:
         text = simple_indent(
-            f"Order ({self.id})\n"\
+            f"Order ({self.id}):\n"\
             # f"Created At: {self.created_at}\n"\
             # f"Updated At: {self.updated_at}\n"\
             f"Supplier: {self.supplier}\n"\
@@ -133,7 +133,7 @@ class DetailedOrderResult(ArlulaObject):
     
     def __str__(self) -> dict:
         text = simple_indent(
-            f"Detailed Order ({self.id})\n"\
+            f"Detailed Order ({self.id}):\n"\
             # f"Created At: {self.created_at}\n"\
             # f"Updated At: {self.updated_at}\n"\
             f"Supplier: {self.supplier}\n"\
@@ -142,7 +142,8 @@ class DetailedOrderResult(ArlulaObject):
             f"Status: {self.status}\n"\
             f"Total: {self.total}\n"\
             f"Type: {self.type}\n"\
-            f"Expiration: {self.expiration}\n", 0, 2)
+            f"Expiration: {self.expiration}\n"\
+            f"Resources:\n", 0, 2)
         for r in self.resources:
             text += simple_indent(str(r), 4, 4)   
         return text
