@@ -45,14 +45,14 @@ class Resource(ArlulaObject):
 
     def __str__(self) -> str:
         text = simple_indent(
-            f"Resource {self.id}\n"\
+            f"Resource ({self.id})\n"\
             # f"Created At: {self.created_at.isoformat()}\n"\
             # f"Updated At: {self.updated_at.isoformat()}\n"\
-            f"Order ID: {self.order}\n"\
+            # f"Order ID: {self.order}\n"\
             f"Name: {self.name}\n"\
             f"Type: {self.type}\n"\
             f"Format: {self.format}\n"\
-            f"Roles: {self.roles}\n"\
+            f"Roles: {', '.join(self.roles)}\n"\
             f"Size: {self.size} Bytes\n"\
             f"Checksum: {self.checksum}\n", 0, 2)
         return text
