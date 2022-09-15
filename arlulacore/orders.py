@@ -129,9 +129,10 @@ class DetailedOrderResult(ArlulaObject):
         self.total = data["total"]
         self.type = data["type"]
         self.expiration = data["expiration"]
-        self.resources = [Resource(x) for x in data["resources"]]
+        self.resources = [Resource(x) for x in data["resources"]] if data["resources"] is not None else []
     
     def __str__(self) -> dict:
+        resources = simple_indent(''.join([str(r) for r in self.resources]), 2, 2)
         text = simple_indent(
             f"Detailed Order ({self.id}):\n"\
             # f"Created At: {self.created_at}\n"\
@@ -143,9 +144,8 @@ class DetailedOrderResult(ArlulaObject):
             f"Total: {self.total}\n"\
             f"Type: {self.type}\n"\
             f"Expiration: {self.expiration}\n"\
-            f"Resources:\n", 0, 2)
-        for r in self.resources:
-            text += simple_indent(str(r), 4, 4)   
+            f"Resources:\n"\
+            f"{resources}", 0, 2)
         return text
 
     def dict(self) -> dict:
