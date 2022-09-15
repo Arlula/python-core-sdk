@@ -27,7 +27,7 @@ class CenterPoint(ArlulaObject):
         return self.data
 
     def __str__(self) -> str:
-        return f"Center: {self.long} E/W, {self.lat} N/S"
+        return f"Center: {self.long} {'E' if self.long < 0 else 'W'}, {self.lat} {'S' if self.lat < 0 else 'N'}"
 
 class Percent(ArlulaObject):
     data: dict
@@ -43,7 +43,7 @@ class Percent(ArlulaObject):
         return self.data
     
     def __str__(self) -> str:
-        return f"Overlap: {self.scene}% of scene, {self.search}% of search"
+        return f"Coverage: {self.scene}% of scene, {self.search}% of search"
 
 class Overlap(ArlulaObject):
     data: dict
@@ -62,6 +62,7 @@ class Overlap(ArlulaObject):
     
     def __str__(self) -> str:
         return simple_indent(
+        f"Overlap:\n"\
         f"Area: {self.area} sqkm\n"\
         f"{str(self.percent)}\n"\
         f"Geometry: {self.polygon}", 0, 2)
@@ -85,8 +86,8 @@ class License(ArlulaObject):
 
     def __str__(self) -> str:
         return simple_indent(
+        f"License ({self.href}):\n"\
         f"Name: {self.name}\n"\
-        f"Href: {self.href}\n"\
         f"Loading: {self.loading_amount} US Cents + {self.loading_percent}%\n", 0, 2)
 
 class Band(ArlulaObject):
@@ -120,8 +121,8 @@ class Band(ArlulaObject):
 
     def __str__(self) -> str:
         return simple_indent(
-            f"Band ({self.name})\n"\
-            f"ID: {self.id}\n"\
+            f"Band ({self.id}):\n"\
+            f"Name: {self.name}\n"\
             f"Bandwidth: {self.min}nm - {self.max}nm\n", 0, 2)
 
 class Bundle(ArlulaObject):
@@ -142,10 +143,11 @@ class Bundle(ArlulaObject):
         return self.data
 
     def __str__(self) -> str:
+        bands = 'all' if len(self.bands) == 0 else '\n'.join(self.bands)
         return simple_indent(
+            f"Bundle ({self.key}):\n"\
             f"Name: {self.name}\n"\
-            f"Key: {self.key}\n"\
-            f"Bands: {self.bands}\n"\
+            f"Bands: {bands}\n"\
             f"Price: {self.price} US Cents\n", 0, 2)
 
 class SearchResult(ArlulaObject):
@@ -230,32 +232,31 @@ class SearchResult(ArlulaObject):
 
     def __str__(self) -> str:
 
-        bundles = ""
-        for b in self.bundles:
-            bundles += simple_indent(str(b), 4, 4)
+        bundles = simple_indent(''.join([str(b) for b in self.bundles]), 2, 2)
+        bands = simple_indent(''.join([str(b) for b in self.bands]), 2, 2)
+        license = simple_indent(''.join([str(l) for l in self.license]), 2, 2)
         return simple_indent(
-            f"Result:\n"\
+            f"Result ({self.ordering_id}):\n"\
             f"Scene ID: {self.scene_id}\n"\
             f"Supplier: {self.supplier}\n"\
             f"Platform: {self.platform}\n"\
             f"Capture Date: {self.date.strftime('%Y-%m-%d')}\n"\
             f"Thumbnail URL: {self.thumbnail}\n"\
-            f"Cloud Coverage: {self.cloud*100}%\n"\
+            f"Cloud Coverage: {self.cloud}%\n"\
             f"Off Nadir: {self.off_nadir} degrees\n"\
             f"Ground Sample Distance: {self.gsd} m\n"\
-            f"Bands:\n"\
-            f"{simple_indent(str(self.bands[0]), 2, 2)}"
+            f"Fulfillment Time: {self.fulfillment_time}\n"\
             f"Area: {self.area} sqkm\n"\
             f"{str(self.center)}\n"\
             f"Bounding: {self.bounding}\n"\
             f"{str(self.overlap)}"\
-            f"Fulfillment Time: {self.fulfillment_time}\n"\
-            f"Ordering ID: {self.ordering_id}\n"\
+            f"Bands:\n"\
+            f"{bands}"
             f"Bundles: \n"\
-            f"{simple_indent(str(self.bundles[0]), 2, 2)}"
+            f"{bundles}"
             f"License: \n"\
-            f"{simple_indent(str(self.license[0]), 2, 2)}"
-            f"Annotations {self.annotations}\n", 0, 2)
+            f"{license}"
+            f"Annotations: {', '.join(self.annotations)}\n", 0, 2)
 
 class SearchResponse(ArlulaObject):
     data: dict
