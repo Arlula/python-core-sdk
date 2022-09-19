@@ -40,6 +40,8 @@ class Session:
             'User-Agent': user_agent,
             'X-API-Version': x_api_version
         }
+        if url is None:
+            url = "https://api.arlula.com"
         self.baseURL = url
         if test:
             self.validate_creds()
