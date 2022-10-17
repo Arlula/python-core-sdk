@@ -103,7 +103,7 @@ class TestOrderRequest(unittest.TestCase):
 
     def test_dumps(self):
         
-        self.assertEqual(arlulacore.OrderRequest("id", "eula", "bundle_key").dumps(), 
+        self.assertEqual(json.dumps(arlulacore.OrderRequest("id", "eula", "bundle_key").dict()), 
             json.dumps({
                 "id": "id",
                 "eula": "eula",
@@ -113,7 +113,7 @@ class TestOrderRequest(unittest.TestCase):
             })
         )
         
-        self.assertEqual(arlulacore.OrderRequest("id", "eula", "bundle_key", ["https://test1.com", "https://test2.com"], ["test1@gmail.com", "test2@gmail.com"]).dumps(),
+        self.assertEqual(json.dumps(arlulacore.OrderRequest("id", "eula", "bundle_key", ["https://test1.com", "https://test2.com"], ["test1@gmail.com", "test2@gmail.com"]).dict()),
             json.dumps({
                 "id": "id",
                 "eula": "eula",
@@ -123,10 +123,10 @@ class TestOrderRequest(unittest.TestCase):
             })
         )
 
-        self.assertEqual(arlulacore.OrderRequest("id", "eula", "bundle_key", ["https://test1.com"], ["test1@gmail.com"])
+        self.assertEqual(json.dumps(arlulacore.OrderRequest("id", "eula", "bundle_key", ["https://test1.com"], ["test1@gmail.com"])
             .add_email("test2@gmail.com")
             .add_webhook("https://test2.com")
-            .dumps(),
+            .dict()),
             json.dumps({
                 "id": "id",
                 "eula": "eula",
@@ -141,4 +141,4 @@ class TestOrderRequest(unittest.TestCase):
         # This will throw an exception on failure
         session = create_test_session()
         api = arlulacore.ArlulaAPI(session)
-        response = api.archiveAPI().order(arlulacore.OrderRequest(os.getenv("API_ORDERING_ID"), os.getenv("API_ORDER_LICENSE_HREF"), os.getenv("API_ORDER_BUNDLE_KEY")))
+        response = api.archiveAPI().order(arlulacore.OrderRequest(os.getenv("API_ORDERING_ID"), os.getenv("API_ORDER_LICENSE_HREF"), os.getenv("API_ORDER_BUNDLE_KEY"), team=os.getenv("API_TEAM_ID")))

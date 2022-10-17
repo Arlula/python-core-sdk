@@ -20,3 +20,5 @@ class TestEnv(unittest.TestCase):
         self.assertNotEqual(os.getenv("API_ORDERING_ID"), None)
     def test_resource_id(self):
         self.assertNotEqual(os.getenv("API_RESOURCE_ID"), None)
+    def test_team_id(self):
+        self.assertNotEqual(os.getenv("API_TEAM_ID"), None)
