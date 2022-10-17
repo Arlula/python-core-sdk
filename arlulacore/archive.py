@@ -406,13 +406,15 @@ class OrderRequest(ArlulaObject):
             id: str,
             eula: str,
             bundle_key: str,
-            webhooks: typing.List[str] = [],
-            emails: typing.List[str] = []):
+            webhooks: typing.Optional[typing.List[str]] = [],
+            emails: typing.Optional[typing.List[str]] = [],
+            team: typing.Optional[str] = None):
         self.id = id
         self.eula = eula
         self.bundle_key = bundle_key
         self.webhooks = webhooks
         self.emails = emails
+        self.team = team
     
     def add_webhook(self, webhook: str) -> "OrderRequest":
         self.webhooks.append(webhook)
@@ -430,6 +432,10 @@ class OrderRequest(ArlulaObject):
         self.emails = emails
         return self
 
+    def set_team(self, team: str) -> "OrderRequest":
+        self.team = team
+        return self
+
     def valid(self) -> bool:
         return self.id != None and self.eula != None and self.bundle_key != None
 
@@ -439,7 +445,8 @@ class OrderRequest(ArlulaObject):
             "eula": self.eula,
             "bundleKey": self.bundle_key,
             "webhooks": self.webhooks,
-            "emails": self.emails
+            "emails": self.emails,
+            "team": self.team,
         })
 
 
