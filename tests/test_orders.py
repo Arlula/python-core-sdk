@@ -17,14 +17,12 @@ class TestOrders(unittest.TestCase):
         api = arlulacore.ArlulaAPI(session)
         response = api.ordersAPI().get(os.getenv("API_ORDER_ID"))
     
-
-
     def test_order_resource_as_file(self):
         session = create_test_session()
         api = arlulacore.ArlulaAPI(session)
         with tempfile.TemporaryDirectory() as temp_dir:
             filepath = os.path.join(temp_dir, "temp")
-            api.ordersAPI().get_resource_as_file(os.getenv("API_RESOURCE_ID"), "temp").close()
+            api.ordersAPI().get_resource_as_file(os.getenv("API_RESOURCE_ID"), filepath).close()
             self.assertTrue(os.path.getsize(filepath) > 0)
                 
     def test_order_resource_directory(self):
