@@ -1,11 +1,9 @@
 from __future__ import annotations
 import json
 import string
-import textwrap
 import typing
 import requests
 
-from dataclasses import dataclass
 from datetime import date, datetime
 from .common import ArlulaObject
 from .auth import Session
@@ -394,6 +392,28 @@ class SearchRequest():
 
         return remove_none(query_params)
 
+class DeliveryConfig(ArlulaObject):
+    location: str
+    metadata_format: str
+
+    def __init__(self, location: str, metadata_format: str):
+        self.location = location
+        self.metadata_format = metadata_format
+    
+    def set_location(self, location: str) -> "DeliveryConfig":
+        self.location = location
+        return self
+
+    def set_metadata_format(self, metadata_format: str) -> "DeliveryConfig":
+        self.metadata_format = metadata_format
+        return self
+
+    def dict(self):
+        return remove_none({
+            "Location": self.location,
+            "MetadataFormat": self.metadata_format,
+        })
+
 class OrderRequest(ArlulaObject):
 
     id: str
@@ -401,6 +421,7 @@ class OrderRequest(ArlulaObject):
     bundle_key: str
     webhooks: typing.List[str]
     emails: typing.List[str]
+    delivery_config: DeliveryConfig
 
     def __init__(self,
             id: str,
@@ -408,13 +429,15 @@ class OrderRequest(ArlulaObject):
             bundle_key: str,
             webhooks: typing.Optional[typing.List[str]] = [],
             emails: typing.Optional[typing.List[str]] = [],
-            team: typing.Optional[str] = None):
+            team: typing.Optional[str] = None,
+            delivery_config: typing.Optional[DeliveryConfig] = None):
         self.id = id
         self.eula = eula
         self.bundle_key = bundle_key
         self.webhooks = webhooks
         self.emails = emails
         self.team = team
+        self.delivery_config = delivery_config
     
     def add_webhook(self, webhook: str) -> "OrderRequest":
         self.webhooks.append(webhook)
@@ -436,6 +459,10 @@ class OrderRequest(ArlulaObject):
         self.team = team
         return self
 
+    def set_delivery_config(self, delivery_config: str) -> "OrderRequest":
+        self.delivery_config = delivery_config
+        return self
+
     def valid(self) -> bool:
         return self.id != None and self.eula != None and self.bundle_key != None
 
@@ -447,6 +474,7 @@ class OrderRequest(ArlulaObject):
             "webhooks": self.webhooks,
             "emails": self.emails,
             "team": self.team,
+            "config": self.delivery_config.dict() if self.delivery_config is not None else None
         })
 
 

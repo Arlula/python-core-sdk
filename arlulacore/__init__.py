@@ -12,6 +12,7 @@ from .archive import (
     SearchResult,
     SearchResponse,
     SearchRequest,
+    DeliveryConfig,
     OrderRequest,
     ArchiveAPI,
 )
