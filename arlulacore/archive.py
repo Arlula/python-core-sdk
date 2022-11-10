@@ -523,15 +523,6 @@ class ArchiveAPI:
             headers=self.session.header)
 
         if response.status_code != 200:
-            print("raising exception as status code = ", response.status_code)
-            print(response.text)
             raise ArlulaAPIException(response)
         else:
-            print("Happily returning")
-            print(response.text)
-            print("JSON load")
-            print(json.loads(response.text))
-            print("Pretty json load")
-            pprint.pprint(json.loads(response.text))
-            print(DetailedOrderResult(json.loads(response.text)))
             return DetailedOrderResult(json.loads(response.text))
