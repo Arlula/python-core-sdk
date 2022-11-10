@@ -1,5 +1,6 @@
 from __future__ import annotations
 import json
+import pprint
 import string
 import typing
 import requests
@@ -527,4 +528,9 @@ class ArchiveAPI:
             raise ArlulaAPIException(response)
         else:
             print("Happily returning")
+            print(response.text)
+            print("JSON load")
+            print(json.loads(response.text))
+            print("Pretty json load")
+            pprint.pprint(json.loads(response.text))
             return DetailedOrderResult(json.loads(response.text))
