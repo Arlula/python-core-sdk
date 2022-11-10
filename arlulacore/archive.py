@@ -474,7 +474,7 @@ class OrderRequest(ArlulaObject):
             "webhooks": self.webhooks,
             "emails": self.emails,
             "team": self.team,
-            "config": self.delivery_config.dict() if self.delivery_config is not None else None
+            "delivery": self.delivery_config.dict() if self.delivery_config is not None else None
         })
 
 
