@@ -533,4 +533,5 @@ class ArchiveAPI:
             print(json.loads(response.text))
             print("Pretty json load")
             pprint.pprint(json.loads(response.text))
+            print(DetailedOrderResult(json.loads(response.text)))
             return DetailedOrderResult(json.loads(response.text))
