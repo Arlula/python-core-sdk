@@ -85,7 +85,7 @@ class DetailedOrderResult(ArlulaObject):
         self.total = data["total"]
         self.type = data["type"]
         self.expiration = data["expiration"]
-        self.resources = [Resource(x) for x in data["resources"]]
+        self.resources = [Resource(x) for x in data["resources"]] if "resources" in data is not None else []
 
 class OrdersAPI:
     '''
