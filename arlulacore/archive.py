@@ -12,6 +12,7 @@ from .auth import Session
 from .exception import ArlulaAPIException
 from .orders import DetailedOrderResult
 from .util import parse_rfc3339, calculate_price, remove_none, simple_indent
+
 Polygon = typing.Union[typing.List[typing.List[typing.List[float]]], str]
 
 class CenterPoint(ArlulaObject):
@@ -396,11 +397,11 @@ class SearchRequest():
             "lat": self.lat, "long": self.long,
             "north": self.north, "south": self.south, "east": self.east, 
             "west": self.west, "supplier": self.supplier, "off-nadir": self.off_nadir,
-            "polygon": self.polygon}
+            "polygon": json.dumps(self.polygon) if isinstance(self.polygon, list) else self.polygon}
 
         query_params = {k: v for k, v in param_dict.items()
             if v is not None}
-
+        print(query_params)
         return remove_none(query_params)
 
 class OrderRequest(ArlulaObject):
