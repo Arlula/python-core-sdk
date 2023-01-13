@@ -17,7 +17,7 @@ def_ua = "core-sdk " + \
     sdk_version + " python " + py_version + " OS " + os_version
 
 # Expected API version
-x_api_version = '2021-09'
+x_api_version = '2023-01'
 
 class Session:
     '''
