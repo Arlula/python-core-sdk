@@ -129,7 +129,7 @@ class DetailedOrderResult(ArlulaObject):
         self.total = data["total"]
         self.type = data["type"]
         self.expiration = data["expiration"]
-        self.resources = [Resource(x) for x in data["resources"]] if data["resources"] is not None else []
+        self.resources = [Resource(x) for x in data["resources"]] if "resources" in data else []
     
     def __str__(self) -> dict:
         resources = simple_indent(''.join([str(r) for r in self.resources]), 2, 2)
