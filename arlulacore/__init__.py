@@ -14,6 +14,7 @@ from .archive import (
     SearchRequest,
     OrderRequest,
     ArchiveAPI,
+    Polygon,
 )
 from .orders import (
     OrderResult,
