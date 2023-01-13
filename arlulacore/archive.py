@@ -401,7 +401,7 @@ class SearchRequest():
 
         query_params = {k: v for k, v in param_dict.items()
             if v is not None}
-        print(query_params)
+
         return remove_none(query_params)
 
 class OrderRequest(ArlulaObject):
