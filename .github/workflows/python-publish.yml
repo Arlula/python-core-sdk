@@ -19,6 +19,7 @@ jobs:
       TEST_API_ORDER_BUNDLE_KEY: ${{ secrets.TEST_API_ORDER_BUNDLE_KEY }}
       TEST_API_ORDER_ID: ${{ secrets.TEST_API_ORDER_ID }}
       TEST_API_RESOURCE_ID: ${{ secrets.TEST_API_RESOURCE_ID }}
+      TEST_API_TEAM_ID: ""
 
   deploy:
     needs: test
