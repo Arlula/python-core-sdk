@@ -456,7 +456,7 @@ class OrderRequest(ArlulaObject):
             "bundleKey": self.bundle_key,
             "webhooks": self.webhooks,
             "emails": self.emails,
-            "team": self.team,
+            "team": None if self.team == "" else self.team,
         })
 
 
