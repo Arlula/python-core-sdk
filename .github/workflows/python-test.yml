@@ -20,6 +20,8 @@ on:
         required: true
       TEST_API_RESOURCE_ID:
         required: true
+      TEST_API_TEAM_ID:
+        required: true
   pull_request:
     types: [opened,edited,synchronize,reopened,ready_for_review,review_requested,]
   
