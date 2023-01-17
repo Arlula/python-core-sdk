@@ -1,5 +1,7 @@
+from __future__ import annotations
 import json
 import string
+import textwrap
 import typing
 import requests
 
@@ -7,45 +9,102 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from .common import ArlulaObject
 from .auth import Session
-from .exception import ArlulaSessionError
+from .exception import ArlulaAPIException
 from .orders import DetailedOrderResult
-from .util import parse_rfc3339, calculate_price
+from .util import parse_rfc3339, calculate_price, remove_none, simple_indent
 
+Polygon = typing.Union[typing.List[typing.List[typing.List[float]]], str]
 
-@dataclass
 class CenterPoint(ArlulaObject):
+    data: dict
     long: float
     lat: float
 
-@dataclass
+    def __init__(self, data):
+        self.data = data
+        self.long = data["long"]
+        self.lat = data["lat"]
+
+    def dict(self) -> dict:
+        return self.data
+
+    def __str__(self) -> str:
+        return f"Center: {self.long} {'E' if self.long < 0 else 'W'}, {self.lat} {'S' if self.lat < 0 else 'N'}"
+
 class Percent(ArlulaObject):
+    data: dict
     scene: float
     search: float
 
-@dataclass
+    def __init__(self, data):
+        self.data = data
+        self.scene = data["scene"]
+        self.search = data["search"]
+
+    def dict(self) -> dict:
+        return self.data
+    
+    def __str__(self) -> str:
+        return f"Coverage: {self.scene}% of scene, {self.search}% of search"
+
 class Overlap(ArlulaObject):
+    data: dict
     area: float
     percent: Percent
     polygon: typing.List[typing.List[typing.List[float]]]
 
+    def __init__(self, data):
+        self.data = data
+        self.area = data["area"]
+        self.percent = Percent(data["percent"])
+        self.polygon = data["polygon"]
+
+    def dict(self) -> dict:
+        return self.data
+    
+    def __str__(self) -> str:
+        return simple_indent(
+        f"Overlap:\n"\
+        f"Area: {self.area} sqkm\n"\
+        f"{str(self.percent)}\n"\
+        f"Geometry: {self.polygon}", 0, 2)
+
 class License(ArlulaObject):
+    data: dict
     name: str
     href: str
     loading_percent: float
     loading_amount: int
 
     def __init__(self, data):
+        self.data = data
         self.name = data["name"]
         self.href = data["href"]
         self.loading_percent = data["loadingPercent"]
         self.loading_amount = data["loadingAmount"]
 
-@dataclass
+    def dict(self) -> dict:
+        return self.data
+
+    def __str__(self) -> str:
+        return simple_indent(
+        f"License ({self.href}):\n"\
+        f"Name: {self.name}\n"\
+        f"Loading: {self.loading_amount} US Cents + {self.loading_percent}%\n", 0, 2)
+
 class Band(ArlulaObject):
+    data: dict
     name: str
     id: str
     min: float
     max: float
+
+    def __init__(self, data):
+        self.data = data
+        self.name = data["name"]
+        self.id = data["id"]
+        self.min = data["min"]
+        self.max = data["max"]
 
     def centre(self) -> float:
         '''
@@ -59,14 +118,42 @@ class Band(ArlulaObject):
         '''
         return self.max - self.min
 
-@dataclass
+    def dict(self) -> dict:
+        return self.data
+
+    def __str__(self) -> str:
+        return simple_indent(
+            f"Band ({self.id}):\n"\
+            f"Name: {self.name}\n"\
+            f"Bandwidth: {self.min}nm - {self.max}nm\n", 0, 2)
+
 class Bundle(ArlulaObject):
+    data: dict
     name: str
     key: str
     bands: typing.List[str]
     price: int
 
+    def __init__(self, data):
+        self.data = data
+        self.name = data["name"]
+        self.key = data["key"]
+        self.bands = data["bands"]
+        self.price = data["price"]
+
+    def dict(self) -> dict:
+        return self.data
+
+    def __str__(self) -> str:
+        bands = 'all' if len(self.bands) == 0 else '\n'.join(self.bands)
+        return simple_indent(
+            f"Bundle ({self.key}):\n"\
+            f"Name: {self.name}\n"\
+            f"Bands: {bands}\n"\
+            f"Price: {self.price} US Cents\n", 0, 2)
+
 class SearchResult(ArlulaObject):
+    data: dict
     scene_id: str
     supplier: str
     platform: str
@@ -87,6 +174,7 @@ class SearchResult(ArlulaObject):
     annotations: typing.List[str]
 
     def __init__(self, data):
+        self.data = data
         self.scene_id = data["sceneID"]
         self.supplier = data["supplier"]
         self.platform = data["platform"]
@@ -98,18 +186,18 @@ class SearchResult(ArlulaObject):
         self.gsd = data["gsd"]
 
         self.bands = []
-        self.bands += [Band(**b) for b in data["bands"]]
+        self.bands += [Band(b) for b in data["bands"]]
 
         self.area = data["area"]
-        self.center = CenterPoint(**data["center"])
+        self.center = CenterPoint(data["center"])
         self.bounding = data["bounding"]
-        self.overlap = data["overlap"]
+        self.overlap = Overlap(data["overlap"])
         self.fulfillment_time = data["fulfillmentTime"]
 
         self.ordering_id = data["orderingID"]
             
         self.bundles = []
-        self.bundles += [Bundle(**b) for b in data["bundles"]]
+        self.bundles += [Bundle(b) for b in data["bundles"]]
         self.license = []
         self.license += [License(l) for l in data["license"]]
 
@@ -141,16 +229,50 @@ class SearchResult(ArlulaObject):
 
         return calculate_price(bundle.price, license.loading_percent, license.loading_amount)
 
+    def dict(self) -> dict:
+        return self.data
+
+    def __str__(self) -> str:
+
+        bundles = simple_indent(''.join([str(b) for b in self.bundles]), 2, 2)
+        bands = simple_indent(''.join([str(b) for b in self.bands]), 2, 2)
+        license = simple_indent(''.join([str(l) for l in self.license]), 2, 2)
+        return simple_indent(
+            f"Result ({self.ordering_id}):\n"\
+            f"Scene ID: {self.scene_id}\n"\
+            f"Supplier: {self.supplier}\n"\
+            f"Platform: {self.platform}\n"\
+            f"Capture Date: {self.date.strftime('%Y-%m-%d')}\n"\
+            f"Thumbnail URL: {self.thumbnail}\n"\
+            f"Cloud Coverage: {self.cloud}%\n"\
+            f"Off Nadir: {self.off_nadir} degrees\n"\
+            f"Ground Sample Distance: {self.gsd} m\n"\
+            f"Fulfillment Time: {self.fulfillment_time}\n"\
+            f"Area: {self.area} sqkm\n"\
+            f"{str(self.center)}\n"\
+            f"Bounding: {self.bounding}\n"\
+            f"{str(self.overlap)}"\
+            f"Bands:\n"\
+            f"{bands}"
+            f"Bundles: \n"\
+            f"{bundles}"
+            f"License: \n"\
+            f"{license}"
+            f"Annotations: {', '.join(self.annotations)}\n", 0, 2)
+
 class SearchResponse(ArlulaObject):
+    data: dict
     state: string
     errors: typing.List[str]
     warnings: typing.List[str]
     results: typing.List[SearchResult]
 
     def __init__(self, data):
+        self.data = data
         self.state = ""
         self.errors = []
         self.warnings = []
+        self.results = []
 
         if "state" in data:
             self.state = data["state"]
@@ -161,7 +283,17 @@ class SearchResponse(ArlulaObject):
         if "results" in data:
             self.results = [SearchResult(e) for e in data["results"]]
 
-class SearchRequest(ArlulaObject):
+    def __str__(self) -> str:
+        s = ""
+        for r in self.results:
+            s += str(r)
+        return s
+
+    
+    def dict(self) -> dict:
+        return self.data
+
+class SearchRequest():
     start: date
     gsd: float
     end: date
@@ -171,6 +303,7 @@ class SearchRequest(ArlulaObject):
     south: float
     east: float
     west: float
+    polygon: Polygon
     supplier: str
     off_nadir: float
     cloud: float
@@ -186,7 +319,8 @@ class SearchRequest(ArlulaObject):
             east: typing.Optional[float] = None,
             west: typing.Optional[float] = None,
             supplier: typing.Optional[str] = None,
-            off_nadir: typing.Optional[float] = None):
+            off_nadir: typing.Optional[float] = None,
+            polygon: Polygon = None):
         self.start = start
         self.cloud = cloud
         self.gsd = gsd
@@ -199,6 +333,7 @@ class SearchRequest(ArlulaObject):
         self.west = west
         self.supplier = supplier
         self.off_nadir = off_nadir
+        self.polygon = polygon
 
     def set_point_of_interest(self, lat: float, long: float) -> "SearchRequest":
         self.lat = lat
@@ -210,6 +345,10 @@ class SearchRequest(ArlulaObject):
         self.south = south
         self.west = west
         self.east = east
+        return self
+    
+    def set_polygon(self, polygon: Polygon) -> "SearchRequest":
+        self.polygon = polygon
         return self
 
     def set_supplier(self, supplier: str) -> "SearchRequest":
@@ -240,6 +379,15 @@ class SearchRequest(ArlulaObject):
     def set_maximum_cloud_cover(self, cloud: float) -> "SearchRequest":
         self.cloud = cloud
         return self
+
+    def valid_point_of_interest(self) -> bool:
+        return self.lat != None and self.long != None
+
+    def valid_area_of_interest(self) -> bool:
+        return self.north != None and self.south != None and self.east != None and self.west != None
+    
+    def valid(self) -> bool:
+        return (self.valid_area_of_interest() or self.valid_point_of_interest) and self.start != None and self.gsd != None
     
     def dict(self):
         param_dict = {
@@ -248,14 +396,15 @@ class SearchRequest(ArlulaObject):
             "gsd": self.gsd, "cloud": self.cloud,
             "lat": self.lat, "long": self.long,
             "north": self.north, "south": self.south, "east": self.east, 
-            "west": self.west, "supplier": self.supplier, "off-nadir": self.off_nadir}
+            "west": self.west, "supplier": self.supplier, "off-nadir": self.off_nadir,
+            "polygon": json.dumps(self.polygon) if isinstance(self.polygon, list) else self.polygon}
 
         query_params = {k: v for k, v in param_dict.items()
             if v is not None}
 
-        return query_params
+        return remove_none(query_params)
 
-class OrderRequest:
+class OrderRequest(ArlulaObject):
 
     id: str
     eula: str
@@ -267,13 +416,15 @@ class OrderRequest:
             id: str,
             eula: str,
             bundle_key: str,
-            webhooks: typing.List[str] = [],
-            emails: typing.List[str] = []):
+            webhooks: typing.Optional[typing.List[str]] = [],
+            emails: typing.Optional[typing.List[str]] = [],
+            team: typing.Optional[str] = None):
         self.id = id
         self.eula = eula
         self.bundle_key = bundle_key
         self.webhooks = webhooks
         self.emails = emails
+        self.team = team
     
     def add_webhook(self, webhook: str) -> "OrderRequest":
         self.webhooks.append(webhook)
@@ -291,14 +442,21 @@ class OrderRequest:
         self.emails = emails
         return self
 
-    def dumps(self):
-        return json.dumps({
+    def set_team(self, team: str) -> "OrderRequest":
+        self.team = team
+        return self
+
+    def valid(self) -> bool:
+        return self.id != None and self.eula != None and self.bundle_key != None
+
+    def dict(self):
+        return remove_none({
             "id": self.id,
             "eula": self.eula,
             "bundleKey": self.bundle_key,
-            "seats": 1, # For legacy support
             "webhooks": self.webhooks,
-            "emails": self.emails
+            "emails": self.emails,
+            "team": None if self.team == "" else self.team,
         })
 
 
@@ -326,13 +484,9 @@ class ArchiveAPI:
             headers=self.session.header,
             params=request.dict())
         if response.status_code != 200:
-            raise ArlulaSessionError(response.text)
+            raise ArlulaAPIException(response)
         else:
             resp_data = json.loads(response.text)
-            # Break result into a list of objects (Legacy)
-            if (type(resp_data) == list):
-                lst = [SearchResult(x) for x in resp_data]
-                return SearchResponse(lst)
             # Construct an instance of `SearchResponse`
             return SearchResponse(resp_data)
 
@@ -346,10 +500,10 @@ class ArchiveAPI:
         response = requests.request(
             "POST",
             url,
-            data=request.dumps(),
+            data=json.dumps(request.dict()),
             headers=self.session.header)
 
         if response.status_code != 200:
-            raise ArlulaSessionError(response.text)
+            raise ArlulaAPIException(response)
         else:
             return DetailedOrderResult(json.loads(response.text))

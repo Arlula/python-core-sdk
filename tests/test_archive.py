@@ -86,7 +86,7 @@ class TestSearchRequest(unittest.TestCase):
             }
         )
 
-    def test_search(self):
+    def test_search_point(self):
         session = create_test_session()
         api = arlulacore.ArlulaAPI(session)
         result = api.archiveAPI().search(
@@ -99,41 +99,77 @@ class TestSearchRequest(unittest.TestCase):
             len(result.results) > 0
         )
 
+    def test_search_aoi(self):
+        session = create_test_session()
+        api = arlulacore.ArlulaAPI(session)
+        result = api.archiveAPI().search(
+            arlulacore.SearchRequest(date(2020, 1, 1), 100)
+            .set_area_of_interest(-33, -33.1, 150.1, 150)
+            .set_end(date(2020, 2, 1))
+        )
+                
+        self.assertTrue(
+            len(result.results) > 0
+        )
+
+    def test_search_polygon_wkt(self):
+        session = create_test_session()
+        api = arlulacore.ArlulaAPI(session)
+        result = api.archiveAPI().search(
+            arlulacore.SearchRequest(date(2020, 1, 1), 100)
+            .set_polygon("POLYGON((151.17454501612775 -33.90059831814348,151.16355868800275 -33.91769420996655,151.18724795802228 -33.93549878391787,151.19531604273908 -33.90700967940383,151.19359942896955 -33.89247656841645,151.17454501612775 -33.90059831814348))")
+            .set_end(date(2020, 2, 1))
+        )
+                
+        self.assertTrue(
+            len(result.results) > 0
+        )
+    
+    def test_search_polygon_array(self):
+        session = create_test_session()
+        api = arlulacore.ArlulaAPI(session)
+        result = api.archiveAPI().search(
+            arlulacore.SearchRequest(date(2020, 1, 1), 100)
+            .set_polygon([[[151.17592271889822,-33.90012296148858],[151.18776360157415,-33.94086373059308],[151.22992869598534,-33.938946954784306],[151.25823129360515,-33.91546294929382],[151.25736488755598,-33.88765718887135],[151.2085573467637,-33.87902597130201],[151.17592271889822,-33.90012296148858]]])
+            .set_end(date(2020, 2, 1))
+        )
+                
+        self.assertTrue(
+            len(result.results) > 0
+        )
+
 class TestOrderRequest(unittest.TestCase):
 
     def test_dumps(self):
         
-        self.assertEqual(arlulacore.OrderRequest("id", "eula", "bundle_key").dumps(), 
+        self.assertEqual(json.dumps(arlulacore.OrderRequest("id", "eula", "bundle_key").dict()), 
             json.dumps({
                 "id": "id",
                 "eula": "eula",
                 "bundleKey": "bundle_key",
-                "seats": 1,
                 "webhooks": [],
                 "emails": [],
             })
         )
         
-        self.assertEqual(arlulacore.OrderRequest("id", "eula", "bundle_key", ["https://test1.com", "https://test2.com"], ["test1@gmail.com", "test2@gmail.com"]).dumps(),
+        self.assertEqual(json.dumps(arlulacore.OrderRequest("id", "eula", "bundle_key", ["https://test1.com", "https://test2.com"], ["test1@gmail.com", "test2@gmail.com"]).dict()),
             json.dumps({
                 "id": "id",
                 "eula": "eula",
                 "bundleKey": "bundle_key",
-                "seats": 1,
                 "webhooks": ["https://test1.com", "https://test2.com"],
                 "emails": ["test1@gmail.com", "test2@gmail.com"],
             })
         )
 
-        self.assertEqual(arlulacore.OrderRequest("id", "eula", "bundle_key", ["https://test1.com"], ["test1@gmail.com"])
+        self.assertEqual(json.dumps(arlulacore.OrderRequest("id", "eula", "bundle_key", ["https://test1.com"], ["test1@gmail.com"])
             .add_email("test2@gmail.com")
             .add_webhook("https://test2.com")
-            .dumps(),
+            .dict()),
             json.dumps({
                 "id": "id",
                 "eula": "eula",
                 "bundleKey": "bundle_key",
-                "seats": 1,
                 "webhooks": ["https://test1.com", "https://test2.com"],
                 "emails": ["test1@gmail.com", "test2@gmail.com"],
             })
@@ -144,4 +180,4 @@ class TestOrderRequest(unittest.TestCase):
         # This will throw an exception on failure
         session = create_test_session()
         api = arlulacore.ArlulaAPI(session)
-        response = api.archiveAPI().order(arlulacore.OrderRequest(os.getenv("API_ORDERING_ID"), os.getenv("API_ORDER_LICENSE_HREF"), os.getenv("API_ORDER_BUNDLE_KEY")))
+        response = api.archiveAPI().order(arlulacore.OrderRequest(os.getenv("API_ORDERING_ID"), os.getenv("API_ORDER_LICENSE_HREF"), os.getenv("API_ORDER_BUNDLE_KEY"), team=os.getenv("API_TEAM_ID")))
