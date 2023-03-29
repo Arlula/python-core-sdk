@@ -470,7 +470,7 @@ class OrderRequest(ArlulaObject):
         self.team = team
         return self
 
-    def set_delivery_config(self, delivery_config: str) -> "OrderRequest":
+    def set_delivery_config(self, delivery_config: DeliveryConfig) -> "OrderRequest":
         self.delivery_config = delivery_config
         return self
 
