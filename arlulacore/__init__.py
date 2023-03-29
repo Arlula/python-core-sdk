@@ -15,6 +15,7 @@ from .archive import (
     DeliveryConfig,
     OrderRequest,
     ArchiveAPI,
+    Polygon,
 )
 from .orders import (
     OrderResult,

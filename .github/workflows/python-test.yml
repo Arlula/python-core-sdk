@@ -20,6 +20,8 @@ on:
         required: true
       TEST_API_RESOURCE_ID:
         required: true
+      TEST_API_TEAM_ID:
+        required: true
   pull_request:
     types: [opened,edited,synchronize,reopened,ready_for_review,review_requested,]
   
@@ -32,7 +34,18 @@ jobs:
         with:
           python-version: '3.x'
       - run: pip3 install -r requirements.txt
-      - run: python3 -m unittest tests/test_archive.py tests/test_orders.py tests/test_price.py tests/test_rfc3339.py tests/test_setup.py
+      - run: python3 -m unittest tests/test_setup.py
+        env:
+            API_KEY: ${{ secrets.TEST_API_KEY }}
+            API_SECRET: ${{ secrets.TEST_API_SECRET }}
+            API_ORDERING_ID: ${{ secrets.TEST_API_ORDERING_ID }}
+            API_ORDER_LICENSE_HREF: ${{ secrets.TEST_API_ORDER_LICENSE_HREF }}
+            API_ORDER_BUNDLE_KEY: ${{ secrets.TEST_API_ORDER_BUNDLE_KEY }}
+            API_HOST: ${{ secrets.TEST_API_HOST }}
+            API_ORDER_ID: ${{ secrets.TEST_API_ORDER_ID }}
+            API_RESOURCE_ID: ${{ secrets.TEST_API_RESOURCE_ID }}
+            API_TEAM_ID: ""
+      - run: python3 -m unittest tests/test_archive.py tests/test_orders.py tests/test_price.py tests/test_rfc3339.py
         env:
           API_KEY: ${{ secrets.TEST_API_KEY }}
           API_SECRET: ${{ secrets.TEST_API_SECRET }}
@@ -42,3 +55,4 @@ jobs:
           API_HOST: ${{ secrets.TEST_API_HOST }}
           API_ORDER_ID: ${{ secrets.TEST_API_ORDER_ID }}
           API_RESOURCE_ID: ${{ secrets.TEST_API_RESOURCE_ID }}
+          API_TEAM_ID: ""

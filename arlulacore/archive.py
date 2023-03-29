@@ -12,6 +12,8 @@ from .exception import ArlulaAPIException
 from .orders import DetailedOrderResult
 from .util import parse_rfc3339, calculate_price, remove_none, simple_indent
 
+Polygon = typing.Union[typing.List[typing.List[typing.List[float]]], str]
+
 class CenterPoint(ArlulaObject):
     data: dict
     long: float
@@ -300,6 +302,7 @@ class SearchRequest():
     south: float
     east: float
     west: float
+    polygon: Polygon
     supplier: str
     off_nadir: float
     cloud: float
@@ -315,7 +318,8 @@ class SearchRequest():
             east: typing.Optional[float] = None,
             west: typing.Optional[float] = None,
             supplier: typing.Optional[str] = None,
-            off_nadir: typing.Optional[float] = None):
+            off_nadir: typing.Optional[float] = None,
+            polygon: Polygon = None):
         self.start = start
         self.cloud = cloud
         self.gsd = gsd
@@ -328,6 +332,7 @@ class SearchRequest():
         self.west = west
         self.supplier = supplier
         self.off_nadir = off_nadir
+        self.polygon = polygon
 
     def set_point_of_interest(self, lat: float, long: float) -> "SearchRequest":
         self.lat = lat
@@ -339,6 +344,10 @@ class SearchRequest():
         self.south = south
         self.west = west
         self.east = east
+        return self
+    
+    def set_polygon(self, polygon: Polygon) -> "SearchRequest":
+        self.polygon = polygon
         return self
 
     def set_supplier(self, supplier: str) -> "SearchRequest":
@@ -386,7 +395,8 @@ class SearchRequest():
             "gsd": self.gsd, "cloud": self.cloud,
             "lat": self.lat, "long": self.long,
             "north": self.north, "south": self.south, "east": self.east, 
-            "west": self.west, "supplier": self.supplier, "off-nadir": self.off_nadir}
+            "west": self.west, "supplier": self.supplier, "off-nadir": self.off_nadir,
+            "polygon": json.dumps(self.polygon) if isinstance(self.polygon, list) else self.polygon}
 
         query_params = {k: v for k, v in param_dict.items()
             if v is not None}
@@ -474,7 +484,7 @@ class OrderRequest(ArlulaObject):
             "bundleKey": self.bundle_key,
             "webhooks": self.webhooks,
             "emails": self.emails,
-            "team": self.team,
+            "team": None if self.team == "" else self.team,
             "delivery": self.delivery_config.dict() if self.delivery_config is not None else None
         })
 

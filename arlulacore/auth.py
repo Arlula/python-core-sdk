@@ -10,14 +10,14 @@ from .exception import ArlulaSessionError
 name = "arlulacore"
 
 # User agent setting
-sdk_version = "3.0.3"
+sdk_version = "3.1.0"
 py_version = sys.version.split(' ')[0]
 os_version = platform.platform()
 def_ua = "core-sdk " + \
     sdk_version + " python " + py_version + " OS " + os_version
 
 # Expected API version
-x_api_version = '2021-09'
+x_api_version = '2023-01'
 
 class Session:
     '''
