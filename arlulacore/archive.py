@@ -170,7 +170,7 @@ class SearchResult(ArlulaObject):
     fulfillment_time: float
     ordering_id: str
     bundles: typing.List[Bundle]
-    license: typing.List[License]
+    licenses: typing.List[License]
     annotations: typing.List[str]
 
     def __init__(self, data):
@@ -198,8 +198,8 @@ class SearchResult(ArlulaObject):
             
         self.bundles = []
         self.bundles += [Bundle(b) for b in data["bundles"]]
-        self.license = []
-        self.license += [License(l) for l in data["license"]]
+        self.licenses = []
+        self.licenses += [License(l) for l in data["licenses"]]
 
         self.annotations = []
         if "annotations" in data:
@@ -214,11 +214,11 @@ class SearchResult(ArlulaObject):
         license = None
         
         for b in self.bundles:
-            if bundle.key == bundle_key:
+            if b.key == bundle_key:
                 bundle = b
         
-        for l in self.license:
-            if license.href == license_href:
+        for l in self.licenses:
+            if l.href == license_href:
                 license = l
 
         if bundle == None:
@@ -236,7 +236,7 @@ class SearchResult(ArlulaObject):
 
         bundles = simple_indent(''.join([str(b) for b in self.bundles]), 2, 2)
         bands = simple_indent(''.join([str(b) for b in self.bands]), 2, 2)
-        license = simple_indent(''.join([str(l) for l in self.license]), 2, 2)
+        licenses = simple_indent(''.join([str(l) for l in self.licenses]), 2, 2)
         return simple_indent(
             f"Result ({self.ordering_id}):\n"\
             f"Scene ID: {self.scene_id}\n"\
@@ -256,8 +256,8 @@ class SearchResult(ArlulaObject):
             f"{bands}"
             f"Bundles: \n"\
             f"{bundles}"
-            f"License: \n"\
-            f"{license}"
+            f"Licenses: \n"\
+            f"{licenses}"
             f"Annotations: {', '.join(self.annotations)}\n", 0, 2)
 
 class SearchResponse(ArlulaObject):
