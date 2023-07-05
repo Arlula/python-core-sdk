@@ -412,6 +412,7 @@ class OrderRequest(ArlulaObject):
     webhooks: typing.List[str]
     emails: typing.List[str]
     team: str
+    payment: str
 
     def __init__(self,
             id: str,
@@ -419,13 +420,15 @@ class OrderRequest(ArlulaObject):
             bundle_key: str,
             webhooks: typing.Optional[typing.List[str]] = [],
             emails: typing.Optional[typing.List[str]] = [],
-            team: typing.Optional[str] = None):
+            team: typing.Optional[str] = None,
+            payment: typing.Optional[str] = None):
         self.id = id
         self.eula = eula
         self.bundle_key = bundle_key
         self.webhooks = webhooks
         self.emails = emails
         self.team = team
+        self.payment = payment
     
     def add_webhook(self, webhook: str) -> "OrderRequest":
         self.webhooks.append(webhook)
@@ -446,6 +449,10 @@ class OrderRequest(ArlulaObject):
     def set_team(self, team: str) -> "OrderRequest":
         self.team = team
         return self
+    
+    def set_payment(self, payment: str) -> "OrderRequest":
+        self.payment = payment
+        return payment
 
     def valid(self) -> bool:
         return self.id != None and self.eula != None and self.bundle_key != None
@@ -466,18 +473,21 @@ class BatchOrderRequest():
     webhooks: typing.List[str]
     emails: typing.List[str]
     team: str
+    payment: str
 
     def __init__(
         self, 
-        orders: typing.List[OrderRequest],
+        orders: typing.Optional[typing.List[OrderRequest]] = [],
         webhooks: typing.Optional[typing.List[str]] = [],
         emails: typing.Optional[typing.List[str]] = [],
-        team: typing.Optional[str] = None):
+        team: typing.Optional[str] = None,
+        payment: typing.Optional[str] = None):
 
         self.orders = orders
         self.webhooks = webhooks
         self.emails = emails
         self.team = team
+        self.payment = payment
 
     def add_order(self, order: OrderRequest) -> "BatchOrderRequest":
         self.orders.append(order)
@@ -506,6 +516,10 @@ class BatchOrderRequest():
     def set_team(self, team: str) -> "BatchOrderRequest":
         self.team = team
         return self
+    
+    def set_payment(self, payment: str) -> "BatchOrderRequest":
+        self.payment = payment
+        return self
 
     def dict(self):
         d = {
@@ -513,6 +527,7 @@ class BatchOrderRequest():
             "webhooks": self.webhooks,
             "emails": self.emails,
             "team": None if self.team == "" else self.team,
+            "payment": None if self.payment == "" else self.payment,
         }
 
         return remove_none(d)
