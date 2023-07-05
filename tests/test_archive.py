@@ -150,38 +150,39 @@ class TestOrderRequest(unittest.TestCase):
 
     def test_dumps(self):
         
-        self.assertEqual(json.dumps(arlulacore.OrderRequest("id", "eula", "bundle_key").dict()), 
-            json.dumps({
+        orders = [
+            arlulacore.OrderRequest("id", "eula", "bundle_key"),
+            arlulacore.OrderRequest("id", "eula", "bundle_key", ["https://test1.com", "https://test2.com"], ["test1@gmail.com", "test2@gmail.com"]),
+            arlulacore.OrderRequest("id", "eula", "bundle_key", ["https://test1.com"], ["test1@gmail.com"]).add_email("test2@gmail.com").add_webhook("https://test2.com"),
+        ]
+
+        expected = [
+            {
                 "id": "id",
                 "eula": "eula",
                 "bundleKey": "bundle_key",
                 "webhooks": [],
                 "emails": [],
-            })
-        )
-        
-        self.assertEqual(json.dumps(arlulacore.OrderRequest("id", "eula", "bundle_key", ["https://test1.com", "https://test2.com"], ["test1@gmail.com", "test2@gmail.com"]).dict()),
-            json.dumps({
+            },
+            {
                 "id": "id",
                 "eula": "eula",
                 "bundleKey": "bundle_key",
                 "webhooks": ["https://test1.com", "https://test2.com"],
                 "emails": ["test1@gmail.com", "test2@gmail.com"],
-            })
-        )
+            },
+            {
+                "id": "id",
+                "eula": "eula",
+                "bundleKey": "bundle_key",
+                "webhooks": ["https://test1.com", "https://test2.com"],
+                "emails": ["test1@gmail.com", "test2@gmail.com"],
+            }
+        ]
 
-        self.assertEqual(json.dumps(arlulacore.OrderRequest("id", "eula", "bundle_key", ["https://test1.com"], ["test1@gmail.com"])
-            .add_email("test2@gmail.com")
-            .add_webhook("https://test2.com")
-            .dict()),
-            json.dumps({
-                "id": "id",
-                "eula": "eula",
-                "bundleKey": "bundle_key",
-                "webhooks": ["https://test1.com", "https://test2.com"],
-                "emails": ["test1@gmail.com", "test2@gmail.com"],
-            })
-        )
+        for i, o in enumerate(orders):
+            self.assertEqual(json.dumps(o.dict()), json.dumps(expected[i]))
+
     
     def test_order(self):
 
