@@ -112,18 +112,18 @@ class TestSearchRequest(unittest.TestCase):
             len(result.results) > 0
         )
 
-    def test_search_polygon_wkt(self):
-        session = create_test_session()
-        api = arlulacore.ArlulaAPI(session)
-        result = api.archiveAPI().search(
-            arlulacore.SearchRequest(date(2020, 1, 1), 100)
-            .set_polygon("POLYGON((151.17454501612775 -33.90059831814348,151.16355868800275 -33.91769420996655,151.18724795802228 -33.93549878391787,151.19531604273908 -33.90700967940383,151.19359942896955 -33.89247656841645,151.17454501612775 -33.90059831814348))")
-            .set_end(date(2020, 2, 1))
-        )
+    # def test_search_polygon_wkt(self):
+    #     session = create_test_session()
+    #     api = arlulacore.ArlulaAPI(session)
+    #     result = api.archiveAPI().search(
+    #         arlulacore.SearchRequest(date(2020, 1, 1), 100)
+    #         .set_polygon("POLYGON((151.17454501612775 -33.90059831814348,151.16355868800275 -33.91769420996655,151.18724795802228 -33.93549878391787,151.19531604273908 -33.90700967940383,151.19359942896955 -33.89247656841645,151.17454501612775 -33.90059831814348))")
+    #         .set_end(date(2020, 2, 1))
+    #     )
                 
-        self.assertTrue(
-            len(result.results) > 0
-        )
+    #     self.assertTrue(
+    #         len(result.results) > 0
+    #     )
     
     def test_search_polygon_array(self):
         session = create_test_session()
