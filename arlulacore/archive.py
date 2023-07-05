@@ -13,7 +13,7 @@ from .exception import ArlulaAPIException
 from .orders import DetailedOrderResult
 from .util import parse_rfc3339, calculate_price, remove_none, simple_indent
 
-Polygon = typing.Union[typing.List[typing.List[typing.List[float]]], str]
+Polygon = typing.List[typing.List[typing.List[float]]]
 
 class CenterPoint(ArlulaObject):
     data: dict
