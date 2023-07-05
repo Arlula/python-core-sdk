@@ -390,19 +390,33 @@ class SearchRequest():
         return (self.valid_area_of_interest() or self.valid_point_of_interest) and self.start != None and self.gsd != None
     
     def dict(self):
-        param_dict = {
+        d = {
             "start": str(self.start) if self.start != None else None, 
             "end": str(self.end) if self.end != None else None,
-            "gsd": self.gsd, "cloud": self.cloud,
-            "lat": self.lat, "long": self.long,
-            "north": self.north, "south": self.south, "east": self.east, 
-            "west": self.west, "supplier": self.supplier, "off-nadir": self.off_nadir,
-            "polygon": json.dumps(self.polygon) if isinstance(self.polygon, list) else self.polygon}
+            "gsd": self.gsd, 
+            "cloud": self.cloud,
+            "off-nadir": self.off_nadir
+        }
 
-        query_params = {k: v for k, v in param_dict.items()
-            if v is not None}
+        # Add the polygon if not None
+        if self.polygon != None:
+            d["polygon"] = json.dumps(self.polygon) if isinstance(self.polygon, list) else self.polygon
+        # Add boundingBox if all related not None
+        elif self.north != None and self.east != None and self.west != None and self.south != None:
+            d["boundingBox"] = {
+                "north": self.north,
+                "east": self.east,
+                "west": self.west,
+                "south": self.south,
+            }
+        # Add latLong if all related not None
+        elif self.west != None and self.east != None:
+            d["latLong"] = {
+                "latitude": self.lat,
+                "longitude": self.long,
+            }
 
-        return remove_none(query_params)
+        return remove_none(d)
 
 class OrderRequest(ArlulaObject):
 
@@ -480,9 +494,9 @@ class ArchiveAPI:
 
         # Send request and handle responses
         response = requests.request(
-            "GET", url,
+            "POST", url,
             headers=self.session.header,
-            params=request.dict())
+            data=json.dumps(request.dict()))
         if response.status_code != 200:
             raise ArlulaAPIException(response)
         else:
