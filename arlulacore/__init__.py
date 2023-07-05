@@ -14,6 +14,7 @@ from .archive import (
     SearchRequest,
     DeliveryConfig,
     OrderRequest,
+    BatchOrderRequest,
     ArchiveAPI,
     Polygon,
 )

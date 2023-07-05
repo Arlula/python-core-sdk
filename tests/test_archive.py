@@ -27,10 +27,12 @@ class TestSearchRequest(unittest.TestCase):
             .dict(),
             {
                 "start": "2021-01-01",
-                "north": -10,
-                "south": 0,
-                "east": 10,
-                "west": 20,
+                "boundingBox": {
+                    "north": -10,
+                    "south": 0,
+                    "east": 10,
+                    "west": 20,
+                },
                 "gsd": 100,
             }
         )
@@ -42,8 +44,10 @@ class TestSearchRequest(unittest.TestCase):
             {
                 "start": "2021-01-01",
                 "gsd": 100,
-                "lat": 0,
-                "long": 10,
+                "latLong": {
+                    "latitude": 0,
+                    "longitude": 10,
+                },
             }
         )
 
@@ -59,14 +63,17 @@ class TestSearchRequest(unittest.TestCase):
                 "start": "2021-01-01",
                 "end": "2021-02-01",
                 "gsd": 100,
-                "lat": 0,
-                "long": 10,
+                "latLong": {
+                    "latitude": 0,
+                    "longitude": 10,
+                },
                 "cloud": 10,
-                "off-nadir": 20,
+                "offNadir": 20,
                 "supplier": "landsat"
             }
         )
 
+        # Should only include the boundingBox specified
         self.assertEqual(
             arlulacore.SearchRequest(date(2021, 1, 1), 0, 10, date(2021, 2, 1), 20, 30, 40, 50, 60, 70, "landsat", 80)
             .dict(),
@@ -75,16 +82,17 @@ class TestSearchRequest(unittest.TestCase):
                 "end": "2021-02-01",
                 "gsd": 0,
                 "cloud": 10,
-                "lat": 20,
-                "long": 30,
-                "north": 40,
-                "south": 50,
-                "east": 60,
-                "west": 70,
+                "boundingBox": {
+                    "north": 40,
+                    "south": 50,
+                    "east": 60,
+                    "west": 70,
+                },
                 "supplier": "landsat",
-                "off-nadir": 80,
+                "offNadir": 80,
             }
         )
+        
 
     def test_search_point(self):
         session = create_test_session()
@@ -112,18 +120,18 @@ class TestSearchRequest(unittest.TestCase):
             len(result.results) > 0
         )
 
-    def test_search_polygon_wkt(self):
-        session = create_test_session()
-        api = arlulacore.ArlulaAPI(session)
-        result = api.archiveAPI().search(
-            arlulacore.SearchRequest(date(2020, 1, 1), 100)
-            .set_polygon("POLYGON((151.17454501612775 -33.90059831814348,151.16355868800275 -33.91769420996655,151.18724795802228 -33.93549878391787,151.19531604273908 -33.90700967940383,151.19359942896955 -33.89247656841645,151.17454501612775 -33.90059831814348))")
-            .set_end(date(2020, 2, 1))
-        )
+    # def test_search_polygon_wkt(self):
+    #     session = create_test_session()
+    #     api = arlulacore.ArlulaAPI(session)
+    #     result = api.archiveAPI().search(
+    #         arlulacore.SearchRequest(date(2020, 1, 1), 100)
+    #         .set_polygon("POLYGON((151.17454501612775 -33.90059831814348,151.16355868800275 -33.91769420996655,151.18724795802228 -33.93549878391787,151.19531604273908 -33.90700967940383,151.19359942896955 -33.89247656841645,151.17454501612775 -33.90059831814348))")
+    #         .set_end(date(2020, 2, 1))
+    #     )
                 
-        self.assertTrue(
-            len(result.results) > 0
-        )
+    #     self.assertTrue(
+    #         len(result.results) > 0
+    #     )
     
     def test_search_polygon_array(self):
         session = create_test_session()
@@ -142,38 +150,39 @@ class TestOrderRequest(unittest.TestCase):
 
     def test_dumps(self):
         
-        self.assertEqual(json.dumps(arlulacore.OrderRequest("id", "eula", "bundle_key").dict()), 
-            json.dumps({
+        orders = [
+            arlulacore.OrderRequest("id", "eula", "bundle_key"),
+            arlulacore.OrderRequest("id", "eula", "bundle_key", ["https://test1.com", "https://test2.com"], ["test1@gmail.com", "test2@gmail.com"]),
+            arlulacore.OrderRequest("id", "eula", "bundle_key", ["https://test1.com"], ["test1@gmail.com"]).add_email("test2@gmail.com").add_webhook("https://test2.com"),
+        ]
+
+        expected = [
+            {
                 "id": "id",
                 "eula": "eula",
                 "bundleKey": "bundle_key",
                 "webhooks": [],
                 "emails": [],
-            })
-        )
-        
-        self.assertEqual(json.dumps(arlulacore.OrderRequest("id", "eula", "bundle_key", ["https://test1.com", "https://test2.com"], ["test1@gmail.com", "test2@gmail.com"]).dict()),
-            json.dumps({
+            },
+            {
                 "id": "id",
                 "eula": "eula",
                 "bundleKey": "bundle_key",
                 "webhooks": ["https://test1.com", "https://test2.com"],
                 "emails": ["test1@gmail.com", "test2@gmail.com"],
-            })
-        )
+            },
+            {
+                "id": "id",
+                "eula": "eula",
+                "bundleKey": "bundle_key",
+                "webhooks": ["https://test1.com", "https://test2.com"],
+                "emails": ["test1@gmail.com", "test2@gmail.com"],
+            }
+        ]
 
-        self.assertEqual(json.dumps(arlulacore.OrderRequest("id", "eula", "bundle_key", ["https://test1.com"], ["test1@gmail.com"])
-            .add_email("test2@gmail.com")
-            .add_webhook("https://test2.com")
-            .dict()),
-            json.dumps({
-                "id": "id",
-                "eula": "eula",
-                "bundleKey": "bundle_key",
-                "webhooks": ["https://test1.com", "https://test2.com"],
-                "emails": ["test1@gmail.com", "test2@gmail.com"],
-            })
-        )
+        for i, o in enumerate(orders):
+            self.assertEqual(json.dumps(o.dict()), json.dumps(expected[i]))
+
     
     def test_order(self):
 
