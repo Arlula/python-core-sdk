@@ -13,6 +13,7 @@ from .archive import (
     SearchResponse,
     SearchRequest,
     OrderRequest,
+    BatchOrderRequest,
     ArchiveAPI,
     Polygon,
 )
