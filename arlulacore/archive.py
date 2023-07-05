@@ -410,7 +410,7 @@ class SearchRequest():
                 "south": self.south,
             }
         # Add latLong if all related not None
-        elif self.west != None and self.east != None:
+        elif self.lat != None and self.long != None:
             d["latLong"] = {
                 "latitude": self.lat,
                 "longitude": self.long,
