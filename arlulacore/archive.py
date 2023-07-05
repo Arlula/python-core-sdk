@@ -411,6 +411,7 @@ class OrderRequest(ArlulaObject):
     bundle_key: str
     webhooks: typing.List[str]
     emails: typing.List[str]
+    team: str
 
     def __init__(self,
             id: str,
@@ -458,6 +459,64 @@ class OrderRequest(ArlulaObject):
             "emails": self.emails,
             "team": None if self.team == "" else self.team,
         })
+
+class BatchOrderRequest():
+
+    orders: typing.List[OrderRequest]
+    webhooks: typing.List[str]
+    emails: typing.List[str]
+    team: str
+
+    def __init__(
+        self, 
+        orders: typing.List[OrderRequest],
+        webhooks: typing.Optional[typing.List[str]] = [],
+        emails: typing.Optional[typing.List[str]] = [],
+        team: typing.Optional[str] = None):
+
+        self.orders = orders
+        self.webhooks = webhooks
+        self.emails = emails
+        self.team = team
+
+    def add_order(self, order: OrderRequest) -> "BatchOrderRequest":
+        self.orders.append(order)
+        return self
+    
+    def set_orders(self, orders: typing.List[OrderRequest]) -> "BatchOrderRequest":
+        self.orders = orders
+        return self
+
+    def add_webhook(self, webhook: str) -> "BatchOrderRequest":
+        self.webhooks.append(webhook)
+        return self
+    
+    def set_webhooks(self, webhooks: typing.List[str]) -> "BatchOrderRequest":
+        self.webhooks = webhooks
+        return self
+
+    def add_email(self, email: str) -> "BatchOrderRequest":
+        self.emails.append(email)
+        return self
+    
+    def set_emails(self, emails: typing.List[str]) -> "BatchOrderRequest":
+        self.emails = emails
+        return self
+
+    def set_team(self, team: str) -> "BatchOrderRequest":
+        self.team = team
+        return self
+
+    def dict(self):
+        d = {
+            "orders": [o.dict() for o in self.orders],
+            "webhooks": self.webhooks,
+            "emails": self.emails,
+            "team": None if self.team == "" else self.team,
+        }
+
+        return remove_none(d)
+
 
 
 class ArchiveAPI:
@@ -507,3 +566,22 @@ class ArchiveAPI:
             raise ArlulaAPIException(response)
         else:
             return DetailedOrderResult(json.loads(response.text))
+        
+    def batch_order(self, request: BatchOrderRequest) -> typing.List[DetailedOrderResult]:
+        '''
+            Order multiple scenes from the Arlula imagery archive
+        '''
+
+        url = self.url + "/order/batch"
+
+        response = requests.request(
+            "POST",
+            url,
+            data=json.dumps(request.dict()),
+            headers=self.session.header,
+        )
+
+        if response.status_code != 200:
+            raise ArlulaAPIException(response)
+        else:
+            return [DetailedOrderResult(r) for r in json.loads(response.text)]
