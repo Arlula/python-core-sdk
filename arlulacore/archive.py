@@ -480,6 +480,7 @@ class OrderRequest(ArlulaObject):
             "webhooks": self.webhooks,
             "emails": self.emails,
             "team": None if self.team == "" else self.team,
+            "payment": None if self.payment == "" else self.payment,
         })
 
 class BatchOrderRequest():
