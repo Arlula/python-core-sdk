@@ -400,7 +400,7 @@ class SearchRequest():
 
         # Add the polygon if not None
         if self.polygon != None:
-            d["polygon"] = json.dumps(self.polygon) if isinstance(self.polygon, list) else self.polygon
+            d["polygon"] = self.polygon if isinstance(self.polygon, list) else self.polygon
         # Add boundingBox if all related not None
         elif self.north != None and self.east != None and self.west != None and self.south != None:
             d["boundingBox"] = {
