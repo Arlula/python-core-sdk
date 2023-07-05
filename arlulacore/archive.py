@@ -395,7 +395,8 @@ class SearchRequest():
             "end": str(self.end) if self.end != None else None,
             "gsd": self.gsd, 
             "cloud": self.cloud,
-            "offNadir": self.off_nadir
+            "offNadir": self.off_nadir,
+            "supplier": self.supplier,
         }
 
         # Add the polygon if not None
