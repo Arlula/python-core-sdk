@@ -27,10 +27,12 @@ class TestSearchRequest(unittest.TestCase):
             .dict(),
             {
                 "start": "2021-01-01",
-                "north": -10,
-                "south": 0,
-                "east": 10,
-                "west": 20,
+                "boundingBox": {
+                    "north": -10,
+                    "south": 0,
+                    "east": 10,
+                    "west": 20,
+                },
                 "gsd": 100,
             }
         )
@@ -42,8 +44,10 @@ class TestSearchRequest(unittest.TestCase):
             {
                 "start": "2021-01-01",
                 "gsd": 100,
-                "lat": 0,
-                "long": 10,
+                "latLong": {
+                    "latitude": 0,
+                    "longitude": 10,
+                },
             }
         )
 
@@ -59,14 +63,17 @@ class TestSearchRequest(unittest.TestCase):
                 "start": "2021-01-01",
                 "end": "2021-02-01",
                 "gsd": 100,
-                "lat": 0,
-                "long": 10,
+                "latLong": {
+                    "latitude": 0,
+                    "longitude": 10,
+                },
                 "cloud": 10,
-                "off-nadir": 20,
+                "offNadir": 20,
                 "supplier": "landsat"
             }
         )
 
+        # Should only include the boundingBox specified
         self.assertEqual(
             arlulacore.SearchRequest(date(2021, 1, 1), 0, 10, date(2021, 2, 1), 20, 30, 40, 50, 60, 70, "landsat", 80)
             .dict(),
@@ -75,16 +82,17 @@ class TestSearchRequest(unittest.TestCase):
                 "end": "2021-02-01",
                 "gsd": 0,
                 "cloud": 10,
-                "lat": 20,
-                "long": 30,
-                "north": 40,
-                "south": 50,
-                "east": 60,
-                "west": 70,
+                "boundingBox": {
+                    "north": 40,
+                    "south": 50,
+                    "east": 60,
+                    "west": 70,
+                },
                 "supplier": "landsat",
-                "off-nadir": 80,
+                "offNadir": 80,
             }
         )
+        
 
     def test_search_point(self):
         session = create_test_session()
