@@ -13,7 +13,7 @@ from .exception import ArlulaAPIException
 from .orders import DetailedOrderResult
 from .util import parse_rfc3339, calculate_price, remove_none, simple_indent
 
-Polygon = typing.Union[typing.List[typing.List[typing.List[float]]], str]
+Polygon = typing.List[typing.List[typing.List[float]]]
 
 class CenterPoint(ArlulaObject):
     data: dict
@@ -170,7 +170,7 @@ class SearchResult(ArlulaObject):
     fulfillment_time: float
     ordering_id: str
     bundles: typing.List[Bundle]
-    license: typing.List[License]
+    licenses: typing.List[License]
     annotations: typing.List[str]
 
     def __init__(self, data):
@@ -198,8 +198,8 @@ class SearchResult(ArlulaObject):
             
         self.bundles = []
         self.bundles += [Bundle(b) for b in data["bundles"]]
-        self.license = []
-        self.license += [License(l) for l in data["license"]]
+        self.licenses = []
+        self.licenses += [License(l) for l in data["licenses"]]
 
         self.annotations = []
         if "annotations" in data:
@@ -214,11 +214,11 @@ class SearchResult(ArlulaObject):
         license = None
         
         for b in self.bundles:
-            if bundle.key == bundle_key:
+            if b.key == bundle_key:
                 bundle = b
         
-        for l in self.license:
-            if license.href == license_href:
+        for l in self.licenses:
+            if l.href == license_href:
                 license = l
 
         if bundle == None:
@@ -236,7 +236,7 @@ class SearchResult(ArlulaObject):
 
         bundles = simple_indent(''.join([str(b) for b in self.bundles]), 2, 2)
         bands = simple_indent(''.join([str(b) for b in self.bands]), 2, 2)
-        license = simple_indent(''.join([str(l) for l in self.license]), 2, 2)
+        licenses = simple_indent(''.join([str(l) for l in self.licenses]), 2, 2)
         return simple_indent(
             f"Result ({self.ordering_id}):\n"\
             f"Scene ID: {self.scene_id}\n"\
@@ -256,8 +256,8 @@ class SearchResult(ArlulaObject):
             f"{bands}"
             f"Bundles: \n"\
             f"{bundles}"
-            f"License: \n"\
-            f"{license}"
+            f"Licenses: \n"\
+            f"{licenses}"
             f"Annotations: {', '.join(self.annotations)}\n", 0, 2)
 
 class SearchResponse(ArlulaObject):
@@ -390,19 +390,34 @@ class SearchRequest():
         return (self.valid_area_of_interest() or self.valid_point_of_interest) and self.start != None and self.gsd != None
     
     def dict(self):
-        param_dict = {
+        d = {
             "start": str(self.start) if self.start != None else None, 
             "end": str(self.end) if self.end != None else None,
-            "gsd": self.gsd, "cloud": self.cloud,
-            "lat": self.lat, "long": self.long,
-            "north": self.north, "south": self.south, "east": self.east, 
-            "west": self.west, "supplier": self.supplier, "off-nadir": self.off_nadir,
-            "polygon": json.dumps(self.polygon) if isinstance(self.polygon, list) else self.polygon}
+            "gsd": self.gsd, 
+            "cloud": self.cloud,
+            "offNadir": self.off_nadir,
+            "supplier": self.supplier,
+        }
 
-        query_params = {k: v for k, v in param_dict.items()
-            if v is not None}
+        # Add the polygon if not None
+        if self.polygon != None:
+            d["polygon"] = self.polygon if isinstance(self.polygon, list) else self.polygon
+        # Add boundingBox if all related not None
+        elif self.north != None and self.east != None and self.west != None and self.south != None:
+            d["boundingBox"] = {
+                "north": self.north,
+                "east": self.east,
+                "west": self.west,
+                "south": self.south,
+            }
+        # Add latLong if all related not None
+        elif self.lat != None and self.long != None:
+            d["latLong"] = {
+                "latitude": self.lat,
+                "longitude": self.long,
+            }
 
-        return remove_none(query_params)
+        return remove_none(d)
 
 class OrderRequest(ArlulaObject):
 
@@ -411,6 +426,8 @@ class OrderRequest(ArlulaObject):
     bundle_key: str
     webhooks: typing.List[str]
     emails: typing.List[str]
+    team: str
+    payment: str
 
     def __init__(self,
             id: str,
@@ -418,13 +435,15 @@ class OrderRequest(ArlulaObject):
             bundle_key: str,
             webhooks: typing.Optional[typing.List[str]] = [],
             emails: typing.Optional[typing.List[str]] = [],
-            team: typing.Optional[str] = None):
+            team: typing.Optional[str] = None,
+            payment: typing.Optional[str] = None):
         self.id = id
         self.eula = eula
         self.bundle_key = bundle_key
         self.webhooks = webhooks
         self.emails = emails
         self.team = team
+        self.payment = payment
     
     def add_webhook(self, webhook: str) -> "OrderRequest":
         self.webhooks.append(webhook)
@@ -445,6 +464,10 @@ class OrderRequest(ArlulaObject):
     def set_team(self, team: str) -> "OrderRequest":
         self.team = team
         return self
+    
+    def set_payment(self, payment: str) -> "OrderRequest":
+        self.payment = payment
+        return payment
 
     def valid(self) -> bool:
         return self.id != None and self.eula != None and self.bundle_key != None
@@ -457,7 +480,74 @@ class OrderRequest(ArlulaObject):
             "webhooks": self.webhooks,
             "emails": self.emails,
             "team": None if self.team == "" else self.team,
+            "payment": None if self.payment == "" else self.payment,
         })
+
+class BatchOrderRequest():
+
+    orders: typing.List[OrderRequest]
+    webhooks: typing.List[str]
+    emails: typing.List[str]
+    team: str
+    payment: str
+
+    def __init__(
+        self, 
+        orders: typing.Optional[typing.List[OrderRequest]] = [],
+        webhooks: typing.Optional[typing.List[str]] = [],
+        emails: typing.Optional[typing.List[str]] = [],
+        team: typing.Optional[str] = None,
+        payment: typing.Optional[str] = None):
+
+        self.orders = orders
+        self.webhooks = webhooks
+        self.emails = emails
+        self.team = team
+        self.payment = payment
+
+    def add_order(self, order: OrderRequest) -> "BatchOrderRequest":
+        self.orders.append(order)
+        return self
+    
+    def set_orders(self, orders: typing.List[OrderRequest]) -> "BatchOrderRequest":
+        self.orders = orders
+        return self
+
+    def add_webhook(self, webhook: str) -> "BatchOrderRequest":
+        self.webhooks.append(webhook)
+        return self
+    
+    def set_webhooks(self, webhooks: typing.List[str]) -> "BatchOrderRequest":
+        self.webhooks = webhooks
+        return self
+
+    def add_email(self, email: str) -> "BatchOrderRequest":
+        self.emails.append(email)
+        return self
+    
+    def set_emails(self, emails: typing.List[str]) -> "BatchOrderRequest":
+        self.emails = emails
+        return self
+
+    def set_team(self, team: str) -> "BatchOrderRequest":
+        self.team = team
+        return self
+    
+    def set_payment(self, payment: str) -> "BatchOrderRequest":
+        self.payment = payment
+        return self
+
+    def dict(self):
+        d = {
+            "orders": [o.dict() for o in self.orders],
+            "webhooks": self.webhooks,
+            "emails": self.emails,
+            "team": None if self.team == "" else self.team,
+            "payment": None if self.payment == "" else self.payment,
+        }
+
+        return remove_none(d)
+
 
 
 class ArchiveAPI:
@@ -480,9 +570,9 @@ class ArchiveAPI:
 
         # Send request and handle responses
         response = requests.request(
-            "GET", url,
+            "POST", url,
             headers=self.session.header,
-            params=request.dict())
+            data=json.dumps(request.dict()))
         if response.status_code != 200:
             raise ArlulaAPIException(response)
         else:
@@ -507,3 +597,22 @@ class ArchiveAPI:
             raise ArlulaAPIException(response)
         else:
             return DetailedOrderResult(json.loads(response.text))
+        
+    def batch_order(self, request: BatchOrderRequest) -> typing.List[DetailedOrderResult]:
+        '''
+            Order multiple scenes from the Arlula imagery archive
+        '''
+
+        url = self.url + "/order/batch"
+
+        response = requests.request(
+            "POST",
+            url,
+            data=json.dumps(request.dict()),
+            headers=self.session.header,
+        )
+
+        if response.status_code != 200:
+            raise ArlulaAPIException(response)
+        else:
+            return [DetailedOrderResult(r) for r in json.loads(response.text)]
