@@ -28,7 +28,6 @@ class TaskingSearchRequest():
     polygon: Polygon
     supplier: str
     off_nadir: float
-    platform: str
     
     def __init__(self, 
             start: date,
@@ -42,12 +41,11 @@ class TaskingSearchRequest():
             east: typing.Optional[float] = None,
             west: typing.Optional[float] = None,
             supplier: typing.Optional[str] = None,
-            platforms: typing.Optional[str] = None,
             polygon: Polygon = None):
         self.start = start
-        self.cloud = cloud
-        self.gsd = gsd
         self.end = end
+        self.gsd = gsd
+        self.off_nadir = off_nadir
         self.lat = lat
         self.long = long
         self.north = north
@@ -55,7 +53,6 @@ class TaskingSearchRequest():
         self.east = east
         self.west = west
         self.supplier = supplier
-        self.off_nadir = off_nadir
         self.polygon = polygon
 
     def set_point_of_interest(self, lat: float, long: float) -> "TaskingSearchRequest":
@@ -78,7 +75,7 @@ class TaskingSearchRequest():
         self.supplier = supplier
         return self
 
-    def set_maximum_gsd(self, gsd: float) -> "TaskingSearchRequest":
+    def set_gsd(self, gsd: float) -> "TaskingSearchRequest":
         self.gsd = gsd
         return self
 
@@ -106,22 +103,37 @@ class TaskingSearchRequest():
         return self.north != None and self.south != None and self.east != None and self.west != None
     
     def valid(self) -> bool:
-        return (self.valid_area_of_interest() or self.valid_point_of_interest) and self.start != None and self.gsd != None
+        return (self.valid_area_of_interest() or self.valid_point_of_interest()) and self.start != None and self.gsd != None
     
     def dict(self):
-        param_dict = {
+        d = {
             "start": str(self.start) if self.start != None else None, 
             "end": str(self.end) if self.end != None else None,
-            "gsd": self.gsd, "cloud": self.cloud,
-            "lat": self.lat, "long": self.long,
-            "north": self.north, "south": self.south, "east": self.east, 
-            "west": self.west, "supplier": self.supplier, "off-nadir": self.off_nadir,
-            "polygon": json.dumps(self.polygon) if isinstance(self.polygon, list) else self.polygon}
+            "gsd": self.gsd, 
+            "longLat": remove_none({"lat": self.lat, "long": self.long}),
+            "boundingBox": remove_none({"west": self.west, "north": self.north, "south": self.south, "east": self.east}), 
+            "supplier": self.supplier, "off-nadir": self.off_nadir,
+            "polygon": json.dumps(self.polygon) if isinstance(self.polygon, list) else self.polygon
+        }
 
-        query_params = {k: v for k, v in param_dict.items()
-            if v is not None}
-
-        return remove_none(query_params)
+        if self.polygon != None:
+            d["polygon"] = self.polygon
+        elif self.north != None and self.south != None and self.east != None and self.west != None:
+            d["boundingBox"] = {
+                "north": self.north,
+                "south": self.south,
+                "east": self.east,
+                "west": self.west,
+            }
+        elif self.lat != None and self.long != None:
+            d["latLong"] = {
+                "latitude": self.lat,
+                "longitude": self.long,
+            }
+        else:
+            raise ValueError("No point of interest or area of interest provided")
+        
+        return remove_none(d)
 
 class TaskingSearchResponse():
     pass
