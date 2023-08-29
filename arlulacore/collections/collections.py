@@ -2,11 +2,162 @@ import json
 import requests
 
 from arlulacore.exception import ArlulaAPIException
+class Provider():
+    name: str
+    """The name of the provider"""
+    description: str
+    """A description of the provider and their data"""
+    roles: typing.List[str]
+    """A list of providing roles they fulfil (i.e. licensor, producer, processor or host)"""
+    url: str
+    """Link to the providers homepage"""
 
+    def __init__(self, data):
+        self.name = data["name"]
+        self.description = data["description"]
+        self.roles = data["roles"]
+        self.url = data["url"]
 
-class Collection:
+class BBox():
+    south: float
+    west: float
+    north: float
+    east: float
+
+    def __init__(self, data):
+        self.south = data[0]
+        self.west = data[1]
+        self.north = data[2]
+        self.east = data[3]
+
+class Interval():
+    start: datetime
+    end: datetime
+
+    def __init__(self, data):
+        self.start = data[0]
+        self.end = data[1]
+
+class SpatialExtents():
+    bbox: typing.List[BBox]
+
+    def __init__(self, data):
+        self.bbox = [BBox(x) for x in data["bbox"]]
+    
+class TemporalExtents():
+    interval: typing.List[Interval]
+
+    def __init__(self, data):
+        self.interval = [Interval(x) for x in data["interval"]]
+
+class Extent():
+    
+    spatial: SpatialExtents
+    temporal: TemporalExtents
+
+    def __init__(self, data):
+        self.spatial = SpatialExtents(data["spatial"]) 
+        self.temporal = TemporalExtents(data["temporal"])
+
+class Asset():
+    href: str
+    """Url of the asset"""
+
+    title: str
+    """Title or name of the asset"""
+
+    description: str
+    """Optional description of the asset"""
+
+    type: str
+    """IANA media type (MIME type) of the asset"""
+
+    roles: typing.List[str]
+    """List of semantic roles this asset satisfies (see resource reference for more details)"""
+
+    def __init__(self, data):
+        self.href = data["href"]
+        self.title = data["title"]
+        self.description = data["description"]
+        self.type = data["type"]
+        self.roles = data["roles"]
+
+class Summary():
     pass
 
+class Link():
+    href: str
+    """The URL of the linked media"""
+
+    rel: str
+    """The type of relationship the media has to the current document. (i.e. parent, next result, the associated licence. etc)"""
+
+    type: str
+    """The IANA Media Type (MIME) of the linked media"""
+
+    title: str
+    """An optional title to describe the linked media"""
+
+    def __init__(self, data):
+        self.href = data["href"]
+        self.rel = data["rel"]
+        self.type = data["type"]
+        self.title = data["title"]
+
+class Collection():
+    id: str
+    """The unique identifier for this collection"""
+
+    type: str
+    """Part of the STAC standard to conform with GeoJSON, will always be 'Collection'"""
+
+    stac_version: str
+    """The version of the STAC standard being adhered to"""
+
+    stac_extensions: typing.List[str]
+    """A list of STAC extension schemas this collection complies with"""
+
+    title: str
+    """A descriptive title of the collection"""
+
+    description: str
+    """A more detailed description of the collection and its contents"""
+
+    keywords: typing.List[str]
+    """Identifying keywords for the collection"""
+
+    license: str
+    """SPDX License identifier, various if multiple licenses apply or proprietary for all other cases"""
+
+    providers: typing.List[Provider]
+    """A list of providers that are the source of or that manage data in this collection"""
+
+    extent: Extent
+    """The spatial and temporal extents of items in this collection"""
+
+    assets: typing.Dict[str, Asset]
+    """A list of any assets related to this collection but not to any specific items within it"""
+
+    summaries: typing.Dict[str, typing.Union[dict, list]]
+    """Summaries of the range or values of common properties of items in this collection"""
+
+    links: typing.List[Link]
+    """Links to resources and media associated with this collection"""
+
+    def __init__(self, data: dict):
+        self.id = data["id"]
+        self.type = data["type"]
+        self.stac_version = data["stac_version"]
+        self.stac_extensions = data["stac_extensions"]
+        self.title = data["title"]
+        self.description = data["description"]
+        self.keywords = data["keywords"]
+        self.license = data["license"]
+        self.providers = [Provider(x) for x in data["providers"]]
+        self.extent = Extent(data["extent"])
+        self.assets = {k : Asset(v) for k, v in data["assets"].items()}
+        self.summaries = {k : v for k, v in data["summaries"].items()}
+        self.links = [Link(x) for x in data["links"]]
 class CollectionCreateRequest:
 
     title: str
