@@ -52,6 +52,47 @@ class CollectionCreateRequest:
     def set_team(self, team: str) -> "CollectionCreateRequest":
         self.team = team
         return self
+    
+class CollectionUpdateRequest:
+    collection_id: str
+    """Collection to update"""
+
+    title: typing.Optional[str]
+    """A title/name for the collection to identify it"""
+
+    description: typing.Optional[str]
+    """A description of the collection, such as its purpose, or the location of interest."""
+
+    keywords: typing.Optional[typing.List[str]]
+    """A list of keywords that describe the collections content for organisational purposes"""
+
+    def __init__(
+        self,
+        collection: typing.Union[Collection, str],
+        title: typing.Optional[str] = None,
+        description: typing.Optional[str] = None,
+        keywords: typing.Optional[typing.List[str]] = None,
+    ):
+        self.collection_id = get_collection_id(collection)
+        self.title = title
+        self.description = description
+        self.keywords = keywords
+    
+    def set_title(self, title: str) -> "CollectionUpdateRequest":
+        self.title = title
+        return self
+    
+    def set_description(self, description: str) -> "CollectionUpdateRequest":
+        self.description = description
+        return self
+    
+    def set_keywords(self, keywords: typing.List[str]) -> "CollectionUpdateRequest":
+        self.keywords = keywords
+        return self
+
+    def add_keyword(self, keyword: str) -> "CollectionUpdateRequest":
+        self.keywords.append(keyword)
+        return self
 class CollectionsAPI:
 
     def list_collections(self, request: CollectionListRequest) -> CollectionListResponse:
@@ -104,9 +145,21 @@ class CollectionsAPI:
         else:
             return Collection(json.loads(response.text))
         
-        pass
+    def update(self, request: CollectionUpdateRequest) -> Collection:
 
-    def remove_collection(self, request: CollectionRemoveRequest) -> CollectionRemoveResponse:
+        url = f"{self.url}/{request.collection_id}"
+
+        response = requests.request(
+            "POST",
+            url,
+            data=json.dumps(request.dict()),
+            headers=self.session.header
+        )
+
+        if response.status_code != 200:
+            raise ArlulaAPIException(response)
+        else:
+            return Collection(json.loads(response.text))
         pass
 
     def update_collection(self, request: CollectionUpdateRequest) -> CollectionUpdateResponse:
