@@ -7,6 +7,51 @@ from arlulacore.exception import ArlulaAPIException
 class Collection:
     pass
 
+class CollectionCreateRequest:
+
+    title: str
+    """A title/name for the collection to identify it"""
+
+    description: str
+    """A description of the collection, such as its purpose, or the location of interest."""
+
+    keywords: typing.List[str]
+    """A list of keywords that describe the collections content for organisational purposes"""
+
+    team: typing.Optional[str]
+    """The team that will be the owner of the collection (defaults to the requesting API directly)"""
+
+    def __init__(
+        self,
+        title: str,
+        description: str,
+        keywords: typing.Optional[typing.List[str]] = [],
+        team: typing.Optional[str] = None, 
+    ):
+        self.title = title
+        self.description = description
+        self.keywords = keywords
+        self.team = team
+    
+    def set_title(self, title: str) -> "CollectionCreateRequest":
+        self.title = title
+        return self
+    
+    def set_description(self, description: str) -> "CollectionCreateRequest":
+        self.description = description
+        return self
+    
+    def set_keywords(self, keywords: typing.List[str]) -> "CollectionCreateRequest":
+        self.keywords = keywords
+        return self
+
+    def add_keyword(self, keyword: str) -> "CollectionCreateRequest":
+        self.keywords.append(keyword)
+        return self
+    
+    def set_team(self, team: str) -> "CollectionCreateRequest":
+        self.team = team
+        return self
 class CollectionsAPI:
 
     def list_collections(self, request: CollectionListRequest) -> CollectionListResponse:
@@ -45,18 +90,20 @@ class CollectionsAPI:
             return CollectionListResponse(json.loads(response.text))
 
     def list_items(self, request: CollectionListItemsRequest) -> CollectionListItemsResponse:
-        pass
+    def create(self, request: CollectionCreateRequest) -> Collection:
+        
+        response = requests.request(
+            "POST",
+            self.url,
+            data=json.dumps(request.dict()),
+            headers=self.session.header
+        )
 
-    def detail_item(self, request: CollectionDetailItemRequest) -> CollectionDetailItemResponse:
-        pass
-
-    def search_collections(self, request: CollectionSearchRequest) -> CollectionSearchResponse:
-        pass
-
-    def create_collection(self, request: CollectionCreateRequest) -> CollectionCreateResponse:
-        pass
-
-    def add_item_to_collection(self, request: CollectionAddItemRequest) -> CollectionAddItemResponse:
+        if response.status_code != 200:
+            raise ArlulaAPIException(response)
+        else:
+            return Collection(json.loads(response.text))
+        
         pass
 
     def remove_collection(self, request: CollectionRemoveRequest) -> CollectionRemoveResponse:
