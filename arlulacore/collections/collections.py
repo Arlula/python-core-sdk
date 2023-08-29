@@ -158,6 +158,53 @@ class Collection():
         self.assets = {k : Asset(v) for k, v in data["assets"].items()}
         self.summaries = {k : v for k, v in data["summaries"].items()}
         self.links = [Link(x) for x in data["links"]]
+
+class CollectionItem():
+    type: str
+    """Part of the STAC standard to conform with GeoJSON, will always be 'Feature'"""
+
+    stac_version: str
+    """The version of the STAC standard being adhered to"""
+
+    stac_extensions: typing.List[str]
+    """A list of STAC extension schemas this item complies with"""
+
+    id: str
+    """ID of the order the item corresponds to"""
+
+    crs: str
+    """The Coordinate Reference System for all geometry of this item"""
+    
+    geometry: dict
+    """The polygon defining coverage of this item in the given CRS."""
+
+    bbox: typing.List[float]
+    """The total bounding box of the item"""
+
+    properties: dict
+    """The list of properties of this item"""
+
+    assets: typing.Dict[str, Asset]
+    """A list of any assets related to this item, including all resources from the source order"""
+
+    links: typing.List[Link]
+    """Links to resources and media associated with this collection"""
+
+    collection: str
+    """The ID of the collection this item is from"""
+
+    def __init__(self, data):
+        self.type = data["type"]
+        self.stac_version = data["stac_version"]
+        self.stac_extensions = data["stac_extensions"]
+        self.crs = data["crs"]
+        self.id = data["id"]
+        self.bbox = data["bbox"]
+        self.geometry = data["geometry"]
+        self.properties = data["properties"]
+        self.assets = {k : Asset(v) for k, v in data["assets"].items()}
+        self.links = [Link(x) for x in data["links"]]
+
 class CollectionCreateRequest:
 
     title: str
