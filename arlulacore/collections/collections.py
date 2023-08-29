@@ -160,9 +160,22 @@ class CollectionsAPI:
             raise ArlulaAPIException(response)
         else:
             return Collection(json.loads(response.text))
-        pass
 
-    def update_collection(self, request: CollectionUpdateRequest) -> CollectionUpdateResponse:
+    def delete(self, collection: typing.Union[str, Collection]) -> None:
+        collection_id = get_collection_id(collection)
+
+        url = f"{self.url}/{collection_id}"
+
+        response = requests.request(
+            "DELETE",
+            url,
+            headers=self.session.header)
+
+        if response.status_code != 200:
+            raise ArlulaAPIException(response)
+        else:
+            return Collection(json.loads(response.text))
+    
         pass
 
     def delete_collection(self, request: CollectionDeleteRequest) -> CollectionDeleteResponse:
