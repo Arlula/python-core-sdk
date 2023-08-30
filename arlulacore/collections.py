@@ -2,8 +2,9 @@ import json
 import typing
 import requests
 
-from arlulacore.exception import ArlulaAPIException
-from datetime import date, datetime
+from datetime import datetime
+from .auth import Session
+from .exception import ArlulaAPIException
 from .util import parse_rfc3339, remove_none
 
 class Provider():
