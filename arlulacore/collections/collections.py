@@ -513,6 +513,21 @@ class CollectionsAPI:
             raise ArlulaAPIException(response)
         else:
             return CollectionListItemsResponse(json.loads(response.text))
+
+    def get_item(self, collection: typing.Union[str, Collection], item: typing.Union[str, CollectionItem]) -> CollectionItem:
+
+        url = f"{self.url}/{get_collection_id(collection)}/items/{get_item_id(item)}"
+
+        response = requests.request(
+            "GET",
+            url,
+            headers=self.session.header)
+
+        if response.status_code != 200:
+            raise ArlulaAPIException(response)
+        else:
+            return CollectionItem(json.loads(response.text))
+
     def create(self, request: CollectionCreateRequest) -> Collection:
         
         response = requests.request(
