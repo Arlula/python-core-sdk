@@ -4,7 +4,7 @@ import requests
 
 from arlulacore.exception import ArlulaAPIException
 from datetime import date, datetime
-from ..util import parse_rfc3339, remove_none
+from .util import parse_rfc3339, remove_none
 
 class Provider():
     name: str
