@@ -1,7 +1,11 @@
 import json
+import typing
 import requests
 
 from arlulacore.exception import ArlulaAPIException
+from datetime import date, datetime
+from ..util import parse_rfc3339, remove_none
+
 class Provider():
     name: str
     """The name of the provider"""
@@ -502,6 +506,14 @@ class CollectionUpdateRequest:
     def add_keyword(self, keyword: str) -> "CollectionUpdateRequest":
         self.keywords.append(keyword)
         return self
+
+    def dict(self) -> dict:
+        return remove_none({
+            "title": self.title,
+            "description": self.description,
+            "keywords": self.keywords,
+        })
+
 # Helper function to type check a collection argument (str or collection)
 def get_collection_id(collection: typing.Union[str, Collection]) -> str:
     if isinstance(collection, str):
