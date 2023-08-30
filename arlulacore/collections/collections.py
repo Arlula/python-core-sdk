@@ -537,19 +537,13 @@ class CollectionsAPI:
         else:
             return CollectionListResponse(json.loads(response.text))
 
-    def detail_collection(self, request: CollectionDetailRequest) -> CollectionDetailResponse:
+    def detail(self, collection: typing.Union[str, Collection]) -> Collection:
 
-        url = self.url+"/detail"
-
-        params = {
-            "page": request.page or 1,
-            "size": request.size or 100,
-        }
+        url = f"{self.url}/{get_collection_id(collection)}"
 
         response = requests.request(
             "GET",
             url,
-            params=params,
             headers=self.session.header)
 
         if response.status_code != 200:
