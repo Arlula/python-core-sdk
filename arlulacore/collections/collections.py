@@ -205,6 +205,41 @@ class CollectionItem():
         self.assets = {k : Asset(v) for k, v in data["assets"].items()}
         self.links = [Link(x) for x in data["links"]]
 
+# CollectionList classes
+class CollectionListResponseContext:
+    page: int
+    """The index of this page"""
+
+    limit: int
+    """The page size"""
+
+    matched: int
+    """The total number of items matched"""
+
+    returned: int
+    """The number of items returned in this request"""
+
+    def __init__(self, data):
+        self.page = data["page"]
+        self.limit = data["limit"]
+        self.matched = data["matched"]
+        self.returned = data["returned"]
+
+class CollectionListResponse:
+    collections: typing.List[Collection]
+    """A list of collections matching the request specifications"""
+
+    links: typing.List[Link]
+    """Links to resources and media associated with this collection"""
+
+    context: CollectionListResponseContext
+    """Details about data returned and the number of results remaining"""
+
+    def __init__(self, data):
+        self.collections = [Collection(x) for x in data["collections"]]
+        self.links = [Link(x) for x in data["links"]]
+        self.context = CollectionListResponseContext(data["context"])
+
 class CollectionCreateRequest:
 
     title: str
@@ -293,14 +328,14 @@ class CollectionUpdateRequest:
         return self
 class CollectionsAPI:
 
-    def list_collections(self, request: CollectionListRequest) -> CollectionListResponse:
+    def list(self, page: typing.Optional[int] = 0, size: typing.Optional[int] = 100) -> CollectionListResponse:
         
-        url = self.url+"/list"
+        url = self.url
 
         response = requests.request(
             "GET",
             url,
-            params=request.dict(),
+            params={"page": page, "size": size},
             headers=self.session.header)
 
         if response.status_code != 200:
