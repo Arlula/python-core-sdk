@@ -657,6 +657,7 @@ class CollectionsAPI:
         else:
             return Collection(json.loads(response.text))
     
+    def request_access_item(self):
         pass
 
     def conformance(self) -> CollectionConformanceResponse:
@@ -673,11 +674,7 @@ class CollectionsAPI:
         else:
             return CollectionConformanceResponse(json.loads(response.text))
 
-    def request_access_to_item(self, request: CollectionRequestAccessToItemRequest) -> CollectionRequestI:
-        pass
 
-    def conformance(self):
-        pass
 
 
 
