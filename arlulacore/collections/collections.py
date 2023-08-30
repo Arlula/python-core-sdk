@@ -359,6 +359,14 @@ class CollectionListItemsRequest:
             "datetime": self._to_interval(),
         })
 
+class CollectionConformanceResponse:
+
+    conforms_to: typing.List[str]
+    """List of uris of JSON schema documents that this API conforms to"""
+
+    def __init__(self, data):
+        self.conforms_to = data["conformsTo"]
+
 class CollectionCreateRequest:
 
     title: str
@@ -588,8 +596,19 @@ class CollectionsAPI:
     
         pass
 
-    def delete_collection(self, request: CollectionDeleteRequest) -> CollectionDeleteResponse:
-        pass
+    def conformance(self) -> CollectionConformanceResponse:
+        url = f"{self.url}/conformance"
+
+        response = requests.request(
+            "GET",
+            url,
+            headers=self.session.header
+        )
+
+        if response.status_code != 200:
+            raise ArlulaAPIException(response)
+        else:
+            return CollectionConformanceResponse(json.loads(response.text))
 
     def request_access_to_item(self, request: CollectionRequestAccessToItemRequest) -> CollectionRequestI:
         pass
