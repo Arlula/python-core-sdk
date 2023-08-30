@@ -367,6 +367,55 @@ class CollectionConformanceResponse:
     def __init__(self, data):
         self.conforms_to = data["conformsTo"]
 
+
+class CollectionSearchRequest(CollectionListItemsRequest):
+
+    def __init__(
+        self, 
+        page: typing.Optional[int] = 0,
+        limit: typing.Optional[int] = 100,
+        bbox: typing.Optional[typing.List[int]] = None,
+        start: typing.Optional[datetime] = None,
+        end: typing.Optional[datetime] = None,
+        datetime: typing.Optional[datetime] = None,
+        ids: typing.Optional[typing.List[str]] = None,
+        intersects: typing.Optional[typing.Union[Polygon, Point]] = None,
+        queries: typing.Optional[dict] = None,
+    ):
+        pass
+
+class CollectionSearchResponseContext():
+    limit: int
+    matched: int
+    returned: int
+
+    def __init__(self, data):
+        self.limit = data["limit"]
+        self.matched = data["matched"]
+        self.returned = data["returned"]
+
+class CollectionSearchResponse():
+    
+    type: str
+    stac_version: str
+    stac_extensions: str
+    context: str
+    number_matched: int
+    number_returned: int
+    links: typing.List[int]
+    features: typing.List[CollectionItem]
+
+    def __init__(self, data):
+        self.type = data["type"]
+        self.stac_version = data["stac_version"]
+        self.stac_extensions = data["stac_extensions"]
+        self.context = CollectionSearchResponseContext(data["context"])
+        self.number_matched = data["numberMatched"]
+        self.number_returned = data["numberReturned"]
+        self.links = data["links"]
+        self.features = data["features"]
+
+
 class CollectionCreateRequest:
 
     title: str
@@ -536,6 +585,20 @@ class CollectionsAPI:
         else:
             return CollectionItem(json.loads(response.text))
 
+    def search_items(self, request: CollectionSearchRequest) -> CollectionSearchResponse:
+
+        url = f"{self.url}/{request.id}/search"
+
+        response = requests.request(
+            "POST",
+            url,
+            data=json.dumps(request.dict()),
+            headers=self.session.header)
+
+        if response.status_code != 200:
+            raise ArlulaAPIException(response)
+        else:
+            return CollectionItem(json.loads(response.text))
     def remove_item(self, collection: typing.Union[str, Collection], item: typing.Union[str, CollectionItem]) -> None:
 
         url = f"{self.url}/{get_collection_id(collection)}/items/{get_item_id(item)}"
