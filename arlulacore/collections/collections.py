@@ -240,6 +240,125 @@ class CollectionListResponse:
         self.links = [Link(x) for x in data["links"]]
         self.context = CollectionListResponseContext(data["context"])
 
+
+# CollectionListItems Classes
+class CollectionListItemsResponse:
+    
+    type: str
+    """Part of the STAC standard to conform with GeoJSON, will always be 'FeatureCollection'"""
+
+    features: typing.List[CollectionItem]
+    """A list of collection items coinciding with the search"""
+
+    links: typing.List[Link]
+    """Links to resources and media associated with this collection"""
+    
+    timestamp: datetime
+    """The time at which this search was conducted"""
+
+    number_matched: int
+    """The total number of items matched"""
+
+    number_returned: int
+    """The total number of items returned on this page"""
+
+    def __init__(self, data):
+        self.type = data["type"]
+        self.features = [CollectionItem(x) for x in data["features"]]
+        self.links = [Link(x) for x in data["links"]]
+        self.timestamp = parse_rfc3339(data["timeStamp"])
+        self.number_matched = data["numberMatched"]
+        self.number_returned = data["numberReturned"]
+
+class CollectionListItemsRequest:
+    page: int
+    limit: int
+    bbox: typing.Optional[typing.List[int]]
+    """bounding box """
+
+    start: typing.Optional[datetime]
+    """The start of a period of interest. If not provided when end is provided, it specifies an open interval"""
+
+    end: typing.Optional[datetime]
+    """The end of a period of interest. If not provided when start is provided, it specifies an open interval"""
+
+    datetime: typing.Optional[datetime]
+    """Matches the same date"""
+
+    def __init__(
+        self, 
+        page: typing.Optional[int] = 0,
+        limit: typing.Optional[int] = 100,
+        bbox: typing.Optional[typing.List[int]] = None,
+        start: typing.Optional[datetime] = None,
+        end: typing.Optional[datetime] = None,
+        datetime: typing.Optional[datetime] = None,
+    ):
+        self.page = page
+        self.limit = limit
+        self.bbox = bbox
+        self.start = start
+        self.end = end
+        self.datetime = datetime
+    
+    def set_start(self, start: datetime) -> "CollectionListItemsRequest":
+        self.start = start
+        return self
+    
+    def set_end(self, end: datetime) -> "CollectionListItemsRequest":
+        self.end = end
+        return self
+    
+    def set_between_dates(self, start: datetime, end: datetime) -> "CollectionListItemsRequest":
+        self.start = start
+        self.end = end
+        return self
+    
+    def set_datetime(self, datetime: datetime) -> "CollectionListItemsRequest":
+        self.datetime = datetime
+        return self
+    
+    def set_page(self, page: int) -> "CollectionListItemsRequest":
+        self.page = page
+        return self
+    
+    def set_limit(self, limit: int) -> "CollectionListItemsRequest":
+        self.limit = limit
+        return self
+    
+    def _to_interval(self) -> typing.Optional[str]:
+        if self.datetime is not None:
+            return str(self.datetime)
+        elif self.start is not None or self.end is not None:
+            return f"{self.start if self.start is not None else '..'}/{self.end if self.end is not None else '..'}"
+        else:
+            return None
+    
+    def set_bbox(
+        self,
+        south: typing.Optional[float],
+        west: typing.Optional[float],
+        north: typing.Optional[float],
+        east: typing.Optional[float],
+        bbox: typing.Optional[typing.List[float]]
+    ) -> "CollectionListItemsRequest":
+        """
+            Set the bounding box, must provide either all of `south`, `west`, `north`, and `east`, or `bbox`
+        """
+        if bbox != None:
+            self.bbox = bbox
+        else:
+            self.bbox = [south, west, north, east]
+        return self
+    
+    def dict(self) -> dict:
+        return remove_none({
+            "page": self.page,
+            "limit": self.limit,
+            "bbox": self.bbox,
+            "datetime": self._to_interval(),
+        })
+
 class CollectionCreateRequest:
 
     title: str
@@ -382,6 +501,18 @@ class CollectionsAPI:
             return CollectionListResponse(json.loads(response.text))
 
     def list_items(self, request: CollectionListItemsRequest) -> CollectionListItemsResponse:
+        url = f"{self.url}/{request.id}/items"
+
+        response = requests.request(
+            "GET",
+            url,
+            params=request.dict(),
+            headers=self.session.header)
+
+        if response.status_code != 200:
+            raise ArlulaAPIException(response)
+        else:
+            return CollectionListItemsResponse(json.loads(response.text))
     def create(self, request: CollectionCreateRequest) -> Collection:
         
         response = requests.request(
