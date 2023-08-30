@@ -326,6 +326,24 @@ class CollectionUpdateRequest:
     def add_keyword(self, keyword: str) -> "CollectionUpdateRequest":
         self.keywords.append(keyword)
         return self
+# Helper function to type check a collection argument (str or collection)
+def get_collection_id(collection: typing.Union[str, Collection]) -> str:
+    if isinstance(collection, str):
+        return collection
+    elif isinstance(collection, Collection):
+        return collection.id
+    else:
+        raise TypeError("Invalid type for `collection`")
+
+# Helper function to type check an item argument (str or collection) 
+def get_item_id(item: typing.Union[str, CollectionItem]) -> str:
+    if isinstance(item, str):
+        return item
+    elif isinstance(item, CollectionItem):
+        return item.id
+    else:
+        raise TypeError("Invalid type for `item`")
+
 class CollectionsAPI:
 
     def list(self, page: typing.Optional[int] = 0, size: typing.Optional[int] = 100) -> CollectionListResponse:
