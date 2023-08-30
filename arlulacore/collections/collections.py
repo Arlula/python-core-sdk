@@ -528,6 +528,19 @@ class CollectionsAPI:
         else:
             return CollectionItem(json.loads(response.text))
 
+    def remove_item(self, collection: typing.Union[str, Collection], item: typing.Union[str, CollectionItem]) -> None:
+
+        url = f"{self.url}/{get_collection_id(collection)}/items/{get_item_id(item)}"
+        
+        response = requests.request(
+            "DELETE",
+            url,
+            headers=self.session.header
+        )
+
+        if response.status_code != 200:
+            raise ArlulaAPIException(response)
+
     def create(self, request: CollectionCreateRequest) -> Collection:
         
         response = requests.request(
