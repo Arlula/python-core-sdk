@@ -522,6 +522,15 @@ def get_item_id(item: typing.Union[str, CollectionItem]) -> str:
 
 class CollectionsAPI:
 
+    '''
+        CollectionsAPI is used to interface with the Arlula Collections API
+    '''
+
+    def __init__(self, session: Session):
+        self.session = session
+        self.url = self.session.baseURL + "/api/collections"
+
+
     def list(self, page: typing.Optional[int] = 0, size: typing.Optional[int] = 100) -> CollectionListResponse:
         
         url = self.url
