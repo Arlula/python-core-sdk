@@ -1,8 +1,10 @@
+import abc
 import json
 import typing
 import requests
 
 from datetime import datetime
+from enum import Enum
 from .auth import Session
 from .exception import ArlulaAPIException
 from .util import parse_rfc3339, remove_none
@@ -373,7 +375,103 @@ class CollectionConformanceResponse:
         self.conforms_to = data["conformsTo"]
 
 
+class QueryFieldNumber(str, Enum):
+    gsd = "gsd"
+    """The ground sample distance of this item (smallest distance is multiple, i.e. from a multi-spectral sensor)"""
+
+    cloud_cover = "eo:cloud_cover"
+    """The percentage cloud cover of this item"""
+    
+    snow_cover = "eo:snow_cover"
+    """The percentage snow cover of this item (if provided)"""
+
+    types = "arl:types"	
+    """The imagery types this item contains (i.e. visual, optical, SAR, etc)"""
+
+class QueryFieldString(str, Enum):
+    provider_key = "providers.key"
+    """Matches against a provider (supplier) of this imagery"""
+
+    supplier = "supplier"
+    """A shorthand alias for the provider_key"""
+
+    platform = "platform"
+    """The identifier for the platform that captured this item"""
+
+    instruments	= "instruments"
+    """The list of instruments used to capture this item"""
+    
+    band_common_name = "eo:bands.common_name"
+    """The list of spectral band common names that are available in this item"""
+
+    band = "band"
+    """A shorthand alias for the above"""
+
+    types = "arl:types"	
+    """The imagery types this item contains (i.e. visual, optical, SAR, etc)"""
+
+
+class Query(abc.ABC):
+    
+    @abc.abstractmethod
+    def dict(self):
+        pass
+
+class StringQuery():
+
+    def __init__(
+        self,
+        eq: typing.Optional[str] = None,
+        like: typing.Optional[str] = None,
+    ):
+        self.eq = eq
+        self.like = like
+    
+    def dict(self):
+        return remove_none({
+            "eq": self.eq,
+            "like": self.like,
+        })
+
+class NumericalQuery(Query):
+
+    def __init__(
+        self,
+        eq: typing.Optional[float] = None,
+        lt: typing.Optional[float] = None,
+        lte: typing.Optional[float] = None,
+        gt: typing.Optional[float] = None,
+        gte: typing.Optional[float] = None,
+        range: typing.Optional[typing.Tuple[float, float]] = None,
+    ):
+        self.eq = eq
+        self.lt = lt
+        self.lte = lte
+        self.gt = gt
+        self.gte = gte
+        self.range = range
+    
+    def dict(self):
+        return remove_none({
+            "eq": self.eq,
+            "lt": self.lt,
+            "lte": self.lte,
+            "gt": self.gt,
+            "gte": self.gte,
+            "range": self.range,
+        })
+
 class CollectionSearchRequest(CollectionListItemsRequest):
+
+    page: typing.Optional[int]
+    limit: typing.Optional[int]
+    bbox: typing.Optional[int]
+    start: typing.Optional[datetime]
+    end: typing.Optional[datetime]
+    datetime: typing.Optional[datetime]
+    ids: typing.Optional[typing.List[str]]
+    intersects: typing.Optional[typing.Union[Polygon, Point]]
+    queries: typing.Optional[typing.Dict[typing.Union[QueryFieldString, QueryFieldNumber], Query]]
 
     def __init__(
         self, 
@@ -385,9 +483,77 @@ class CollectionSearchRequest(CollectionListItemsRequest):
         datetime: typing.Optional[datetime] = None,
         ids: typing.Optional[typing.List[str]] = None,
         intersects: typing.Optional[typing.Union[Polygon, Point]] = None,
-        queries: typing.Optional[dict] = None,
+        queries: typing.Optional[typing.Dict[typing.Union[QueryFieldString, QueryFieldNumber], Query]] = None,
     ):
+        self.page = page
+        self.limit = limit
+        self.bbox = bbox
+        self.start = start
+        self.end = end
+        self.datetime = datetime
+        self.ids = ids
+        self.intersects = intersects
+        self.queries = queries
+
+    def set_page(self, page: int) -> "CollectionSearchRequest":
+        self.page = page
+        return self
+
+    def set_limit(self, limit: int) -> "CollectionSearchRequest":
+        self.limit = limit
+        return self
+
+    def set_bbox(
+        self,
+        south: typing.Optional[float],
+        west: typing.Optional[float],
+        north: typing.Optional[float],
+        east: typing.Optional[float],
+        bbox: typing.Optional[typing.List[float]]
+    ) -> "CollectionListItemsRequest":
+        """
+            Set the bounding box, must provide either all of `south`, `west`, `north`, and `east`, or `bbox`
+        """
+        if bbox != None:
+            self.bbox = bbox
+        else:
+            self.bbox = [south, west, north, east]
+        return self
+
+    def set_start(self, start: typing.Optional[datetime]) -> "CollectionSearchRequest":
+        self.start = start
+        return self
+
+    def set_end(self, end: typing.Optional[datetime]) -> "CollectionSearchRequest":
+        self.end = end
+        return self
+    
+    def set_between_dates(
+        self, 
+        start: typing.Optional[datetime], 
+        end: typing.Optional[datetime]
+    ) -> "CollectionListItemsRequest":
+        self.start = start
+        self.end = end
+        return self
+
+    def set_datetime(self, datetime: datetime) -> "CollectionSearchRequest":
+        self.datetime = datetime
+        return self
+
+    def set_ids(self, ids: typing.List[str]) -> "CollectionSearchRequest":
+        self.ids = ids
+        return self
+
+    def add_id(self, id: str) -> "CollectionSearchRequest":
+        self.ids.append(id)
+        return self
+    
+    def set_point(self, long: float, lat: float) -> "CollectionSearchRequest":
         pass
+
+    def add_query(self, field: typing.Union[QueryFieldNumber, QueryFieldString], query: Query):
+        self.queries[field] = query
 
 class CollectionSearchResponseContext():
     limit: int
