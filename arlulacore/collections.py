@@ -545,7 +545,10 @@ class CollectionsAPI:
 
 
     def list(self, page: typing.Optional[int] = 0, size: typing.Optional[int] = 100) -> CollectionListResponse:
-        
+        """
+            List all STAC collections the requesting API has access to.
+        """
+
         url = self.url
 
         response = requests.request(
@@ -560,6 +563,9 @@ class CollectionsAPI:
             return CollectionListResponse(json.loads(response.text))
 
     def detail(self, collection: typing.Union[str, Collection]) -> Collection:
+        """
+            Returns the details of the specified STAC collection.
+        """
 
         url = f"{self.url}/{get_collection_id(collection)}"
 
@@ -574,6 +580,10 @@ class CollectionsAPI:
             return CollectionListResponse(json.loads(response.text))
 
     def list_items(self, request: CollectionListItemsRequest) -> CollectionListItemsResponse:
+        """
+            Paginate STAC Items within the collection.
+        """
+
         url = f"{self.url}/{request.id}/items"
 
         response = requests.request(
@@ -588,6 +598,9 @@ class CollectionsAPI:
             return CollectionListItemsResponse(json.loads(response.text))
 
     def get_item(self, collection: typing.Union[str, Collection], item: typing.Union[str, CollectionItem]) -> CollectionItem:
+        """
+            Retrieve an individual item from a collection
+        """
 
         url = f"{self.url}/{get_collection_id(collection)}/items/{get_item_id(item)}"
 
@@ -602,6 +615,9 @@ class CollectionsAPI:
             return CollectionItem(json.loads(response.text))
 
     def search_items(self, request: CollectionSearchRequest) -> CollectionSearchResponse:
+        """
+            Perform a detailed search of items within a collection.
+        """
 
         url = f"{self.url}/{request.id}/search"
 
@@ -617,6 +633,9 @@ class CollectionsAPI:
             return CollectionItem(json.loads(response.text))
         
     def import_order(self, collection: typing.Union[str, Collection], order_id: str) -> None:
+        """
+            Import an order from the Orders API into a collection
+        """
 
         url = f"{self.url}/{get_collection_id(collection)}"
 
@@ -632,7 +651,9 @@ class CollectionsAPI:
 
 
     def remove_item(self, collection: typing.Union[str, Collection], item: typing.Union[str, CollectionItem]) -> None:
-
+        """
+            Remove an item from a collection
+        """
         url = f"{self.url}/{get_collection_id(collection)}/items/{get_item_id(item)}"
         
         response = requests.request(
@@ -645,6 +666,9 @@ class CollectionsAPI:
             raise ArlulaAPIException(response)
 
     def create(self, request: CollectionCreateRequest) -> Collection:
+        """
+            Create a new collection to add imagery to
+        """
         
         response = requests.request(
             "POST",
@@ -659,6 +683,9 @@ class CollectionsAPI:
             return Collection(json.loads(response.text))
         
     def update(self, request: CollectionUpdateRequest) -> Collection:
+        """
+            Update the details of an existing collection
+        """
 
         url = f"{self.url}/{request.collection_id}"
 
@@ -675,6 +702,10 @@ class CollectionsAPI:
             return Collection(json.loads(response.text))
 
     def delete(self, collection: typing.Union[str, Collection]) -> None:
+        """
+            Delete an imagery collection
+        """
+
         collection_id = get_collection_id(collection)
 
         url = f"{self.url}/{collection_id}"
@@ -693,6 +724,11 @@ class CollectionsAPI:
         pass
 
     def conformance(self) -> CollectionConformanceResponse:
+        """
+            The conformance endpoint is a required component of the STAC standard, and lists the set of JSON Schema documents that 
+            the API and its output data is in conformance with. These schemas often indicate support for some extension upon the base 
+            STAC specification.
+        """
         url = f"{self.url}/conformance"
 
         response = requests.request(
