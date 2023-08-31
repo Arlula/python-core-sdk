@@ -2,6 +2,36 @@ from .auth import (
     Session,
 )
 
+from .collections import (
+    Provider,
+    BBox,
+    Interval,
+    SpatialExtents,
+    TemporalExtents,
+    Extent,
+    Asset,
+    Summary,
+    Link,
+    Collection,
+    CollectionItem,
+    CollectionListResponseContext,
+    CollectionListResponse,
+    CollectionListItemsResponse,
+    CollectionListItemsRequest,
+    CollectionConformanceResponse,
+    QueryFieldNumber,
+    QueryFieldString,
+    Query,
+    StringQuery,
+    NumericalQuery,
+    CollectionSearchRequest,
+    CollectionSearchResponseContext,
+    CollectionSearchResponse,
+    CollectionCreateRequest,
+    CollectionUpdateRequest,
+    CollectionsAPI,
+)
+
 from .archive import (
     CenterPoint,
     Percent,
