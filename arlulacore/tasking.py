@@ -1,15 +1,11 @@
-from __future__ import annotations
+import enum
 import json
-import string
-import textwrap
 import typing
 import requests
+import datetime
 
-from dataclasses import dataclass
-from datetime import date, datetime
-
-from arlulacore.archive import OrderRequest, Polygon
-from .common import ArlulaObject
+from .archive import BatchOrderRequest, OrderRequest, Polygon
+from .common import Band, Bundle, License, SortDefinition
 from .auth import Session
 from .exception import ArlulaAPIException
 from .orders import DetailedOrderResult
@@ -29,10 +25,10 @@ class TaskingSearchSortFields(str, enum.Enum):
     areas_target = "areas.target"
 
 class TaskingSearchRequest():
-    start: date
+    start: datetime.datetime
     """The start time of the period of interest. Must be in the future."""
 
-    end: date
+    end: datetime.datetime
     """The end time of the period of interest. Must be in the future and after start."""
 
     gsd: float
@@ -69,8 +65,8 @@ class TaskingSearchRequest():
     """the desired field to sort results by, and if that sort should be ascending or descending"""
     
     def __init__(self, 
-            start: date,
-            end: date,
+            start: datetime.datetime,
+            end: datetime.datetime,
             gsd: float,
             off_nadir: float,
             lat: typing.Optional[float] = None,
@@ -121,15 +117,15 @@ class TaskingSearchRequest():
         self.gsd = gsd
         return self
 
-    def set_start(self, start: date) -> "TaskingSearchRequest":
+    def set_start(self, start: datetime.datetime) -> "TaskingSearchRequest":
         self.start = start
         return self
 
-    def set_end(self, end: date) -> "TaskingSearchRequest":
+    def set_end(self, end: datetime.datetime) -> "TaskingSearchRequest":
         self.end = end
         return self
     
-    def set_between_dates(self, start: date, end: date) -> "TaskingSearchRequest":
+    def set_between_dates(self, start: datetime.datetime, end: datetime.datetime) -> "TaskingSearchRequest":
         self.start = start
         self.end = end
         return self
