@@ -472,20 +472,36 @@ class NumericalQuery(Query):
 class CollectionSearchRequest(CollectionListItemsRequest):
 
     page: typing.Optional[int]
+    """The page of data to display, where each page is 'limit' items in length (if not specified, the default is 0)"""
+
     limit: typing.Optional[int]
-    bbox: typing.Optional[int]
+    """The number of results per page. The default is 100."""
+
+    bbox: typing.Optional[typing.List[float]]
+    """A bounding box to only return results within. The elements define the south, west, north and east longitude and latitude boundaries, in that order."""
+
     start: typing.Optional[datetime.datetime]
+    """The start of a period of interest. If not provided when end is provided, it specifies an open interval"""
+
     end: typing.Optional[datetime.datetime]
+    """The end of a period of interest. If not provided when start is provided, it specifies an open interval"""
+
     datetime: typing.Optional[datetime.datetime]
+    """Matches the same date"""
+
     ids: typing.Optional[typing.List[str]]
+    """A list of Item ids you wish to retrieve"""
+
     intersects: typing.Optional[dict]
+    """A GeoJSON geometry object, consisting of the geometry type (point, polygon, etc) and coordinates."""
+
     queries: typing.Optional[typing.Dict[typing.Union[QueryFieldString, QueryFieldNumber], Query]]
 
     def __init__(
         self, 
         page: typing.Optional[int] = 0,
         limit: typing.Optional[int] = 100,
-        bbox: typing.Optional[typing.List[int]] = None,
+        bbox: typing.Optional[typing.List[float]] = None,
         start: typing.Optional[datetime.datetime] = None,
         end: typing.Optional[datetime.datetime] = None,
         datetime: typing.Optional[datetime.datetime] = None,
@@ -576,13 +592,29 @@ class CollectionSearchResponseContext():
 class CollectionSearchResponse():
     
     type: str
+    """Part of the STAC standard to conform with GeoJSON, will always be 'FeatureCollection'"""
+
     stac_version: str
+    """The version of the STAC standard being adhered to"""
+
     stac_extensions: str
+    """A list of STAC extension schemas this collection complies with"""
+
     context: str
+    """Details about data returned and the number of results remaining"""
+
     number_matched: int
+    """The total number of items matched"""
+
     number_returned: int
+    """The total number of items returned on this page"""
+
     links: typing.List[int]
+    """Links to resources and media associated with this collection"""
+
     features: typing.List[CollectionItem]
+    """A list of collection items coinciding with the search"""
+    
 
     def __init__(self, data):
         self.type = data["type"]
