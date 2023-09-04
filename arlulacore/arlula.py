@@ -1,6 +1,7 @@
 from .auth import Session
 from .archive import ArchiveAPI
 from .orders import OrdersAPI
+from .collections import CollectionsAPI
 
 class ArlulaAPI:
     '''
@@ -10,6 +11,7 @@ class ArlulaAPI:
     def __init__(self, session: Session):
         self._archive = ArchiveAPI(session)
         self._orders = OrdersAPI(session)
+        self._collections = CollectionsAPI(session)
     
     def archiveAPI(self) -> ArchiveAPI:
         '''
@@ -22,3 +24,9 @@ class ArlulaAPI:
             Returns the orders api instance, used for maintaining orders and getting resources.
         '''
         return self._orders
+    
+    def collectionsAPI(self) -> CollectionsAPI:
+        """
+            Returns the collections api instance, used for maintaining collections and their items.
+        """
+        return self._collections
