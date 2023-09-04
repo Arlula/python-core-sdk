@@ -213,7 +213,60 @@ class TaskingAreas():
         self.target = data["target"]
 
 class TaskingSearchResult():
-    pass
+    polygons: typing.List[typing.List[typing.List[typing.List[float]]]]
+    """Each polygon represents a single orbital pass which could be captured, with the full set showing the coverage requested from the supplier."""
+    
+    start: datetime
+    """The start time for an order created from this result. It may be later than the searched start time, depending on the supplier's minimum notice period."""
+
+    end: datetime
+    """The end time for an order created from this result. It may be earlier than the searched period, depending on the supplier's maximum notice period."""
+
+    areas: TaskingAreas
+    """Container for area information including estimated scene area and target area."""
+
+    gsd: float
+    """The nadir GSD for this result."""
+
+    supplier: str
+    """The supplier that provides this capture opportunity."""
+
+    ordering_id: str
+    """The OrderingID for this result. Pass this to the ordering endpoint, along with a suitable bundle key and license eula to order this result."""
+
+    off_nadir: float
+    """The maximum off nadir requested for this result."""
+
+    bands: typing.List[Band]
+    """List of the Spectral Bands captured in this scene"""
+
+    bundles: typing.List[Bundle]
+    """Ordering bundles representing the available ways to order the imagery"""
+
+    licenses: typing.List[License]
+    """License options this imagery may be purchased under, and the terms and pricing that apply"""
+
+    platforms: typing.List[str]
+    """A list indicating the satellites and/or constellations that will fulfil this request."""
+
+    annotations: typing.List[str]
+    """Annotates results with information, such as what modifications were made to the search to make it valid for this supplier."""
+    
+    def __init__(self, data):
+        self.polygons = data["polygons"]
+        self.start = parse_rfc3339(data["startDate"])
+        self.end = parse_rfc3339(data["endDate"])
+        self.areas = TaskingAreas(data["areas"])
+        self.gsd = data["gsd"]
+        self.supplier = data["supplier"]
+        self.ordering_id = data["orderingID"]
+        self.off_nadir = data["offNadir"]
+        self.bands = [Band(x) for x in data["bands"]]
+        self.bundles = [Bundle(x) for x in data["bundles"]]
+        self.licenses = [License(x) for x in data["licenses"]]
+        self.platforms = data["platforms"]
+        self.annotations = data["annotations"]
+
 
 class TaskingAPI:
     '''
