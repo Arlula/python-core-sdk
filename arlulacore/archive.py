@@ -212,11 +212,15 @@ class SearchResponse(ArlulaObject):
         return self.data
 
 class ArchiveSearchSortFields(str, enum.Enum):
-    sceneID = "sceneID"
+    """
+        An enumeration of fields that can be sorted by.
+    """
+
+    scene_id = "sceneID"
     supplier = "supplier"
     date = "date"
     cloud = "cloud"
-    offNadir = "offNadir"
+    off_nadir = "offNadir"
     gsd = "gsd"
     area = "area"
     overlap = "overlap"
