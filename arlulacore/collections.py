@@ -50,12 +50,14 @@ class Interval():
 
 class SpatialExtents():
     bbox: typing.List[BBox]
+    """A list of bounding boxes representing spatial data extents within the collection (with the first being total extent of all data)"""
 
     def __init__(self, data):
         self.bbox = [BBox(x) for x in data["bbox"]] if "bbox" in data and data["bbox"] is not None else []
     
 class TemporalExtents():
     interval: typing.List[Interval]
+    """A list of time intervals with a start and end date (or null for an open interval) where the first entry will be the total temporal extent of all data in the collection"""
 
     def __init__(self, data):
         self.interval = [Interval(x) for x in data["interval"]] if "interval" in data and data["interval"] is not None else []
@@ -63,7 +65,10 @@ class TemporalExtents():
 class Extent():
     
     spatial: SpatialExtents
+    """Wraps the spatial extents of the collection"""
+
     temporal: TemporalExtents
+    """Wraps the temporal extents of the collection"""
 
     def __init__(self, data):
         self.spatial = SpatialExtents(data["spatial"]) 
