@@ -636,6 +636,14 @@ class CollectionCreateRequest:
         self.team = team
         return self
     
+    def dict(self):
+        return remove_none({
+            "title": self.title,
+            "description": self.description,
+            "keywords": self.keywords,
+            "team": self.team,
+        })
+
 class CollectionUpdateRequest:
     collection_id: str
     """Collection to update"""
