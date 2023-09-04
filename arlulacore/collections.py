@@ -886,8 +886,30 @@ class CollectionsAPI:
         else:
             return Collection(json.loads(response.text))
     
-    def request_access_item(self):
-        pass
+    def request_access_item(
+            self, 
+            collection: typing.Union[Collection, str], 
+            item: typing.Union[CollectionItem, str],
+            team: str,
+            message: str,
+        ):
+        """
+            Request access to an item in the collection that the caller does not have resource access permission to.
+        """
+        collection_id = get_collection_id(collection)
+        item_id = get_item_id(item)
+
+        url = f"{self.url}/{collection_id}/{item_id}/access-request"
+
+        response = requests.request(
+            "POST",
+            url,
+            data=json.dumps({"team": team, "message": message}),
+            headers=self.session.header,
+        )
+
+        if response.status_code != 200:
+            raise ArlulaAPIException(response)
 
     def conformance(self) -> CollectionConformanceResponse:
         """
