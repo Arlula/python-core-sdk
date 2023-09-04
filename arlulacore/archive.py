@@ -272,6 +272,7 @@ class SearchRequest():
         self.supplier = supplier
         self.off_nadir = off_nadir
         self.polygon = polygon
+        self.sort_definition = sort_definition
 
     def set_point_of_interest(self, lat: float, long: float) -> "SearchRequest":
         self.lat = lat
@@ -316,6 +317,10 @@ class SearchRequest():
 
     def set_maximum_cloud_cover(self, cloud: float) -> "SearchRequest":
         self.cloud = cloud
+        return self
+    
+    def set_sort_definition(self, sort_definition: SortDefinition[ArchiveSearchSortFields]):
+        self.sort_definition = sort_definition
         return self
 
     def valid_point_of_interest(self) -> bool:
