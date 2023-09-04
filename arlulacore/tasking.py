@@ -201,6 +201,16 @@ class TaskingError:
         self.platforms = data["platforms"]
         self.message = data["message"]
 
+class TaskingAreas():
+    scene: float
+    """The estimated deliverable scene size."""
+
+    target: float
+    """The target polygon size."""
+
+    def __init__(self, data):
+        self.scene = data["scene"]
+        self.target = data["target"]
 
 class TaskingSearchResult():
     pass
