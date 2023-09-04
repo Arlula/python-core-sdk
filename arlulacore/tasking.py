@@ -290,8 +290,7 @@ class TaskingAPI:
 
     def search(self, request: TaskingSearchRequest) -> TaskingSearchResponse:
         '''
-            Search the Arlula imagery archive.
-            Requires one of (lat, long) or (north, south, east, west).
+            Search the Arlula tasking API for capturing opportunities.
         '''
 
         url = self.url+"/search"
@@ -300,17 +299,16 @@ class TaskingAPI:
         response = requests.request(
             "POST", url,
             headers=self.session.header,
-            params=request.dict())
+            params=request.dict()
+        )
         if response.status_code != 200:
             raise ArlulaAPIException(response)
         else:
-            resp_data = json.loads(response.text)
-            # Construct an instance of `SearchResponse`
-            return TaskingSearchResponse(resp_data)
+            return TaskingSearchResponse(json.loads(response.text))
 
     def order(self, request: OrderRequest) -> DetailedOrderResult:
         '''
-            Order from the Arlula imagery archive
+            Order a tasking result from the Arlula tasking API.
         '''
 
         url = self.url + "/order"
@@ -324,6 +322,7 @@ class TaskingAPI:
         if response.status_code != 200:
             raise ArlulaAPIException(response)
         else:
+            return DetailedOrderResult(json.loads(response.text))
     
     def batch_order(self, request: BatchOrderRequest) -> typing.List[DetailedOrderResult]:
         '''
