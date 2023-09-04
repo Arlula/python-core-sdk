@@ -267,6 +267,16 @@ class TaskingSearchResult():
         self.platforms = data["platforms"]
         self.annotations = data["annotations"]
 
+class TaskingSearchResponse():
+    results: typing.List[TaskingSearchResult]
+    """The tasking result. Each result indicates a supplier, platform combination that can capture the requested specification."""
+
+    errors: typing.List[TaskingError]
+    """The tasking errors. Details which supplier, platform combinations are unable to fulfil the requested specification."""
+
+    def __init__(self, data):
+        self.results = [TaskingSearchResult(x) for x in data["results"]] if "results" in data else []
+        self.errors = [TaskingError(x) for x in data["errors"]] if "errors" in data else []
 
 class TaskingAPI:
     '''
