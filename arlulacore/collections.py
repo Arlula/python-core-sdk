@@ -754,7 +754,7 @@ class CollectionsAPI:
         if response.status_code != 200:
             raise ArlulaAPIException(response)
         else:
-            return CollectionListResponse(json.loads(response.text))
+            return Collection(json.loads(response.text))
 
     def list_items(self, request: CollectionListItemsRequest) -> CollectionListItemsResponse:
         """
