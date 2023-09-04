@@ -1,4 +1,5 @@
 from __future__ import annotations
+import enum
 import json
 import string
 import textwrap
@@ -7,7 +8,7 @@ import requests
 
 from dataclasses import dataclass
 from datetime import date, datetime
-from .common import ArlulaObject, Band, Bundle, License
+from .common import ArlulaObject, Band, Bundle, License, SortDefinition
 from .auth import Session
 from .exception import ArlulaAPIException
 from .orders import DetailedOrderResult
@@ -210,6 +211,19 @@ class SearchResponse(ArlulaObject):
     def dict(self) -> dict:
         return self.data
 
+class ArchiveSearchSortFields(str, enum.Enum):
+    sceneID = "sceneID"
+    supplier = "supplier"
+    date = "date"
+    cloud = "cloud"
+    offNadir = "offNadir"
+    gsd = "gsd"
+    area = "area"
+    overlap = "overlap"
+    overlap_area = "overlap.area"
+    overlap_percent = "overlap.percent"
+    fulfillment = "fulfillment"
+
 class SearchRequest():
     start: date
     gsd: float
@@ -224,6 +238,7 @@ class SearchRequest():
     supplier: str
     off_nadir: float
     cloud: float
+    sort_definition: SortDefinition[ArchiveSearchSortFields]
 
     def __init__(self, start: date,
             gsd: float,
@@ -237,7 +252,9 @@ class SearchRequest():
             west: typing.Optional[float] = None,
             supplier: typing.Optional[str] = None,
             off_nadir: typing.Optional[float] = None,
-            polygon: Polygon = None):
+            polygon: typing.Optional[Polygon] = None,
+            sort_definition: typing.Optional[SortDefinition[ArchiveSearchSortFields]] = None,
+        ):
         self.start = start
         self.cloud = cloud
         self.gsd = gsd
@@ -333,6 +350,9 @@ class SearchRequest():
                 "latitude": self.lat,
                 "longitude": self.long,
             }
+        
+        if self.sort_definition is not None:
+            d["sort"] = self.sort_definition.dict()
 
         return remove_none(d)
 

@@ -2,7 +2,7 @@ import abc
 import json
 import typing
 
-from .util import simple_indent
+from .util import remove_none, simple_indent
 
 class ArlulaObject(abc.ABC):
     def __repr__(self):
@@ -54,7 +54,7 @@ class License(ArlulaObject):
 
 class Band(ArlulaObject):
     data: dict
-    
+
     name: str
     """the common name of the band frequently used to identify it in a human readable manner (i.e. 'Red' or 'Short Wave InfraRed')"""
 
@@ -126,3 +126,22 @@ class Bundle(ArlulaObject):
             f"Name: {self.name}\n"\
             f"Bands: {bands}\n"\
             f"Price: {self.price} US Cents\n", 0, 2)
+
+Field = typing.TypeVar("Field")
+
+class SortDefinition(typing.Generic[Field]):
+    ascending: bool
+    """Whether the sort should be ascending or descending in order"""
+
+    field: Field
+    """The field to sort by"""
+
+    def __init__(self, field: Field, ascending: bool):
+        self.ascending = ascending
+        self.field = field
+
+    def dict(self):
+        return remove_none({
+            "ascending": self.ascending,
+            "field": self.field, 
+        })
