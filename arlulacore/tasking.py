@@ -91,7 +91,7 @@ class TaskingSearchRequest():
         self.west = west
         self.supplier = supplier
         self.polygon = polygon
-        self.sort_defintion = sort_definition
+        self.sort_definition = sort_definition
 
     def set_point_of_interest(self, lat: float, long: float) -> "TaskingSearchRequest":
         self.lat = lat
@@ -149,12 +149,11 @@ class TaskingSearchRequest():
     
     def dict(self):
         d = {
-            "start": str(self.start) if self.start != None else None, 
-            "end": str(self.end) if self.end != None else None,
+            "start": self.start.isoformat() if self.start != None else None, 
+            "end": self.end.isoformat() if self.end != None else None,
             "gsd": self.gsd, 
             "supplier": self.supplier, 
             "offNadir": self.off_nadir,
-            "polygon": json.dumps(self.polygon),
         }
 
         if self.polygon != None:
@@ -278,8 +277,7 @@ class TaskingAPI:
         The TaskingAPI class is used to interface with the Arlula Tasking REST API
     '''
 
-    def __init__(self,
-                 session: Session):
+    def __init__(self, session: Session):
         self.session = session
         self.url = self.session.baseURL + "/api/tasking"
 
@@ -289,12 +287,13 @@ class TaskingAPI:
         '''
 
         url = self.url+"/search"
-
+        print(json.dumps(request.dict()))
         # Send request and handle responses
         response = requests.request(
-            "POST", url,
+            "POST", 
+            url,
             headers=self.session.header,
-            params=request.dict()
+            data=json.dumps(request.dict())
         )
         if response.status_code != 200:
             raise ArlulaAPIException(response)
@@ -312,7 +311,8 @@ class TaskingAPI:
             "POST",
             url,
             data=json.dumps(request.dict()),
-            headers=self.session.header)
+            headers=self.session.header
+        )
 
         if response.status_code != 200:
             raise ArlulaAPIException(response)
