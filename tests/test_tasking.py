@@ -25,8 +25,8 @@ class TestTaskingSearchRequest(unittest.TestCase):
         """
         result = self._api.taskingAPI().search(
             arlulacore.TaskingSearchRequest(
-                datetime.datetime.now(), 
-                datetime.datetime.now() + datetime.timedelta(days=30),
+                datetime.datetime.now(datetime.timezone.utc), 
+                datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=30),
                 10,
                 40,
             )
@@ -44,8 +44,8 @@ class TestTaskingSearchRequest(unittest.TestCase):
                 
         result = self._api.taskingAPI().search(
             arlulacore.TaskingSearchRequest(
-                datetime.datetime.now(), 
-                datetime.datetime.now() + datetime.timedelta(days=30),
+                datetime.datetime.now(datetime.timezone.utc), 
+                datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=30),
                 10,
                 40,
             )
@@ -63,8 +63,8 @@ class TestTaskingSearchRequest(unittest.TestCase):
 
         result = self._api.taskingAPI().search(
             arlulacore.TaskingSearchRequest(
-                datetime.datetime.now(), 
-                datetime.datetime.now() + datetime.timedelta(days=30),
+                datetime.datetime.now(datetime.timezone.utc), 
+                datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=30),
                 10,
                 40,
             )
