@@ -25,9 +25,16 @@ class ArlulaObject(abc.ABC):
 class License(ArlulaObject):
     data: dict
     name: str
+    """A human readable name to refer to this license type (i.e. 'internal', or 'enterprise')"""
+
     href: str
+    """A URL at which the terms of the license can be read, use this value in the ordering endpoints “eula” field to select this license for ordering"""
+
     loading_percent: float
+    """The percentage loading this license applies to the bundle's price"""
+
     loading_amount: int
+    """The static amount (in US cents) this license adds to the bundle's price"""
 
     def __init__(self, data):
         self.data = data
@@ -47,10 +54,18 @@ class License(ArlulaObject):
 
 class Band(ArlulaObject):
     data: dict
+    
     name: str
+    """the common name of the band frequently used to identify it in a human readable manner (i.e. 'Red' or 'Short Wave InfraRed')"""
+
     id: str
+    """A short form identifier for the band used to identify the band in references."""
+
     min: float
+    """the minimum wavelength that makes up the band in nanometers (nm)"""
+
     max: float
+    """the maximum wavelength that makes up the band in nanometers (nm)"""
 
     def __init__(self, data):
         self.data = data
@@ -83,9 +98,16 @@ class Band(ArlulaObject):
 class Bundle(ArlulaObject):
     data: dict
     name: str
+    """Name of this bundle."""
+
     key: str
+    """The bundle key that is to be provided to the order endpoint to purchase this bundle"""
+
     bands: typing.List[str]
+    """The list of bands included in this level as a list of the bands 'id' property, if the list is empty, all bands are provided."""
+    
     price: int
+    """The base price for this bundle in US cents"""
 
     def __init__(self, data):
         self.data = data
