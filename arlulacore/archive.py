@@ -213,7 +213,7 @@ class SearchResponse(ArlulaObject):
 
 class ArchiveSearchSortFields(str, enum.Enum):
     """
-        An enumeration of fields that can be sorted by.
+        An enumeration of fields that can be sorted by on archive search requests.
     """
 
     scene_id = "sceneID"

@@ -16,6 +16,10 @@ from .orders import DetailedOrderResult
 from .util import parse_rfc3339, calculate_price, remove_none, simple_indent
 
 class TaskingSearchSortFields(str, enum.Enum):
+    """
+        An enumeration of fields that can be sorted by on tasking search requests.
+    """
+
     duration = "duration"
     supplier = "supplier"
     start = "start"
