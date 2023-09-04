@@ -17,17 +17,40 @@ from .util import parse_rfc3339, calculate_price, remove_none, simple_indent
 
 class TaskingSearchRequest():
     start: date
+    """The start time of the period of interest. Must be in the future."""
+
     end: date
+    """The end time of the period of interest. Must be in the future and after start."""
+
     gsd: float
+    """The maximum nadir gsd of the sensor."""
+
     lat: float
+    """Latitude of a point of interest."""
+
     long: float
+    """Longitude of a point of interest."""
+
     north: float
+    """Northernmost point of a bounding box."""
+
     south: float
+    """Southernmost point of a bounding box."""
+
     east: float
+    """Easternmost point of a bounding box."""
+
     west: float
+    """Westernmost point of a bounding box."""
+
     polygon: Polygon
-    supplier: str
+    """Polygon of interest."""
+
+    supplier: typing.List[str]
+    """Suppliers of interest."""
+
     off_nadir: float
+    """The maximum off-nadir acceptable for capture. Results will not have an off nadir greater than this."""
 
     sort_defintion: SortDefinition[TaskingSearchSortFields]
     """the desired field to sort results by, and if that sort should be ascending or descending"""
