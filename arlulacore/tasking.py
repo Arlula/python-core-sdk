@@ -15,6 +15,15 @@ from .exception import ArlulaAPIException
 from .orders import DetailedOrderResult
 from .util import parse_rfc3339, calculate_price, remove_none, simple_indent
 
+class TaskingSearchSortFields(str, enum.Enum):
+    duration = "duration"
+    supplier = "supplier"
+    start = "start"
+    end = "end"
+    max_off_nadir = "maxOffNadir"
+    areas_scene = "areas.scene"
+    areas_target = "areas.target"
+
 class TaskingSearchRequest():
     start: date
     """The start time of the period of interest. Must be in the future."""
