@@ -156,10 +156,9 @@ class TaskingSearchRequest():
             "start": str(self.start) if self.start != None else None, 
             "end": str(self.end) if self.end != None else None,
             "gsd": self.gsd, 
-            "longLat": remove_none({"lat": self.lat, "long": self.long}),
-            "boundingBox": remove_none({"west": self.west, "north": self.north, "south": self.south, "east": self.east}), 
-            "supplier": self.supplier, "off-nadir": self.off_nadir,
-            "polygon": json.dumps(self.polygon) if isinstance(self.polygon, list) else self.polygon
+            "supplier": self.supplier, 
+            "offNadir": self.off_nadir,
+            "polygon": json.dumps(self.polygon),
         }
 
         if self.polygon != None:
