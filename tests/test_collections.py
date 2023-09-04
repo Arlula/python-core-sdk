@@ -87,3 +87,72 @@ class TestCollectionItem(unittest.TestCase):
         self._api.collectionsAPI().import_order(os.getenv("API_COLLECTION_ID"), os.getenv("API_ORDER_ID"))
 
 
+class TestCollections(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls._session = create_test_session()
+        cls._api = arlulacore.ArlulaAPI(cls._session)
+
+    def test_create(self):
+        """
+            Test creating a collection and then deleting it
+        """
+        reqs = [
+            arlulacore.CollectionCreateRequest(
+                title="Test Collection Title",
+                description="Test Collection Description",
+                keywords=["test"],
+                team=os.getenv("API_TEAM_ID")
+            ),
+        ]
+        resps = []
+
+        try:
+            for req in reqs:
+                resp = self._api.collectionsAPI().create(req)
+                resps.append(resp)
+
+                self.assertEqual(resp.title, req.title)
+                self.assertEqual(resp.description, req.description)
+                self.assertEqual(resp.keywords, req.keywords)
+        except Exception as e:
+            raise e
+        finally:
+            for resp in resps:
+                self._api.collectionsAPI().delete(resp)
+
+    def test_detail_existing(self):
+        """
+            Test that the predefined collection can be retrieved successfully
+        """
+        self._api.collectionsAPI().detail(os.getenv("API_COLLECTION_ID"))
+
+    def test_detail_nonexisting(self):
+        """
+            Test that a collection that does not exist cannot be retrieved
+        """
+        with self.assertRaises(arlulacore.ArlulaAPIException) as e:
+            self._api.collectionsAPI().detail("f6caab9f-acd3-400f-8a92-012ffa2d8d69")
+
+    def test_update(self):
+        """
+            Test that the predefined collection can be updated successfully
+        """
+
+        # Generate a random string
+        random_string = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+
+        before = self._api.collectionsAPI().detail(os.getenv("API_COLLECTION_ID"))
+
+        update = self._api.collectionsAPI().update(arlulacore.CollectionUpdateRequest(
+            collection=before,
+            title="Test Collection Title", # TODO remove
+            description=random_string,
+        ))
+
+        after = self._api.collectionsAPI().detail(os.getenv("API_COLLECTION_ID"))
+        
+        self.assertEqual(update.description, random_string)
+        self.assertEqual(after.description, random_string)
+
