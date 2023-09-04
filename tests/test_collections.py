@@ -67,3 +67,23 @@ class TestOther(unittest.TestCase):
         # self._api.collectionsAPI().request_access_item()
         pass
 
+class TestCollectionItem(unittest.TestCase):
+    
+    @classmethod
+    def setUpClass(cls):
+        cls._session = create_test_session()
+        cls._api = arlulacore.ArlulaAPI(cls._session)
+
+    def test_get_item(self):
+        """
+            Test getting a predefined item 
+        """
+        self._api.collectionsAPI().get_item(os.getenv("API_COLLECTION_ID"), os.getenv("API_COLLECTION_ITEM_ID"))
+
+    def test_import(self):
+        """
+            Test importing a predefined order
+        """
+        self._api.collectionsAPI().import_order(os.getenv("API_COLLECTION_ID"), os.getenv("API_ORDER_ID"))
+
+
