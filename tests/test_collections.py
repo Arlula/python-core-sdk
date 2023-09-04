@@ -53,3 +53,17 @@ class TestCollectionItemsListRequest(unittest.TestCase):
         pass
 
 
+class TestOther(unittest.TestCase):
+    
+    @classmethod
+    def setUpClass(cls):
+        cls._session = create_test_session()
+        cls._api = arlulacore.ArlulaAPI(cls._session)
+
+    def test_conformance(self):
+        self._api.collectionsAPI().conformance()
+    
+    def test_request_item_access(self):
+        # self._api.collectionsAPI().request_access_item()
+        pass
+
