@@ -28,6 +28,9 @@ class TaskingSearchRequest():
     polygon: Polygon
     supplier: str
     off_nadir: float
+
+    sort_defintion: SortDefinition[TaskingSearchSortFields]
+    """the desired field to sort results by, and if that sort should be ascending or descending"""
     
     def __init__(self, 
             start: date,
@@ -40,8 +43,10 @@ class TaskingSearchRequest():
             south: typing.Optional[float] = None,
             east: typing.Optional[float] = None,
             west: typing.Optional[float] = None,
-            supplier: typing.Optional[str] = None,
-            polygon: Polygon = None):
+            supplier: typing.Optional[typing.List[str]] = None,
+            polygon: typing.Optional[Polygon] = None,
+            sort_definition: typing.Optional[SortDefinition[TaskingSearchSortFields]] = None,
+        ):
         self.start = start
         self.end = end
         self.gsd = gsd
@@ -54,6 +59,7 @@ class TaskingSearchRequest():
         self.west = west
         self.supplier = supplier
         self.polygon = polygon
+        self.sort_defintion = sort_definition
 
     def set_point_of_interest(self, lat: float, long: float) -> "TaskingSearchRequest":
         self.lat = lat
@@ -95,6 +101,10 @@ class TaskingSearchRequest():
     def set_maximum_off_nadir(self, off_nadir: float) -> "TaskingSearchRequest":
         self.off_nadir = off_nadir
         return self
+    
+    def set_sort_definition(self, sort_definition: SortDefinition[TaskingSearchSortFields]):
+        self.sort_definition = sort_definition
+        return self
 
     def valid_point_of_interest(self) -> bool:
         return self.lat != None and self.long != None
@@ -133,6 +143,9 @@ class TaskingSearchRequest():
         else:
             raise ValueError("No point of interest or area of interest provided")
         
+        if self.sort_definition is not None:
+            d["sort"] = self.sort_definition.dict()
+
         return remove_none(d)
 
 class TaskingSearchResponse():
