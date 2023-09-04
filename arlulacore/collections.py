@@ -2,9 +2,9 @@ import abc
 import json
 import typing
 import requests
+import enum
+import datetime
 
-from datetime import datetime
-from enum import Enum
 from .auth import Session
 from .exception import ArlulaAPIException
 from .util import parse_rfc3339, remove_none
@@ -38,10 +38,10 @@ class BBox():
         self.east = data[3]
 
 class Interval():
-    start: typing.Optional[datetime]
+    start: typing.Optional[datetime.datetime]
     """Start time for the collection overall"""
 
-    end: typing.Optional[datetime]
+    end: typing.Optional[datetime.datetime]
     """End time for the collection overall. None if no items in this collection."""
 
     def __init__(self, data):
@@ -263,7 +263,7 @@ class CollectionListItemsResponse:
     links: typing.List[Link]
     """Links to resources and media associated with this collection"""
     
-    timestamp: datetime
+    timestamp: datetime.datetime
     """The time at which this search was conducted"""
 
     number_matched: int
@@ -286,13 +286,13 @@ class CollectionListItemsRequest:
     bbox: typing.Optional[typing.List[int]]
     """bounding box """
 
-    start: typing.Optional[datetime]
+    start: typing.Optional[datetime.datetime]
     """The start of a period of interest. If not provided when end is provided, it specifies an open interval"""
 
-    end: typing.Optional[datetime]
+    end: typing.Optional[datetime.datetime]
     """The end of a period of interest. If not provided when start is provided, it specifies an open interval"""
 
-    datetime: typing.Optional[datetime]
+    datetime: typing.Optional[datetime.datetime]
     """Matches the same date"""
 
     def __init__(
@@ -300,9 +300,9 @@ class CollectionListItemsRequest:
         page: typing.Optional[int] = 0,
         limit: typing.Optional[int] = 100,
         bbox: typing.Optional[typing.List[int]] = None,
-        start: typing.Optional[datetime] = None,
-        end: typing.Optional[datetime] = None,
-        datetime: typing.Optional[datetime] = None,
+        start: typing.Optional[datetime.datetime] = None,
+        end: typing.Optional[datetime.datetime] = None,
+        datetime: typing.Optional[datetime.datetime] = None,
     ):
         self.page = page
         self.limit = limit
@@ -311,20 +311,20 @@ class CollectionListItemsRequest:
         self.end = end
         self.datetime = datetime
     
-    def set_start(self, start: datetime) -> "CollectionListItemsRequest":
+    def set_start(self, start: datetime.datetime) -> "CollectionListItemsRequest":
         self.start = start
         return self
     
-    def set_end(self, end: datetime) -> "CollectionListItemsRequest":
+    def set_end(self, end: datetime.datetime) -> "CollectionListItemsRequest":
         self.end = end
         return self
     
-    def set_between_dates(self, start: datetime, end: datetime) -> "CollectionListItemsRequest":
+    def set_between_dates(self, start: datetime.datetime, end: datetime.datetime) -> "CollectionListItemsRequest":
         self.start = start
         self.end = end
         return self
     
-    def set_datetime(self, datetime: datetime) -> "CollectionListItemsRequest":
+    def set_datetime(self, datetime: datetime.datetime) -> "CollectionListItemsRequest":
         self.datetime = datetime
         return self
     
@@ -378,7 +378,7 @@ class CollectionConformanceResponse:
         self.conforms_to = data["conformsTo"]
 
 
-class QueryFieldNumber(str, Enum):
+class QueryFieldNumber(str, enum.Enum):
     gsd = "gsd"
     """The ground sample distance of this item (smallest distance is multiple, i.e. from a multi-spectral sensor)"""
 
@@ -391,7 +391,7 @@ class QueryFieldNumber(str, Enum):
     types = "arl:types"	
     """The imagery types this item contains (i.e. visual, optical, SAR, etc)"""
 
-class QueryFieldString(str, Enum):
+class QueryFieldString(str, enum.Enum):
     provider_key = "providers.key"
     """Matches against a provider (supplier) of this imagery"""
 
@@ -469,11 +469,11 @@ class CollectionSearchRequest(CollectionListItemsRequest):
     page: typing.Optional[int]
     limit: typing.Optional[int]
     bbox: typing.Optional[int]
-    start: typing.Optional[datetime]
-    end: typing.Optional[datetime]
-    datetime: typing.Optional[datetime]
+    start: typing.Optional[datetime.datetime]
+    end: typing.Optional[datetime.datetime]
+    datetime: typing.Optional[datetime.datetime]
     ids: typing.Optional[typing.List[str]]
-    intersects: typing.Optional[typing.Union[Polygon, Point]]
+    intersects: typing.Optional[dict]
     queries: typing.Optional[typing.Dict[typing.Union[QueryFieldString, QueryFieldNumber], Query]]
 
     def __init__(
@@ -481,11 +481,11 @@ class CollectionSearchRequest(CollectionListItemsRequest):
         page: typing.Optional[int] = 0,
         limit: typing.Optional[int] = 100,
         bbox: typing.Optional[typing.List[int]] = None,
-        start: typing.Optional[datetime] = None,
-        end: typing.Optional[datetime] = None,
-        datetime: typing.Optional[datetime] = None,
+        start: typing.Optional[datetime.datetime] = None,
+        end: typing.Optional[datetime.datetime] = None,
+        datetime: typing.Optional[datetime.datetime] = None,
         ids: typing.Optional[typing.List[str]] = None,
-        intersects: typing.Optional[typing.Union[Polygon, Point]] = None,
+        intersects: typing.Optional[dict] = None,
         queries: typing.Optional[typing.Dict[typing.Union[QueryFieldString, QueryFieldNumber], Query]] = None,
     ):
         self.page = page
@@ -523,24 +523,24 @@ class CollectionSearchRequest(CollectionListItemsRequest):
             self.bbox = [south, west, north, east]
         return self
 
-    def set_start(self, start: typing.Optional[datetime]) -> "CollectionSearchRequest":
+    def set_start(self, start: typing.Optional[datetime.datetime]) -> "CollectionSearchRequest":
         self.start = start
         return self
 
-    def set_end(self, end: typing.Optional[datetime]) -> "CollectionSearchRequest":
+    def set_end(self, end: typing.Optional[datetime.datetime]) -> "CollectionSearchRequest":
         self.end = end
         return self
     
     def set_between_dates(
         self, 
-        start: typing.Optional[datetime], 
-        end: typing.Optional[datetime]
+        start: typing.Optional[datetime.datetime], 
+        end: typing.Optional[datetime.datetime]
     ) -> "CollectionListItemsRequest":
         self.start = start
         self.end = end
         return self
 
-    def set_datetime(self, datetime: datetime) -> "CollectionSearchRequest":
+    def set_datetime(self, datetime: datetime.datetime) -> "CollectionSearchRequest":
         self.datetime = datetime
         return self
 
@@ -872,7 +872,6 @@ class CollectionsAPI:
             data=json.dumps(request.dict()),
             headers=self.session.header
         )
-
         if response.status_code != 200:
             raise ArlulaAPIException(response)
         else:
@@ -894,8 +893,6 @@ class CollectionsAPI:
 
         if response.status_code != 200:
             raise ArlulaAPIException(response)
-        else:
-            return Collection(json.loads(response.text))
     
     def request_access_item(
             self, 
