@@ -184,8 +184,23 @@ class TaskingSearchRequest():
 
         return remove_none(d)
 
-class TaskingSearchResponse():
-    pass
+
+class TaskingError:
+
+    supplier: str
+    """The supplier that is unable to capture the requested specification"""
+
+    platforms: typing.List[str]
+    """The platforms of the supplier that are unable to capture the requested specification"""
+
+    message: str
+    """The reason why this supplier is unable to capture the requested specification"""
+
+    def __init__(self, data):
+        self.supplier = data["supplier"]
+        self.platforms = data["platforms"]
+        self.message = data["message"]
+
 
 class TaskingSearchResult():
     pass
