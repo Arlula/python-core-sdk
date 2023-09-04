@@ -32,6 +32,16 @@ from .collections import (
     CollectionsAPI,
 )
 
+from .tasking import (
+    TaskingSearchSortFields,
+    TaskingSearchRequest,
+    TaskingError,
+    TaskingAreas,
+    TaskingSearchResult,
+    TaskingSearchResponse,
+    TaskingAPI,
+)
+
 from .archive import (
     CenterPoint,
     Percent,
