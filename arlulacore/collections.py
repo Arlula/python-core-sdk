@@ -851,7 +851,7 @@ class CollectionsAPI:
             Import an order from the Orders API into a collection
         """
 
-        url = f"{self.url}/{get_collection_id(collection)}"
+        url = f"{self.url}/{get_collection_id(collection)}/items"
 
         response = requests.request(
             "POST",
