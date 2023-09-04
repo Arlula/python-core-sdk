@@ -324,4 +324,22 @@ class TaskingAPI:
         if response.status_code != 200:
             raise ArlulaAPIException(response)
         else:
-            return DetailedOrderResult(json.loads(response.text))
+    
+    def batch_order(self, request: BatchOrderRequest) -> typing.List[DetailedOrderResult]:
+        '''
+            Order multiple scenes from the Arlula tasking API.
+        '''
+
+        url = self.url + "/order/batch"
+
+        response = requests.request(
+            "POST",
+            url,
+            data=json.dumps(request.dict()),
+            headers=self.session.header,
+        )
+
+        if response.status_code != 200:
+            raise ArlulaAPIException(response)
+        else:
+            return [DetailedOrderResult(r) for r in json.loads(response.text)]
