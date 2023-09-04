@@ -86,12 +86,33 @@ class TestOrderRequest(unittest.TestCase):
         """
             Tests placing a tasking order
         """
-
-        pass
+        order = self._api.taskingAPI().order(arlulacore.OrderRequest(
+            os.getenv("API_TASKING_ORDER_ORDERING_ID_1"),
+            os.getenv("API_TASKING_ORDER_LICENSE_HREF_1"),
+            os.getenv("API_TASKING_ORDER_BUNDLE_KEY_1"),
+            payment=os.getenv("API_PAYMENT_ID"),
+        ))
 
     def test_order_batch(self):
         """
             Tests placing a tasking batch order
         """
 
-        pass
+        req = arlulacore.BatchOrderRequest(
+            [arlulacore.OrderRequest(
+                os.getenv("API_TASKING_ORDER_ORDERING_ID_1"),
+                os.getenv("API_TASKING_ORDER_LICENSE_HREF_1"),
+                os.getenv("API_TASKING_ORDER_BUNDLE_KEY_1")
+            )],
+            payment=os.getenv("API_PAYMENT_ID")
+        )
+
+        req.add_order(arlulacore.OrderRequest(
+            os.getenv("API_TASKING_ORDER_ORDERING_ID_2"),
+            os.getenv("API_TASKING_ORDER_LICENSE_HREF_2"),
+            os.getenv("API_TASKING_ORDER_BUNDLE_KEY_2"),
+        ))
+
+        orders = self._api.taskingAPI().batch_order(req)
+
+        self.assertEqual(len(orders), 2)
