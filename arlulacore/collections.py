@@ -38,24 +38,27 @@ class BBox():
         self.east = data[3]
 
 class Interval():
-    start: datetime
-    end: datetime
+    start: typing.Optional[datetime]
+    """Start time for the collection overall"""
+
+    end: typing.Optional[datetime]
+    """End time for the collection overall. None if no items in this collection."""
 
     def __init__(self, data):
-        self.start = data[0]
-        self.end = data[1]
+        self.start = data[0] if data is not None else None
+        self.end = data[1] if data is not None else None
 
 class SpatialExtents():
     bbox: typing.List[BBox]
 
     def __init__(self, data):
-        self.bbox = [BBox(x) for x in data["bbox"]]
+        self.bbox = [BBox(x) for x in data["bbox"]] if "bbox" in data and data["bbox"] is not None else []
     
 class TemporalExtents():
     interval: typing.List[Interval]
 
     def __init__(self, data):
-        self.interval = [Interval(x) for x in data["interval"]]
+        self.interval = [Interval(x) for x in data["interval"]] if "interval" in data and data["interval"] is not None else []
 
 class Extent():
     
@@ -145,7 +148,7 @@ class Collection():
     assets: typing.Dict[str, Asset]
     """A list of any assets related to this collection but not to any specific items within it"""
 
-    summaries: typing.Dict[str, typing.Union[dict, list]]
+    summaries: typing.Optional[typing.Dict[str, typing.Union[dict, list]]]
     """Summaries of the range or values of common properties of items in this collection"""
 
     links: typing.List[Link]
@@ -154,17 +157,17 @@ class Collection():
     def __init__(self, data: dict):
         self.id = data["id"]
         self.type = data["type"]
-        self.stac_version = data["stac_version"]
-        self.stac_extensions = data["stac_extensions"]
+        self.stac_version = data["stac_version"] if "stac_version" in data else ""
+        self.stac_extensions = data["stac_extensions"] if "stac_extensions" in data else ""
         self.title = data["title"]
         self.description = data["description"]
-        self.keywords = data["keywords"]
+        self.keywords = data["keywords"] if "keywords" in data else []
         self.license = data["license"]
-        self.providers = [Provider(x) for x in data["providers"]]
+        self.providers = [Provider(x) for x in data["providers"]] if "providers" in data else []
         self.extent = Extent(data["extent"])
-        self.assets = {k : Asset(v) for k, v in data["assets"].items()}
-        self.summaries = {k : v for k, v in data["summaries"].items()}
-        self.links = [Link(x) for x in data["links"]]
+        self.assets = {k : Asset(v) for k, v in data["assets"].items()} if "assets" in data else None
+        self.summaries = {k : v for k, v in data["summaries"].items()} if "summaries" in data else None
+        self.links = [Link(x) for x in data["links"]] if "links" in data and data["links"] is not None else []
 
 class CollectionItem():
     type: str
