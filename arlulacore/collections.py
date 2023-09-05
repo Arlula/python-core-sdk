@@ -198,7 +198,7 @@ class CollectionItem():
     id: str
     """ID of the order the item corresponds to"""
 
-    crs: str
+    crs: typing.Optional[str]
     """The Coordinate Reference System for all geometry of this item"""
     
     geometry: dict
@@ -223,7 +223,7 @@ class CollectionItem():
         self.type = data["type"]
         self.stac_version = data["stac_version"]
         self.stac_extensions = data["stac_extensions"]
-        self.crs = data["crs"]
+        self.crs = data["crs"] if "crs" in data else None,
         self.id = data["id"]
         self.bbox = data["bbox"]
         self.geometry = data["geometry"]
