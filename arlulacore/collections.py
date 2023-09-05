@@ -112,23 +112,23 @@ class Summary():
     pass
 
 class Link():
-    href: str
+    href: typing.Optional[str]
     """The URL of the linked media"""
 
-    rel: str
+    rel: typing.Optional[str]
     """The type of relationship the media has to the current document. (i.e. parent, next result, the associated licence. etc)"""
 
-    type: str
+    type: typing.Optional[str]
     """The IANA Media Type (MIME) of the linked media"""
 
-    title: str
+    title: typing.Optional[str]
     """An optional title to describe the linked media"""
 
     def __init__(self, data):
-        self.href = data["href"]
-        self.rel = data["rel"]
-        self.type = data["type"]
-        self.title = data["title"]
+        self.href = data["href"] if "href" in data else None
+        self.rel = data["rel"] if "rel" in data else None
+        self.type = data["type"] if "type" in data else None
+        self.title = data["title"] if "title" in data else None
 
 class Collection():
     id: str
