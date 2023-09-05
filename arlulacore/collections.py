@@ -18,7 +18,7 @@ class Provider():
 
     roles: typing.List[str]
     """A list of providing roles they fulfil (i.e. licensor, producer, processor or host)"""
-    
+
     url: str
     """Link to the providers homepage"""
 
@@ -530,8 +530,11 @@ class CollectionSearchRequest(CollectionListItemsRequest):
     queries: typing.Optional[typing.Dict[typing.Union[QueryFieldString, QueryFieldNumber], Query]]
     """A list of field queries to restrict results to matching the provided conditions"""
 
+    collection_id: str
+
     def __init__(
         self, 
+        collection: typing.Union[str, Collection],
         page: typing.Optional[int] = 0,
         limit: typing.Optional[int] = 100,
         bbox: typing.Optional[typing.List[float]] = None,
@@ -542,6 +545,7 @@ class CollectionSearchRequest(CollectionListItemsRequest):
         intersects: typing.Optional[dict] = None,
         queries: typing.Optional[typing.Dict[typing.Union[QueryFieldString, QueryFieldNumber], Query]] = None,
     ):
+        self.collection_id = get_collection_id(collection)
         self.page = page
         self.limit = limit
         self.bbox = bbox
@@ -551,6 +555,10 @@ class CollectionSearchRequest(CollectionListItemsRequest):
         self.ids = ids
         self.intersects = intersects
         self.queries = queries
+
+    def set_collection(self, collection: typing.Union[str, Collection]) -> "CollectionSearchRequest":
+        self.collection_id = get_collection_id(collection)
+        return self
 
     def set_page(self, page: int) -> "CollectionSearchRequest":
         self.page = page
@@ -855,7 +863,8 @@ class CollectionsAPI:
         response = requests.request(
             "GET",
             url,
-            headers=self.session.header)
+            headers=self.session.header
+        )
 
         if response.status_code != 200:
             raise ArlulaAPIException(response)
@@ -867,7 +876,7 @@ class CollectionsAPI:
             Perform a detailed search of items within a collection.
         """
 
-        url = f"{self.url}/{request.id}/search"
+        url = f"{self.url}/{request.collection_id}/search"
 
         response = requests.request(
             "POST",
@@ -879,7 +888,7 @@ class CollectionsAPI:
         if response.status_code != 200:
             raise ArlulaAPIException(response)
         else:
-            return CollectionItem(json.loads(response.text))
+            return CollectionSearchResponse(json.loads(response.text))
         
     def import_order(self, collection: typing.Union[str, Collection], order_id: str) -> None:
         """
@@ -1009,8 +1018,3 @@ class CollectionsAPI:
             raise ArlulaAPIException(response)
         else:
             return CollectionConformanceResponse(json.loads(response.text))
-
-
-
-
-
