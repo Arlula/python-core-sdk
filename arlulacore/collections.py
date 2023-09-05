@@ -311,8 +311,11 @@ class CollectionListItemsRequest:
     datetime: typing.Optional[datetime.datetime]
     """Matches the same date"""
 
+    collection_id: str
+
     def __init__(
-        self, 
+        self,
+        collection: typing.Union[Collection, str],
         page: typing.Optional[int] = 0,
         limit: typing.Optional[int] = 100,
         bbox: typing.Optional[typing.List[int]] = None,
@@ -320,12 +323,17 @@ class CollectionListItemsRequest:
         end: typing.Optional[datetime.datetime] = None,
         datetime: typing.Optional[datetime.datetime] = None,
     ):
+        self.collection_id = get_collection_id(collection)
         self.page = page
         self.limit = limit
         self.bbox = bbox
         self.start = start
         self.end = end
         self.datetime = datetime
+
+    def set_collection(self, collection: typing.Union[Collection, str]) -> "CollectionListItemsRequest":
+        self.collection_id = get_collection_id(collection)
+        return self
     
     def set_start(self, start: datetime.datetime) -> "CollectionListItemsRequest":
         self.start = start
