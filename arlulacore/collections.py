@@ -302,7 +302,7 @@ class CollectionListItemsRequest:
 
     limit: typing.Optional[int]
     """The number of results per page. The default is 100."""
-    
+
     bbox: typing.Optional[typing.List[int]]
     """A bounding box to only return results within. The elements define the south, west, north and east longitude and latitude boundaries, in that order."""
 
@@ -366,9 +366,15 @@ class CollectionListItemsRequest:
     
     def _to_interval(self) -> typing.Optional[str]:
         if self.datetime is not None:
-            return str(self.datetime)
+            return self.datetime.isoformat()
         elif self.start is not None or self.end is not None:
-            return f"{self.start if self.start is not None else '..'}/{self.end if self.end is not None else '..'}"
+            return f"{self.start.isoformat() if self.start is not None else '..'}/{self.end.isoformat() if self.end is not None else '..'}"
+        else:
+            return None
+
+    def _bbox(self) -> typing.Optional[str]:
+        if self.bbox is not None:
+            return f"{self.bbox[0]},{self.bbox[1]},{self.bbox[2]},{self.bbox[3]}"
         else:
             return None
     
