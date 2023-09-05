@@ -75,13 +75,19 @@ class Extent():
         self.temporal = TemporalExtents(data["temporal"])
 
 class Asset():
+    """
+        Assets represent a discrete file resource associated with a Collection or Item, and provides the details for its retrieval.
+        Some assets may have more fields than just `href`, `type`, and `roles` depending on stac extensions it adheres to, in which case,
+        they can be accessed on `data`.
+    """
+
     href: str
     """Url of the asset"""
 
-    title: str
-    """Title or name of the asset"""
+    title: typing.Optional[str]
+    """Optional title or name of the asset"""
 
-    description: str
+    description: typing.Optional[str]
     """Optional description of the asset"""
 
     type: str
@@ -90,12 +96,17 @@ class Asset():
     roles: typing.List[str]
     """List of semantic roles this asset satisfies (see resource reference for more details)"""
 
+    data: dict
+    """All values this asset describes. Some assets may have extra asset fields to adhere to it's corresponding stac extensions."""
+
     def __init__(self, data):
+        # TODO consider taking stac_extensions here and use to validate expected values.
+
         self.href = data["href"]
-        self.title = data["title"]
-        self.description = data["description"]
         self.type = data["type"]
         self.roles = data["roles"]
+
+        self.data = data
 
 class Summary():
     pass
