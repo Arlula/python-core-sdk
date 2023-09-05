@@ -297,10 +297,14 @@ class CollectionListItemsResponse:
         self.number_returned = data["numberReturned"]
 
 class CollectionListItemsRequest:
-    page: int
-    limit: int
+    page: typing.Optional[int]
+    """The page of data to display, where each page is 'limit' items in length (if not specified, the default is 0)"""
+
+    limit: typing.Optional[int]
+    """The number of results per page. The default is 100."""
+    
     bbox: typing.Optional[typing.List[int]]
-    """bounding box """
+    """A bounding box to only return results within. The elements define the south, west, north and east longitude and latitude boundaries, in that order."""
 
     start: typing.Optional[datetime.datetime]
     """The start of a period of interest. If not provided when end is provided, it specifies an open interval"""
