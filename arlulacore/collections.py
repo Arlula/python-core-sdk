@@ -525,6 +525,7 @@ class CollectionSearchRequest(CollectionListItemsRequest):
     """A GeoJSON geometry object, consisting of the geometry type (point, polygon, etc) and coordinates."""
 
     queries: typing.Optional[typing.Dict[typing.Union[QueryFieldString, QueryFieldNumber], Query]]
+    """A list of field queries to restrict results to matching the provided conditions"""
 
     def __init__(
         self, 
