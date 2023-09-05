@@ -828,14 +828,15 @@ class CollectionsAPI:
             Paginate STAC Items within the collection.
         """
 
-        url = f"{self.url}/{request.id}/items"
-
+        url = f"{self.url}/{request.collection_id}/items"
+        
         response = requests.request(
             "GET",
             url,
             params=request.dict(),
-            headers=self.session.header)
-
+            headers=self.session.header,
+        )
+        
         if response.status_code != 200:
             raise ArlulaAPIException(response)
         else:
@@ -869,7 +870,8 @@ class CollectionsAPI:
             "POST",
             url,
             data=json.dumps(request.dict()),
-            headers=self.session.header)
+            headers=self.session.header
+        )
 
         if response.status_code != 200:
             raise ArlulaAPIException(response)
