@@ -12,10 +12,13 @@ from .util import parse_rfc3339, remove_none
 class Provider():
     name: str
     """The name of the provider"""
+
     description: str
     """A description of the provider and their data"""
+
     roles: typing.List[str]
     """A list of providing roles they fulfil (i.e. licensor, producer, processor or host)"""
+    
     url: str
     """Link to the providers homepage"""
 
