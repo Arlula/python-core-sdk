@@ -705,7 +705,6 @@ class CollectionSearchResponse():
     
 
     def __init__(self, data):
-        print(data)
         self.type = data["type"]
         self.stac_version = data["stac_version"]
         self.stac_extensions = data["stac_extensions"]
