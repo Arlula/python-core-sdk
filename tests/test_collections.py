@@ -219,7 +219,6 @@ class TestCollections(unittest.TestCase):
                 title="Test Collection Title",
                 description="Test Collection Description",
                 keywords=["test"],
-                team=os.getenv("API_TEAM_ID")
             ),
         ]
         resps = []
