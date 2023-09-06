@@ -13,7 +13,7 @@ class Provider():
     name: str
     """The name of the provider"""
 
-    description: str
+    description: typing.Optional[str]
     """A description of the provider and their data"""
 
     roles: typing.List[str]
@@ -24,7 +24,7 @@ class Provider():
 
     def __init__(self, data):
         self.name = data["name"]
-        self.description = data["description"]
+        self.description = data["description"] if "description" in data else None
         self.roles = data["roles"]
         self.url = data["url"]
 
@@ -179,7 +179,7 @@ class Collection():
         self.description = data["description"]
         self.keywords = data["keywords"] if "keywords" in data else []
         self.license = data["license"]
-        self.providers = [Provider(x) for x in data["providers"]] if "providers" in data else []
+        self.providers = [Provider(x) for x in data["providers"]] if "providers" in data and data["providers"] is not None else []
         self.extent = Extent(data["extent"])
         self.assets = {k : Asset(v) for k, v in data["assets"].items()} if "assets" in data else None
         self.summaries = data["summaries"] if "summaries" in data else None
