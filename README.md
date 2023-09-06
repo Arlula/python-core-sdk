@@ -22,7 +22,11 @@ arlula_session = arlulacore.Session(key, secret)
 
 ## API Endpoints
 This package contains methods for each of the supported API endpoints, namespaced by API namespace. Each namespace inherits the session defined above
+
 ### Archive
+
+The Archive API provides the ability to search and order from Arlula and its supplier's historic imagery archives.
+
 ```python
 api = arlulacore.ArlulaAPI(arlula_session)
 
@@ -44,14 +48,50 @@ search_result = archive.search(
 # email jane.doe@gmail.com and john.smith@gmail.com when it is complete.
 order_result = archive.order(
     arlulacore.OrderRequest(
-        id="cade11f4-8b4d-43e1-8cb1-3bce85111a01",
+        id="eyJhb...AYTqwM",
         eula="Supplier's EULA",
         bundle_key="default",
     )
     .set_emails(["john.smith@gmail.com", "jane.doe@gmail.com"])
 )
 ```
+
+### Tasking
+
+The Tasking API provides the ability to search and order future capturing opportunities from Arlula and it's suppliers.
+
+```python
+tasking = api.taskingAPI()
+
+# Search for capturing opportunities around sydney over the next 30 days
+# With at least 1m resolution and at an off-nadir of less than 30 degrees.
+search_result = tasking.search(
+    arlulacore.TaskingSearchRequest(
+        datetime.datetime.now(datetime.timezone.utc), 
+        datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=30),
+        1,
+        30,
+    )
+    .set_point_of_interest(-33.8688, 151.2093)
+)
+
+# Order a future capture, using the ordering id from an above result, 
+# the eula that applies to you, the bundle you want, and (optionally) 
+# email jane.doe@gmail.com and john.smith@gmail.com when it is complete.
+order_result = tasking.order(
+    arlulacore.OrderRequest(
+        id="eyJhb...AYTqwM",
+        eula="Supplier's EULA",
+        bundle_key="default",
+    )
+    .set_emails(["john.smith@gmail.com", "jane.doe@gmail.com"])
+)
+```
+
 ### Orders
+
+The Orders API provides the ability to list and get existing orders, as well as download resources associated with them. 
+
 ```python
 orders = api.ordersAPI()
 
@@ -62,7 +102,7 @@ order = orders.get(
 
 # Get a specific resource, for example thumbnails, tiffs, json metadata.
 # Streams to a file and returns the file handle.
-with orders.get_resource_as_file(id="b7adb198-3e6e-4217-9e67-fb26eb355cc4",filepath="downloads/thumbnail.jpg") as f:
+with orders.get_resource_as_file(id="b7adb198-3e6e-4217-9e67-fb26eb355cc4", filepath="downloads/thumbnail.jpg") as f:
     f.read()
 
 # Get a specific resource, for example thumbnails, tiffs, json metadata.
