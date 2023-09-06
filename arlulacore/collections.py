@@ -615,10 +615,40 @@ class CollectionSearchRequest(CollectionListItemsRequest):
         return self
     
     def set_point(self, long: float, lat: float) -> "CollectionSearchRequest":
-        pass
+        self.intersects = {
+            "type": "Point",
+            "coordinates": [
+                long,
+                lat
+            ],
+        }
+        return self
+    
+    def set_polygon(self, polygon: typing.List[typing.List[typing.List[float]]]) -> "CollectionSearchRequest":
+        self.intersects = {
+            "type": "Polygon",
+            "coordinates": polygon
+        }
+        return self
+
+    def set_intersects(self, intersects: dict) -> "CollectionSearchRequest":
+        # TODO add a proper GeoJSON definition
+        self.intersects = intersects
+        return self
 
     def add_query(self, field: typing.Union[QueryFieldNumber, QueryFieldString], query: Query):
         self.queries[field] = query
+
+    def dict(self):
+        return remove_none({
+            "page": self.page,
+            "limit": self.limit,
+            "bbox": self.bbox,
+            "datetime": self._to_interval(),
+            "ids": self.ids,
+            "intersects": self.intersects,
+            "queries": {k.value: v.dict() for k, v in self.queries.items()} if self.queries is not None else None,
+        })
 
 class CollectionSearchResponseContext():
     limit: int
