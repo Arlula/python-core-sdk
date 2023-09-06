@@ -10,7 +10,6 @@ from .collections import (
     TemporalExtents,
     Extent,
     Asset,
-    Summary,
     Link,
     Collection,
     CollectionItem,
