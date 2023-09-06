@@ -263,7 +263,7 @@ class TestCollections(unittest.TestCase):
 
         update = self._api.collectionsAPI().update(arlulacore.CollectionUpdateRequest(
             collection=before,
-            title="Test Collection Title", # TODO remove
+            title="Test Collection Title", 
             description=random_string,
         ))
 
