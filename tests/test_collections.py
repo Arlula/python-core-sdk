@@ -2,7 +2,6 @@ import datetime
 import os
 import random
 import string
-import tempfile
 import unittest
 
 import arlulacore
