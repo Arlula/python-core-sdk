@@ -568,6 +568,14 @@ class CollectionSearchRequest(CollectionListItemsRequest):
         self.limit = limit
         return self
 
+    def _to_interval(self) -> typing.Optional[str]:
+        if self.datetime is not None:
+            return self.datetime.isoformat()
+        elif self.start is not None or self.end is not None:
+            return f"{self.start.isoformat() if self.start is not None else '..'}/{self.end.isoformat() if self.end is not None else '..'}"
+        else:
+            return None
+
     def set_bbox(
         self,
         south: typing.Optional[float],
