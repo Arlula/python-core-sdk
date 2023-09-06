@@ -1,4 +1,5 @@
 from __future__ import annotations
+import enum
 import json
 import string
 import textwrap
@@ -7,7 +8,7 @@ import requests
 
 from dataclasses import dataclass
 from datetime import date, datetime
-from .common import ArlulaObject
+from .common import ArlulaObject, Band, Bundle, License, SortDefinition
 from .auth import Session
 from .exception import ArlulaAPIException
 from .orders import DetailedOrderResult
@@ -68,89 +69,6 @@ class Overlap(ArlulaObject):
         f"Area: {self.area} sqkm\n"\
         f"{str(self.percent)}\n"\
         f"Geometry: {self.polygon}", 0, 2)
-
-class License(ArlulaObject):
-    data: dict
-    name: str
-    href: str
-    loading_percent: float
-    loading_amount: int
-
-    def __init__(self, data):
-        self.data = data
-        self.name = data["name"]
-        self.href = data["href"]
-        self.loading_percent = data["loadingPercent"]
-        self.loading_amount = data["loadingAmount"]
-
-    def dict(self) -> dict:
-        return self.data
-
-    def __str__(self) -> str:
-        return simple_indent(
-        f"License ({self.href}):\n"\
-        f"Name: {self.name}\n"\
-        f"Loading: {self.loading_amount} US Cents + {self.loading_percent}%\n", 0, 2)
-
-class Band(ArlulaObject):
-    data: dict
-    name: str
-    id: str
-    min: float
-    max: float
-
-    def __init__(self, data):
-        self.data = data
-        self.name = data["name"]
-        self.id = data["id"]
-        self.min = data["min"]
-        self.max = data["max"]
-
-    def centre(self) -> float:
-        '''
-            Get the band centre wavelength
-        '''
-        return (self.max - self.min)/2
-
-    def width(self) -> float:
-        '''
-            Get the band width
-        '''
-        return self.max - self.min
-
-    def dict(self) -> dict:
-        return self.data
-
-    def __str__(self) -> str:
-        return simple_indent(
-            f"Band ({self.id}):\n"\
-            f"Name: {self.name}\n"\
-            f"Bandwidth: {self.min}nm - {self.max}nm\n", 0, 2)
-
-class Bundle(ArlulaObject):
-    data: dict
-    name: str
-    key: str
-    bands: typing.List[str]
-    price: int
-
-    def __init__(self, data):
-        self.data = data
-        self.name = data["name"]
-        self.key = data["key"]
-        self.bands = data["bands"]
-        self.price = data["price"]
-
-    def dict(self) -> dict:
-        return self.data
-
-    def __str__(self) -> str:
-        bands = 'all' if len(self.bands) == 0 else '\n'.join(self.bands)
-        return simple_indent(
-            f"Bundle ({self.key}):\n"\
-            f"Name: {self.name}\n"\
-            f"Bands: {bands}\n"\
-            f"Price: {self.price} US Cents\n", 0, 2)
 
 class SearchResult(ArlulaObject):
     data: dict
@@ -293,6 +211,23 @@ class SearchResponse(ArlulaObject):
     def dict(self) -> dict:
         return self.data
 
+class ArchiveSearchSortFields(str, enum.Enum):
+    """
+        An enumeration of fields that can be sorted by on archive search requests.
+    """
+
+    scene_id = "sceneID"
+    supplier = "supplier"
+    date = "date"
+    cloud = "cloud"
+    off_nadir = "offNadir"
+    gsd = "gsd"
+    area = "area"
+    overlap = "overlap"
+    overlap_area = "overlap.area"
+    overlap_percent = "overlap.percent"
+    fulfillment = "fulfillment"
+
 class SearchRequest():
     start: date
     gsd: float
@@ -307,6 +242,7 @@ class SearchRequest():
     supplier: str
     off_nadir: float
     cloud: float
+    sort_definition: SortDefinition[ArchiveSearchSortFields]
 
     def __init__(self, start: date,
             gsd: float,
@@ -320,7 +256,9 @@ class SearchRequest():
             west: typing.Optional[float] = None,
             supplier: typing.Optional[str] = None,
             off_nadir: typing.Optional[float] = None,
-            polygon: Polygon = None):
+            polygon: typing.Optional[Polygon] = None,
+            sort_definition: typing.Optional[SortDefinition[ArchiveSearchSortFields]] = None,
+        ):
         self.start = start
         self.cloud = cloud
         self.gsd = gsd
@@ -334,6 +272,7 @@ class SearchRequest():
         self.supplier = supplier
         self.off_nadir = off_nadir
         self.polygon = polygon
+        self.sort_definition = sort_definition
 
     def set_point_of_interest(self, lat: float, long: float) -> "SearchRequest":
         self.lat = lat
@@ -379,6 +318,10 @@ class SearchRequest():
     def set_maximum_cloud_cover(self, cloud: float) -> "SearchRequest":
         self.cloud = cloud
         return self
+    
+    def set_sort_definition(self, sort_definition: SortDefinition[ArchiveSearchSortFields]):
+        self.sort_definition = sort_definition
+        return self
 
     def valid_point_of_interest(self) -> bool:
         return self.lat != None and self.long != None
@@ -416,6 +359,9 @@ class SearchRequest():
                 "latitude": self.lat,
                 "longitude": self.long,
             }
+        
+        if self.sort_definition is not None:
+            d["sort"] = self.sort_definition.dict()
 
         return remove_none(d)
 

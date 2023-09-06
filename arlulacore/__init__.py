@@ -2,6 +2,45 @@ from .auth import (
     Session,
 )
 
+from .collections import (
+    Provider,
+    BBox,
+    Interval,
+    SpatialExtents,
+    TemporalExtents,
+    Extent,
+    Asset,
+    Link,
+    Collection,
+    CollectionItem,
+    CollectionListResponseContext,
+    CollectionListResponse,
+    CollectionListItemsResponse,
+    CollectionListItemsRequest,
+    CollectionConformanceResponse,
+    QueryFieldNumber,
+    QueryFieldString,
+    Query,
+    StringQuery,
+    NumericalQuery,
+    CollectionSearchRequest,
+    CollectionSearchResponseContext,
+    CollectionSearchResponse,
+    CollectionCreateRequest,
+    CollectionUpdateRequest,
+    CollectionsAPI,
+)
+
+from .tasking import (
+    TaskingSearchSortFields,
+    TaskingSearchRequest,
+    TaskingError,
+    TaskingAreas,
+    TaskingSearchResult,
+    TaskingSearchResponse,
+    TaskingAPI,
+)
+
 from .archive import (
     CenterPoint,
     Percent,
