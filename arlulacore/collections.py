@@ -48,8 +48,8 @@ class Interval():
     """End time for the collection overall. None if no items in this collection."""
 
     def __init__(self, data):
-        self.start = data[0] if data is not None and len(data) == 2 else None
-        self.end = data[1] if data is not None and len(data) == 2 else None
+        self.start = data["start"] if "start" in data and data["start"] is not None else None
+        self.end = data["end"] if "end" in data and data["end"] is not None else None
 
 class SpatialExtents():
     bbox: typing.List[BBox]
