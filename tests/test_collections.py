@@ -50,8 +50,76 @@ class TestCollectionItemsListRequest(unittest.TestCase):
         pass
 
     def test_time_single(self):
-        pass
+class TestCollectionSearchItems(unittest.TestCase):
 
+    @classmethod
+    def setUpClass(cls):
+        cls._session = create_test_session()
+        cls._api = arlulacore.ArlulaAPI(cls._session)
+
+    def test_search_basic(self):
+        list = self._api.collectionsAPI().search_items(arlulacore.CollectionSearchRequest(
+            collection=os.getenv("API_COLLECTION_ID"),
+            ids=[os.getenv("API_COLLECTION_ITEM_ID")]
+        ))
+        self.assertTrue(len(list.features) > 0)
+
+    def test_search_complex(self):
+        items = self._api.collectionsAPI().search_items(arlulacore.CollectionSearchRequest(
+            os.getenv("API_COLLECTION_ID"),
+            bbox=[-10, -10, 10, 10],
+            start=datetime.datetime(2020, 1, 1, 10, 10, 10, tzinfo=datetime.timezone.utc),
+            end=datetime.datetime(2023, 1, 1, tzinfo=datetime.timezone.utc),
+        ))
+    
+    def test_to_dict(self):
+        reqs = [
+            arlulacore.CollectionSearchRequest(
+                os.getenv("API_COLLECTION_ID")
+            ).dict(),
+            arlulacore.CollectionSearchRequest(
+                os.getenv("API_COLLECTION_ID"),
+                page=1,
+                limit=1,
+                start=datetime.datetime(2020, 1, 2, 3, 4, 5, 6, tzinfo=datetime.timezone.utc),
+                bbox=[1, 2, 3, 4],
+                queries={
+                    arlulacore.QueryFieldNumber.cloud_cover: arlulacore.NumericalQuery(lt=90),
+                    arlulacore.QueryFieldString.band: arlulacore.StringQuery(eq="red"),
+                    arlulacore.QueryFieldNumber.gsd: arlulacore.NumericalQuery(range=(0.4, 0.5))
+                }
+            ).dict()
+        ]
+
+        exps = [
+            {
+                "limit": 100, 
+                "page": 0
+            },
+            {
+                "limit": 1, 
+                "page": 1, 
+                "datetime":"2020-01-02T03:04:05.000006+00:00/..",
+                "bbox":[1, 2, 3, 4], 
+                "queries": {
+                    "eo:cloud_cover": {
+                        "lt": 90
+                    },
+                    "band": {
+                        "eq": "red"
+                    },
+                    "gsd": {
+                        "range": {
+                            "minimum": 0.4,
+                            "maximum": 0.5
+                        }
+                    }
+                }
+            }
+        ]
+
+        for req, exp in zip(reqs, exps):
+            self.assertDictEqual(req, exp)
 
 class TestOther(unittest.TestCase):
     
