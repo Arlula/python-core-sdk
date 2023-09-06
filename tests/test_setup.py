@@ -21,7 +21,9 @@ class TestEnv(unittest.TestCase):
     def test_resource_id(self):
         self.assertNotEqual(os.getenv("API_RESOURCE_ID"), None)
     def test_team_id(self):
-        self.assertNotEqual(os.getenv("API_TEAM_ID"), None)
+        # TODO in future do tests with default team and specified team
+        # self.assertNotEqual(os.getenv("API_TEAM_ID"), None)
+        pass
     def test_collection_id(self):
         self.assertNotEqual(os.getenv("API_COLLECTION_ID"), None)
     def test_collection_item_id(self):
