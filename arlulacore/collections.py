@@ -111,9 +111,6 @@ class Asset():
 
         self.data = data
 
-class Summary():
-    pass
-
 class Link():
     href: typing.Optional[str]
     """The URL of the linked media"""
@@ -185,7 +182,8 @@ class Collection():
         self.providers = [Provider(x) for x in data["providers"]] if "providers" in data else []
         self.extent = Extent(data["extent"])
         self.assets = {k : Asset(v) for k, v in data["assets"].items()} if "assets" in data else None
-        self.summaries = {k : v for k, v in data["summaries"].items()} if "summaries" in data else None
+        self.summaries = data["summaries"] if "summaries" in data else None
+        # TODO add better support for summaries definitions
         self.links = [Link(x) for x in data["links"]] if "links" in data and data["links"] is not None else []
 
 class CollectionItem():
@@ -492,16 +490,27 @@ class NumericalQuery(Query):
         self.range = range
     
     def dict(self):
-        return remove_none({
+        d = {
             "eq": self.eq,
             "lt": self.lt,
             "lte": self.lte,
             "gt": self.gt,
             "gte": self.gte,
-            "range": self.range,
-        })
+        }
 
-class CollectionSearchRequest(CollectionListItemsRequest):
+        if self.range is not None:
+            d["range"] = {
+                "minimum": self.range[0],
+                "maximum": self.range[1],
+            }
+
+        return remove_none(d)
+
+
+class CollectionSearchRequest():
+    """
+        Complete an in-depth search of a collection's items
+    """
 
     page: typing.Optional[int]
     """The page of data to display, where each page is 'limit' items in length (if not specified, the default is 0)"""
@@ -696,6 +705,7 @@ class CollectionSearchResponse():
     
 
     def __init__(self, data):
+        print(data)
         self.type = data["type"]
         self.stac_version = data["stac_version"]
         self.stac_extensions = data["stac_extensions"]
