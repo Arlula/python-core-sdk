@@ -10,46 +10,94 @@ from .util import create_test_session
 
 
 class TestCollectionItemsListRequest(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls._session = create_test_session()
+        cls._api = arlulacore.ArlulaAPI(cls._session)
+    
+    def test_list_basic(self):
+        list = self._api.collectionsAPI().list_items(arlulacore.CollectionListItemsRequest(
+            collection=os.getenv("API_COLLECTION_ID"),
+        ))
+        self.assertTrue(len(list.features) > 0)
+
+    def test_list_complex(self):
+        items = self._api.collectionsAPI().list_items(arlulacore.CollectionListItemsRequest(
+            os.getenv("API_COLLECTION_ID"),
+            bbox=[-10, -10, 10, 10],
+            start=datetime.datetime(2020, 1, 1, 10, 10, 10, tzinfo=datetime.timezone.utc),
+            end=datetime.datetime(2023, 1, 1, tzinfo=datetime.timezone.utc),
+        ))
     
     def test_to_dict(self):
         reqs = [
-            arlulacore.CollectionListItemsRequest().dict(),
             arlulacore.CollectionListItemsRequest(
+                os.getenv("API_COLLECTION_ID")
+            ).dict(),
+            arlulacore.CollectionListItemsRequest(
+                os.getenv("API_COLLECTION_ID"),
                 page=1,
                 limit=1,
+                start=datetime.datetime(2020, 1, 2, 3, 4, 5, 6, tzinfo=datetime.timezone.utc),
                 bbox=[1, 2, 3, 4],
-            )
+            ).dict()
         ]
 
         exps = [
             {"limit": 100, "page": 0},
-            {"limit": 1, "page": 1, "bbox":[1, 2, 3, 4]}
+            {"limit": 1, "page": 1, "bbox":[1, 2, 3, 4], "datetime":"2020-01-02T03:04:05.000006+00:00/.."}
         ]
 
         for req, exp in zip(reqs, exps):
-            pass
+            self.assertDictEqual(req, exp)
 
     def test_time_not_provided(self):
-
         self.assertEqual(
-            arlulacore.CollectionListItemsRequest()._to_interval(),
+            arlulacore.CollectionListItemsRequest(
+                os.getenv("API_COLLECTION_ID")
+            )._to_interval(),
             None
         )
 
     def test_time_open_start(self):
         self.assertEqual(
-            arlulacore.CollectionListItemsRequest(end=datetime.datetime(2023, 1, 2, 3, 4, 5, 6))._to_interval(),
-            "/.."
+            arlulacore.CollectionListItemsRequest(
+                os.getenv("API_COLLECTION_ID"), 
+                end=datetime.datetime(2023, 1, 2, 3, 4, 5, 6, tzinfo=datetime.timezone.utc)
+            )._to_interval(),
+            "../2023-01-02T03:04:05.000006+00:00"
         )
 
 
     def test_time_open_end(self):
-        pass
+        self.assertEqual(
+            arlulacore.CollectionListItemsRequest(
+                os.getenv("API_COLLECTION_ID"), 
+                end=datetime.datetime(2023, 1, 2, 3, 4, 5, 6, tzinfo=datetime.timezone.utc)
+            )._to_interval(),
+            "../2023-01-02T03:04:05.000006+00:00"
+        )
 
     def test_time_closed(self):
-        pass
+        self.assertEqual(
+            arlulacore.CollectionListItemsRequest(
+                os.getenv("API_COLLECTION_ID"), 
+                end=datetime.datetime(2021, 1, 2, 3, 4, 5, 6, tzinfo=datetime.timezone.utc),
+                start=datetime.datetime(2023, 1, 2, 3, tzinfo=datetime.timezone.utc),
+            )._to_interval(),
+            "2023-01-02T03:00:00+00:00/2021-01-02T03:04:05.000006+00:00"
+        )
 
     def test_time_single(self):
+        self.assertEqual(
+            arlulacore.CollectionListItemsRequest(
+                os.getenv("API_COLLECTION_ID"), 
+                datetime=datetime.datetime(2023, 1, 2, 3, tzinfo=datetime.timezone.utc),
+            )._to_interval(),
+            "2023-01-02T03:00:00+00:00"
+        )
+
 class TestCollectionSearchItems(unittest.TestCase):
 
     @classmethod
