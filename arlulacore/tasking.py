@@ -371,22 +371,22 @@ def get_priority_key(priority: typing.Union[str, Priority]) -> str:
     else:
         raise TypeError("Invalid type for `priority`")
     start: datetime
-    """The start time for an order created from this result. It may be later than the searched start time, depending on the supplier's minimum notice period."""
+    """The start time for a campaign created from this result."""
 
     end: datetime
-    """The end time for an order created from this result. It may be earlier than the searched period, depending on the supplier's maximum notice period."""
+    """The end time for a campaign created from this result."""
 
-    areas: TaskingAreas
-    """Container for area information including estimated scene area and target area."""
+    metrics: TaskingMetrics
+    """Container for metrics about the order area and capturing opportunities."""
 
     gsd: float
-    """The nadir GSD for this result."""
+    """The highest nadir GSD for this result."""
 
     supplier: str
     """The supplier that provides this capture opportunity."""
 
     ordering_id: str
-    """The OrderingID for this result. Pass this to the ordering endpoint, along with a suitable bundle key and license eula to order this result."""
+    """The OrderingID for this result. Pass this to the ordering endpoint, along with a suitable bundle key, license eula, cloud level and priority key to order this result."""
 
     off_nadir: float
     """The maximum off nadir requested for this result."""
