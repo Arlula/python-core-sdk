@@ -442,7 +442,161 @@ class TaskingSearchResponse():
 
     def __init__(self, data):
         self.results = [TaskingSearchResult(x) for x in data["results"]] if "results" in data else []
-        self.errors = [TaskingError(x) for x in data["errors"]] if "errors" in data else []
+        self.failures = [TaskingSearchFailure(x) for x in data["errors"]] if "errors" in data else []
+
+class TaskingOrderRequest(ArlulaObject):
+
+    id: str
+    eula: str
+    bundle_key: str
+    priority: str
+    cloud: int
+    webhooks: typing.List[str]
+    emails: typing.List[str]
+    team: str
+    payment: str
+
+    def __init__(self,
+            id: str,
+            license: typing.Union[str, License],
+            bundle: typing.Union[str, Bundle],
+            priority: typing.Union[str, Priority],
+            cloud: typing.Union[str, CloudLevel],
+            webhooks: typing.Optional[typing.List[str]] = [],
+            emails: typing.Optional[typing.List[str]] = [],
+            team: typing.Optional[str] = None,
+            payment: typing.Optional[str] = None,
+        ):
+        self.id = id
+        self.eula = get_license_href(license)
+        self.bundle_key = get_bundle_key(bundle)
+        self.priority = get_priority_key(priority)
+        self.cloud = get_cloud(cloud)
+        self.webhooks = webhooks
+        self.emails = emails
+        self.team = team
+        self.payment = payment
+
+    def set_bundle(self, bundle: typing.Union[str, Bundle]) -> "TaskingOrderRequest":
+        self.bundle_key = get_bundle_key(bundle)
+        return self
+    
+    def set_eula(self, license: typing.Union[str, License]) -> "TaskingOrderRequest":
+        self.eula = get_license_href(license)
+        return self
+    
+    def set_priority(self, priority: typing.Union[str, Priority]) -> "TaskingOrderRequest":
+        self.priority = get_priority_key(priority)
+        return self
+
+    def set_cloud(self, cloud: typing.Union[str, CloudLevel]) -> "TaskingOrderRequest":
+        self.cloud = get_cloud(cloud)
+        return self
+    
+    def add_webhook(self, webhook: str) -> "TaskingOrderRequest":
+        self.webhooks.append(webhook)
+        return self
+    
+    def set_webhooks(self, webhooks: typing.List[str]) -> "TaskingOrderRequest":
+        self.webhooks = webhooks
+        return self
+
+    def add_email(self, email: str) -> "TaskingOrderRequest":
+        self.emails.append(email)
+        return self
+    
+    def set_emails(self, emails: typing.List[str]) -> "TaskingOrderRequest":
+        self.emails = emails
+        return self
+
+    def set_team(self, team: str) -> "TaskingOrderRequest":
+        self.team = team
+        return self
+    
+    def set_payment(self, payment: str) -> "TaskingOrderRequest":
+        self.payment = payment
+        return payment
+
+    def valid(self) -> bool:
+        return self.id != None and self.eula != None and self.bundle_key != None and self.priority != None and self.cloud != None
+
+    def dict(self):
+        return remove_none({
+            "id": self.id,
+            "eula": self.eula,
+            "bundleKey": self.bundle_key,
+            "cloud": self.cloud,
+            "priorityKey": self.priority,
+            "webhooks": self.webhooks,
+            "emails": self.emails,
+            "team": self.team,
+            "payment": None if self.payment == "" else self.payment,
+        })
+
+class TaskingBatchOrderRequest():
+
+    orders: typing.List[TaskingOrderRequest]
+    webhooks: typing.List[str]
+    emails: typing.List[str]
+    team: str
+    payment: str
+
+    def __init__(
+        self, 
+        orders: typing.Optional[typing.List[TaskingOrderRequest]] = [],
+        webhooks: typing.Optional[typing.List[str]] = [],
+        emails: typing.Optional[typing.List[str]] = [],
+        team: typing.Optional[str] = None,
+        payment: typing.Optional[str] = None):
+
+        self.orders = orders
+        self.webhooks = webhooks
+        self.emails = emails
+        self.team = team
+        self.payment = payment
+
+    def add_order(self, order: TaskingOrderRequest) -> "TaskingBatchOrderRequest":
+        self.orders.append(order)
+        return self
+    
+    def set_orders(self, orders: typing.List[TaskingOrderRequest]) -> "TaskingBatchOrderRequest":
+        self.orders = orders
+        return self
+
+    def add_webhook(self, webhook: str) -> "TaskingBatchOrderRequest":
+        self.webhooks.append(webhook)
+        return self
+    
+    def set_webhooks(self, webhooks: typing.List[str]) -> "TaskingBatchOrderRequest":
+        self.webhooks = webhooks
+        return self
+
+    def add_email(self, email: str) -> "TaskingBatchOrderRequest":
+        self.emails.append(email)
+        return self
+    
+    def set_emails(self, emails: typing.List[str]) -> "TaskingBatchOrderRequest":
+        self.emails = emails
+        return self
+
+    def set_team(self, team: str) -> "TaskingBatchOrderRequest":
+        self.team = team
+        return self
+    
+    def set_payment(self, payment: str) -> "TaskingBatchOrderRequest":
+        self.payment = payment
+        return self
+
+    def dict(self):
+        d = {
+            "orders": [o.dict() for o in self.orders],
+            "webhooks": self.webhooks,
+            "emails": self.emails,
+            "team": None if self.team == "" else self.team,
+            "payment": None if self.payment == "" else self.payment,
+        }
+
+        return remove_none(d)
 
 class TaskingAPI:
     '''
