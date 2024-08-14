@@ -289,6 +289,87 @@ class TaskingMetrics(ArlulaObject):
     def __dict__(self) -> dict:
         return self.data
     
+class CloudLevel(ArlulaObject):
+
+    data: dict
+
+    name: str
+    """Human readable name for this cloud level"""
+
+    max: int
+    """Maximum cloud percentage (0-100%) offered for this cloud level. Must be passed when ordering"""
+    
+    description: str
+    """Human readable description for this cloud level"""
+
+    loadingPercent: float
+    """Percentage loading"""
+
+    loadingAmount: int
+    """Absolute loading (US cents)"""
+
+    def __init__(self, data: dict):
+        self.data = data
+        self.name = data["name"]
+        self.max = data["max"]
+        self.description = data["description"]
+        self.loadingPercent = data["loadingPercent"]
+        self.loadingAmount = data["loadingAmount"]
+
+    def __dict__(self) -> dict:
+        return self.data
+    
+def get_cloud(cloud_level: typing.Union[int, CloudLevel]) -> int:
+    """
+        Helper function to get a cloud level from a union type
+    """
+    
+    if isinstance(cloud_level, int):
+        return cloud_level
+    elif isinstance(cloud_level, CloudLevel):
+        return cloud_level
+    else:
+        raise TypeError("Invalid type for `cloud`")
+    
+class Priority(ArlulaObject):
+    data: dict
+    key: str
+    """Key to pass when ordering"""
+
+    name: str
+    """Human readable name for this priority level"""
+    
+    description: str
+    """Human readable description for this priority level"""
+
+    loadingPercent: float
+    """Percentage loading"""
+
+    loadingAmount: int
+    """Absolute loading (US cents)"""
+
+    def __init__(self, data: dict):
+        self.data = data
+        self.key = data["key"]
+        self.name = data["name"]
+        self.description = data["description"]
+        self.loadingPercent = data["loadingPercent"]
+        self.loadingAmount = data["loadingAmount"]
+
+    def __dict__(self) -> dict:
+        return self.data
+    
+def get_priority_key(priority: typing.Union[str, Priority]) -> str:
+    """
+        Helper function to get a priority key from a union type
+    """
+    
+    if isinstance(priority, str):
+        return priority
+    elif isinstance(priority, Priority):
+        return priority.key
+    else:
+        raise TypeError("Invalid type for `priority`")
     start: datetime
     """The start time for an order created from this result. It may be later than the searched start time, depending on the supplier's minimum notice period."""
 
@@ -319,6 +400,12 @@ class TaskingMetrics(ArlulaObject):
     licenses: typing.List[License]
     """License options this imagery may be purchased under, and the terms and pricing that apply"""
 
+    cloud: typing.List[CloudLevel]
+    """Cloud levels available for this order."""
+
+    priorities: typing.List[Priority]
+    """Priority levels available for this order."""
+
     platforms: typing.List[str]
     """A list indicating the satellites and/or constellations that will fulfil this request."""
 
@@ -337,6 +424,8 @@ class TaskingMetrics(ArlulaObject):
         self.bands = [Band(x) for x in data["bands"]]
         self.bundles = [Bundle(x) for x in data["bundles"]]
         self.licenses = [License(x) for x in data["licenses"]]
+        self.clouds = [CloudLevel(x) for x in data["cloud"]]
+        self.priorities = [Priority(x) for x in data["priorities"]]
         self.platforms = data["platforms"]
         self.annotations = data["annotations"]
 
