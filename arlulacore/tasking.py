@@ -613,7 +613,7 @@ class TaskingAPI:
         '''
 
         url = self.url+"/search"
-        print(json.dumps(request.dict()))
+        
         # Send request and handle responses
         response = requests.request(
             "POST", 
@@ -626,13 +626,12 @@ class TaskingAPI:
         else:
             return TaskingSearchResponse(json.loads(response.text))
 
-    def order(self, request: OrderRequest) -> DetailedOrderResult:
+    def order(self, request: TaskingOrderRequest) -> Order:
         '''
             Order a tasking result from the Arlula tasking API.
         '''
 
         url = self.url + "/order"
-
         response = requests.request(
             "POST",
             url,
@@ -643,11 +642,11 @@ class TaskingAPI:
         if response.status_code != 200:
             raise ArlulaAPIException(response)
         else:
-            return DetailedOrderResult(json.loads(response.text))
+            return Order(json.loads(response.text))
     
-    def batch_order(self, request: BatchOrderRequest) -> typing.List[DetailedOrderResult]:
+    def batch_order(self, request: TaskingBatchOrderRequest) -> Order:
         '''
-            Order multiple scenes from the Arlula tasking API.
+            Order multiple results from the Arlula tasking API.
         '''
 
         url = self.url + "/order/batch"
@@ -662,4 +661,4 @@ class TaskingAPI:
         if response.status_code != 200:
             raise ArlulaAPIException(response)
         else:
-            return [DetailedOrderResult(r) for r in json.loads(response.text)]
+            return Order(json.loads(response.text))
