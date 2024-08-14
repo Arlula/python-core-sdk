@@ -81,7 +81,7 @@ class TaskingSearchSortFields(str, enum.Enum):
     areas_scene = "areas.scene"
     areas_target = "areas.target"
 
-class TaskingSearchRequest():
+class TaskingSearchRequest(ArlulaObject):
     start: datetime.datetime
     """The start time of the period of interest. Must be in the future."""
 
@@ -370,6 +370,11 @@ def get_priority_key(priority: typing.Union[str, Priority]) -> str:
         return priority.key
     else:
         raise TypeError("Invalid type for `priority`")
+
+class TaskingSearchResult(ArlulaObject):
+    polygon: typing.List[typing.List[typing.List[float]]]
+    """The area of interest to be captured if ordered"""
+    
     start: datetime
     """The start time for a campaign created from this result."""
 
@@ -413,10 +418,10 @@ def get_priority_key(priority: typing.Union[str, Priority]) -> str:
     """Annotates results with information, such as what modifications were made to the search to make it valid for this supplier."""
     
     def __init__(self, data):
-        self.polygons = data["polygons"]
+        self.polygon = data["polygon"]
         self.start = parse_rfc3339(data["startDate"])
         self.end = parse_rfc3339(data["endDate"])
-        self.areas = TaskingAreas(data["areas"])
+        self.metrics = TaskingMetrics(data["metrics"])
         self.gsd = data["gsd"]
         self.supplier = data["supplier"]
         self.ordering_id = data["orderingID"]
@@ -429,7 +434,8 @@ def get_priority_key(priority: typing.Union[str, Priority]) -> str:
         self.platforms = data["platforms"]
         self.annotations = data["annotations"]
 
-class TaskingSearchResponse():
+
+class TaskingSearchResponse(ArlulaObject):
     results: typing.List[TaskingSearchResult]
     """
         Each result indicates a supplier, platform combination that can capture the requested specification.
