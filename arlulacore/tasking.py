@@ -4,12 +4,69 @@ import typing
 import requests
 import datetime
 
-from .archive import BatchOrderRequest, OrderRequest, Polygon
-from .common import Band, Bundle, License, SortDefinition
+from .order import Order
+from .archive import Polygon
+from .common import ArlulaObject, Band, Bundle, License, SortDefinition, get_bundle_key, get_license_href
 from .auth import Session
 from .exception import ArlulaAPIException
-from .orders import DetailedOrderResult
-from .util import parse_rfc3339, calculate_price, remove_none, simple_indent
+from .util import parse_rfc3339, calculate_price, remove_none
+
+class TaskingSearchFailureType(str, enum.Enum):
+    """
+        An enumeration of types of tasking search failure types.
+        They are intended to give further information on why a result was infeasible.
+    """
+
+    insufficient_los = "insufficient-los"
+    """
+        Returned when the supplier/platform combination does not have enough line of 
+        sight opportunities between the requested start/end date, less than the provided off nadir.
+        Try increasing those values to get a result. 
+    """
+
+    no_priorities = "no-priorities"
+    """
+        There was sufficient line of sight however the supplier has other restrictions. 
+        Try increasing the time between the searched start/end dates.
+    """
+
+    no_cloud = "no-cloud"
+    """
+        There was sufficient line of sight however the supplier cannot provide imagery
+        at your requested cloud coverage.
+        Try decreasing the requested cloud level.
+    """
+
+    too_wide = "too-wide"
+    """
+        The AOI is too wide to capture in one campaign.
+        Try splitting the scene into numerous smaller campaigns.
+    """
+
+    too_tall = "too-tall"
+    """
+        The AOI is too tall to capture in one campaign.
+        Try splitting the scene into numerous smaller campaigns.
+    """
+
+    too_large = "too-large"
+    """
+        The AOI is too large to capture in one campaign.
+        Try splitting the scene into numerous smaller campaigns.
+    """
+
+    too_short = "too-short"
+    """
+        The requested time period is too short for this supplier/platform
+        combination.
+        Try increasing the time span.
+    """
+
+    supplier_error = "supplier-error"
+    """
+        There is currently an issue with the supplier API.
+        Try again in the future or contact support.
+    """
 
 class TaskingSearchSortFields(str, enum.Enum):
     """
@@ -179,36 +236,58 @@ class TaskingSearchRequest():
         return remove_none(d)
 
 
-class TaskingError:
+class TaskingSearchFailure(ArlulaObject):
+    """
+        Describes why a supplier/platform combination failed to return results. 
+    """
 
-    supplier: str
-    """The supplier that is unable to capture the requested specification"""
-
-    platforms: typing.List[str]
-    """The platforms of the supplier that are unable to capture the requested specification"""
+    type: str
+    """The type of search failure this supplier/platform combination experienced"""
 
     message: str
-    """The reason why this supplier is unable to capture the requested specification"""
+    """Human readable message indicating why this combination failed to return a result"""
+
+    supplier: str
+    """Supplier identifier this failure relates to"""
+
+    platforms: typing.List[str]
+    """List of platforms this failure relates to"""    
+    
+    detail: dict
+    """Dictionary of other details pertinent to the failure for programmatic access."""
 
     def __init__(self, data):
+        self.type = data["type"]
+        self.message = data["message"]
         self.supplier = data["supplier"]
         self.platforms = data["platforms"]
-        self.message = data["message"]
+        self.detail = data["detail"]
 
-class TaskingAreas():
-    scene: float
-    """The estimated deliverable scene size."""
+class TaskingMetrics(ArlulaObject):
+    
+    data: dict
 
-    target: float
-    """The target polygon size."""
+    windowsAvailable: int
+    """The estimated number of capture opportunities between the start and end time."""
+
+    windowsRequired: int
+    """The estimated number of captures required to capture the entire aoi requested."""
+
+    orderArea: float
+    """The total area being purchased."""
+
+    moq: float
+    """The minimum order quantity for this purchase (the polygon will be inflated to this size if it is smaller than required)"""
 
     def __init__(self, data):
-        self.scene = data["scene"]
-        self.target = data["target"]
+        self.data = data
+        self.windowsAvailable = data["windowsAvailable"]
+        self.windowsRequired = data["windowsRequired"]
+        self.orderArea = data["orderArea"]
+        self.moq = data["moq"]
 
-class TaskingSearchResult():
-    polygons: typing.List[typing.List[typing.List[typing.List[float]]]]
-    """Each polygon represents a single orbital pass which could be captured, with the full set showing the coverage requested from the supplier."""
+    def __dict__(self) -> dict:
+        return self.data
     
     start: datetime
     """The start time for an order created from this result. It may be later than the searched start time, depending on the supplier's minimum notice period."""
@@ -263,9 +342,13 @@ class TaskingSearchResult():
 
 class TaskingSearchResponse():
     results: typing.List[TaskingSearchResult]
-    """The tasking result. Each result indicates a supplier, platform combination that can capture the requested specification."""
+    """
+        Each result indicates a supplier, platform combination that can capture the requested specification.
+        Results for a specific combination will only be available if the combination meets the requirements
+        of the search and has sufficient line of sight.
+    """
 
-    errors: typing.List[TaskingError]
+    failures: typing.List[TaskingSearchFailure]
     """The tasking errors. Details which supplier, platform combinations are unable to fulfil the requested specification."""
 
     def __init__(self, data):
