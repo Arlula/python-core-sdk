@@ -14,9 +14,6 @@ on:
   pull_request:
     types: [opened,edited,synchronize,reopened,ready_for_review,review_requested,]
 
-env:
-
-
 jobs:
   test:
     runs-on: ubuntu-latest
