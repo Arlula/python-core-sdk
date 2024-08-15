@@ -240,7 +240,7 @@ class OrdersAPI:
     ) -> None:
         dataset = self.get_dataset(dataset)
         for r in dataset.resources:
-            self.get_resource_as_file(r.id, suppress=suppress, directory=directory).close()
+            self.download_resource_as_file(r.id, suppress=suppress, directory=directory).close()
 
     def download_resource_as_file(self,
             resource: typing.Union[str, Resource],
