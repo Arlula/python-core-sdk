@@ -1,3 +1,7 @@
+'''
+    Defines misc. common structures
+'''
+
 import abc
 import json
 import typing
@@ -7,10 +11,6 @@ from .util import remove_none, simple_indent
 class ArlulaObject(abc.ABC):
     def __repr__(self):
         return str(['{}: {}'.format(attr, value) for attr, value in self.__dict__.items()])[1:-1].replace('\'', '')
-
-    @abc.abstractmethod
-    def dict(self):
-        pass
 
     def format(self, format: str) -> str:
         if format == "json":
@@ -51,6 +51,19 @@ class License(ArlulaObject):
         f"License ({self.href}):\n"\
         f"Name: {self.name}\n"\
         f"Loading: {self.loading_amount} US Cents + {self.loading_percent}%\n", 0, 2)
+
+def get_license_href(license: typing.Union[str, License]) -> str:
+    """
+        Helper function to get a license href from a union type
+    """
+    
+    if isinstance(license, str):
+        return license
+    elif isinstance(license, License):
+        return license.href
+    else:
+        raise TypeError("Invalid type for `license`")
+    
 
 class Band(ArlulaObject):
     data: dict
@@ -126,6 +139,18 @@ class Bundle(ArlulaObject):
             f"Name: {self.name}\n"\
             f"Bands: {bands}\n"\
             f"Price: {self.price} US Cents\n", 0, 2)
+    
+def get_bundle_key(bundle: typing.Union[str, Bundle]) -> str:
+    """
+        Helper function to get a bundle key from a union type
+    """
+    
+    if isinstance(bundle, str):
+        return bundle
+    elif isinstance(bundle, Bundle):
+        return bundle.key
+    else:
+        raise TypeError("Invalid type for `bundle`")
 
 Field = typing.TypeVar("Field")
 

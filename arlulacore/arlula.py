@@ -1,3 +1,7 @@
+'''
+    Defines the base ArlulaAPI
+'''
+
 from .auth import Session
 from .archive import ArchiveAPI
 from .orders import OrdersAPI

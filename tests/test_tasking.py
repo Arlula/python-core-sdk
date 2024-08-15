@@ -86,33 +86,39 @@ class TestOrderRequest(unittest.TestCase):
         """
             Tests placing a tasking order
         """
-        order = self._api.taskingAPI().order(arlulacore.OrderRequest(
-            os.getenv("API_TASKING_ORDER_ORDERING_ID_1"),
-            os.getenv("API_TASKING_ORDER_LICENSE_HREF_1"),
-            os.getenv("API_TASKING_ORDER_BUNDLE_KEY_1"),
-            payment=os.getenv("API_PAYMENT_ID"),
+        order = self._api.taskingAPI().order(arlulacore.TaskingOrderRequest(
+            os.getenv("API_TASKING_ORDERING_ID_1"),
+            os.getenv("API_TASKING_LICENSE_HREF_1"),
+            os.getenv("API_TASKING_BUNDLE_KEY_1"),
+            os.getenv("API_TASKING_PRIORITY_KEY_1"),
+            int(os.getenv("API_TASKING_CLOUD_1")),
         ))
+
+        self.assertEqual(len(order.campaigns), 1)
 
     def test_order_batch(self):
         """
             Tests placing a tasking batch order
         """
 
-        req = arlulacore.BatchOrderRequest(
-            [arlulacore.OrderRequest(
-                os.getenv("API_TASKING_ORDER_ORDERING_ID_1"),
-                os.getenv("API_TASKING_ORDER_LICENSE_HREF_1"),
-                os.getenv("API_TASKING_ORDER_BUNDLE_KEY_1")
+        req = arlulacore.TaskingBatchOrderRequest(
+            [arlulacore.TaskingOrderRequest(
+                os.getenv("API_TASKING_ORDERING_ID_1"),
+                os.getenv("API_TASKING_LICENSE_HREF_1"),
+                os.getenv("API_TASKING_BUNDLE_KEY_1"),
+                os.getenv("API_TASKING_PRIORITY_KEY_1"),
+                int(os.getenv("API_TASKING_CLOUD_1")),
             )],
-            payment=os.getenv("API_PAYMENT_ID")
         )
 
-        req.add_order(arlulacore.OrderRequest(
-            os.getenv("API_TASKING_ORDER_ORDERING_ID_2"),
-            os.getenv("API_TASKING_ORDER_LICENSE_HREF_2"),
-            os.getenv("API_TASKING_ORDER_BUNDLE_KEY_2"),
+        req.add_order(arlulacore.TaskingOrderRequest(
+            os.getenv("API_TASKING_ORDERING_ID_2"),
+            os.getenv("API_TASKING_LICENSE_HREF_2"),
+            os.getenv("API_TASKING_BUNDLE_KEY_2"),
+            os.getenv("API_TASKING_PRIORITY_KEY_2"),
+            int(os.getenv("API_TASKING_CLOUD_2")),
         ))
 
-        orders = self._api.taskingAPI().batch_order(req)
+        order = self._api.taskingAPI().batch_order(req)
 
-        self.assertEqual(len(orders), 2)
+        self.assertEqual(len(order.campaigns), 2)

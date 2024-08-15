@@ -1,9 +1,14 @@
+'''
+    Defines the CollectionsAPI and relevant structures.
+'''
+
 import abc
 import json
 import typing
 import requests
 import enum
-import datetime
+# as linters will complain about 'datetime' if the class has a field with the same name 
+from datetime import datetime as dt
 
 from .auth import Session
 from .exception import ArlulaAPIException
@@ -41,10 +46,10 @@ class BBox():
         self.east = data[3]
 
 class Interval():
-    start: typing.Optional[datetime.datetime]
+    start: typing.Optional[dt]
     """Start time for the collection overall"""
 
-    end: typing.Optional[datetime.datetime]
+    end: typing.Optional[dt]
     """End time for the collection overall. None if no items in this collection."""
 
     def __init__(self, data):
@@ -280,7 +285,7 @@ class CollectionListItemsResponse:
     links: typing.List[Link]
     """Links to resources and media associated with this collection"""
     
-    timestamp: datetime.datetime
+    timestamp: dt
     """The time at which this search was conducted"""
 
     number_matched: int
@@ -307,13 +312,13 @@ class CollectionListItemsRequest:
     bbox: typing.Optional[typing.List[int]]
     """A bounding box to only return results within. The elements define the south, west, north and east longitude and latitude boundaries, in that order."""
 
-    start: typing.Optional[datetime.datetime]
+    start: typing.Optional[dt]
     """The start of a period of interest. If not provided when end is provided, it specifies an open interval"""
 
-    end: typing.Optional[datetime.datetime]
+    end: typing.Optional[dt]
     """The end of a period of interest. If not provided when start is provided, it specifies an open interval"""
 
-    datetime: typing.Optional[datetime.datetime]
+    datetime: typing.Optional[dt]
     """Matches the same date"""
 
     collection_id: str
@@ -324,9 +329,9 @@ class CollectionListItemsRequest:
         page: typing.Optional[int] = 0,
         limit: typing.Optional[int] = 100,
         bbox: typing.Optional[typing.List[int]] = None,
-        start: typing.Optional[datetime.datetime] = None,
-        end: typing.Optional[datetime.datetime] = None,
-        datetime: typing.Optional[datetime.datetime] = None,
+        start: typing.Optional[dt] = None,
+        end: typing.Optional[dt] = None,
+        datetime: typing.Optional[dt] = None,
     ):
         self.collection_id = get_collection_id(collection)
         self.page = page
@@ -340,20 +345,20 @@ class CollectionListItemsRequest:
         self.collection_id = get_collection_id(collection)
         return self
     
-    def set_start(self, start: datetime.datetime) -> "CollectionListItemsRequest":
+    def set_start(self, start: dt) -> "CollectionListItemsRequest":
         self.start = start
         return self
     
-    def set_end(self, end: datetime.datetime) -> "CollectionListItemsRequest":
+    def set_end(self, end: dt) -> "CollectionListItemsRequest":
         self.end = end
         return self
     
-    def set_between_dates(self, start: datetime.datetime, end: datetime.datetime) -> "CollectionListItemsRequest":
+    def set_between_dates(self, start: dt, end: dt) -> "CollectionListItemsRequest":
         self.start = start
         self.end = end
         return self
     
-    def set_datetime(self, datetime: datetime.datetime) -> "CollectionListItemsRequest":
+    def set_datetime(self, datetime: dt) -> "CollectionListItemsRequest":
         self.datetime = datetime
         return self
     
@@ -521,13 +526,13 @@ class CollectionSearchRequest():
     bbox: typing.Optional[typing.List[float]]
     """A bounding box to only return results within. The elements define the south, west, north and east longitude and latitude boundaries, in that order."""
 
-    start: typing.Optional[datetime.datetime]
+    start: typing.Optional[dt]
     """The start of a period of interest. If not provided when end is provided, it specifies an open interval"""
 
-    end: typing.Optional[datetime.datetime]
+    end: typing.Optional[dt]
     """The end of a period of interest. If not provided when start is provided, it specifies an open interval"""
 
-    datetime: typing.Optional[datetime.datetime]
+    datetime: typing.Optional[dt]
     """Matches the same date"""
 
     ids: typing.Optional[typing.List[str]]
@@ -547,9 +552,9 @@ class CollectionSearchRequest():
         page: typing.Optional[int] = 0,
         limit: typing.Optional[int] = 100,
         bbox: typing.Optional[typing.List[float]] = None,
-        start: typing.Optional[datetime.datetime] = None,
-        end: typing.Optional[datetime.datetime] = None,
-        datetime: typing.Optional[datetime.datetime] = None,
+        start: typing.Optional[dt] = None,
+        end: typing.Optional[dt] = None,
+        datetime: typing.Optional[dt] = None,
         ids: typing.Optional[typing.List[str]] = None,
         intersects: typing.Optional[dict] = None,
         queries: typing.Optional[typing.Dict[typing.Union[QueryFieldString, QueryFieldNumber], Query]] = None,
@@ -602,24 +607,24 @@ class CollectionSearchRequest():
             self.bbox = [south, west, north, east]
         return self
 
-    def set_start(self, start: typing.Optional[datetime.datetime]) -> "CollectionSearchRequest":
+    def set_start(self, start: typing.Optional[dt]) -> "CollectionSearchRequest":
         self.start = start
         return self
 
-    def set_end(self, end: typing.Optional[datetime.datetime]) -> "CollectionSearchRequest":
+    def set_end(self, end: typing.Optional[dt]) -> "CollectionSearchRequest":
         self.end = end
         return self
     
     def set_between_dates(
         self, 
-        start: typing.Optional[datetime.datetime], 
-        end: typing.Optional[datetime.datetime]
+        start: typing.Optional[dt], 
+        end: typing.Optional[dt]
     ) -> "CollectionListItemsRequest":
         self.start = start
         self.end = end
         return self
 
-    def set_datetime(self, datetime: datetime.datetime) -> "CollectionSearchRequest":
+    def set_datetime(self, datetime: dt) -> "CollectionSearchRequest":
         self.datetime = datetime
         return self
 

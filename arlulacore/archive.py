@@ -1,17 +1,19 @@
+'''
+    Defines the ArchiveAPI and relevant search/order entities.
+'''
+
 from __future__ import annotations
 import enum
 import json
-import string
-import textwrap
 import typing
 import requests
 
-from dataclasses import dataclass
 from datetime import date, datetime
-from .common import ArlulaObject, Band, Bundle, License, SortDefinition
+
+from .order import Order
+from .common import ArlulaObject, Band, Bundle, License, SortDefinition, get_bundle_key, get_license_href
 from .auth import Session
 from .exception import ArlulaAPIException
-from .orders import DetailedOrderResult
 from .util import parse_rfc3339, calculate_price, remove_none, simple_indent
 
 Polygon = typing.List[typing.List[typing.List[float]]]
@@ -19,7 +21,10 @@ Polygon = typing.List[typing.List[typing.List[float]]]
 class CenterPoint(ArlulaObject):
     data: dict
     long: float
+    """Center longitude"""
+
     lat: float
+    """Center latitude"""
 
     def __init__(self, data):
         self.data = data
@@ -35,7 +40,10 @@ class CenterPoint(ArlulaObject):
 class Percent(ArlulaObject):
     data: dict
     scene: float
+    """percent of the whole scene the polygon represents"""
+
     search: float
+    """percent of the original search area (if bounding box) the AOI represents. This will be -1 for a point search, and may be greater than 100% if the original search is less than the suppliers minimum order"""
 
     def __init__(self, data):
         self.data = data
@@ -51,8 +59,13 @@ class Percent(ArlulaObject):
 class Overlap(ArlulaObject):
     data: dict
     area: float
+    """area in sq km of the overlap between search and result"""
+
     percent: Percent
+    """details percentage coverage"""
+
     polygon: typing.List[typing.List[typing.List[float]]]
+    """polygon of overlap area. This polygon is what will be ordered if the supplier supports ordering an area of interest"""
 
     def __init__(self, data):
         self.data = data
@@ -73,23 +86,58 @@ class Overlap(ArlulaObject):
 class SearchResult(ArlulaObject):
     data: dict
     scene_id: str
+    """ID for the suppliers image capture, can be used to identify the same source imagery between searches"""
+
     supplier: str
+    """identifies the supplier of the imagery, used in ordering the imagery"""
+
     platform: str
+    """The platform which captured the imagery, generally identifies the constellation, or specific satellite that captured the imagery."""
+
     date: datetime
+    """date the imagery was captured"""
+
     thumbnail: str
+    """URL of a low resolution JPEG thumbnail of the imagery that will be provided"""
+
     cloud: float
+    """estimated percentage of the imagery that is cloud cover"""
+
     off_nadir: float
+    """The degrees away from Nadir (straight down) the satellite was oriented during capture"""
+
     gsd: float
+    """spatial resolution of the imagery in meters per pixel"""
+
     bands: typing.List[Band]
+    """List of the Spectral Bands captured in this scene"""
+
     area: float
+    """area the scene covers in square kilometers"""
+
     center: CenterPoint
+    """center coordinates of the imagery"""
+
     bounding: typing.List[typing.List[typing.List[float]]]
+    """bounding polygon of the imagery in the geoJSON ([long, lat]) notation"""
+
     overlap: Overlap
+    """overlap between the imagery and the interest area, or an area constructed from it to meet minimum order requirements"""
+
     fulfillment_time: float
+    """estimated time to fulfill an order of this imagery in hours, 0 is instant"""
+
     ordering_id: str
+    """ordering ID for this scene and Area Of Interest, used to order the imagery"""
+
     bundles: typing.List[Bundle]
+    """ordering bundles representing the available ways to order the imagery"""
+
     licenses: typing.List[License]
+    """License options this imagery may be purchased under, and the terms and pricing that apply"""
+
     annotations: typing.List[str]
+    """annotates result with information, such as what modifications were made to your search to make a valid order"""
 
     def __init__(self, data):
         self.data = data
@@ -123,7 +171,7 @@ class SearchResult(ArlulaObject):
         if "annotations" in data:
             self.annotations = data["annotations"]
 
-    def calculate_price(self, license_href: string, bundle_key: string) -> int:
+    def calculate_price(self, license_href: str, bundle_key: str) -> int:
         '''
             Wrapper for util.calculate_price, returns price in US Cents. Raises error in the case of invalid license_name or bundle_key
         '''
@@ -180,10 +228,11 @@ class SearchResult(ArlulaObject):
 
 class SearchResponse(ArlulaObject):
     data: dict
-    state: string
+    state: str
     errors: typing.List[str]
     warnings: typing.List[str]
     results: typing.List[SearchResult]
+    """Results for the search conducted."""
 
     def __init__(self, data):
         self.data = data
@@ -230,19 +279,46 @@ class ArchiveSearchSortFields(str, enum.Enum):
 
 class SearchRequest():
     start: date
+    """Date of interest, or start of an interest period"""
+
     gsd: float
+    """Desired ground sample distance of imagery, all imagery will be of this GSD or better"""
+    
     end: date
+    """End of an interest period"""
+
     lat: float
+    """Latitude of the point of interest for which imagery is requested"""
+    
     long: float
+    """Longitude of the point of interest for which imagery is requested"""
+
     north: float
+    """Northern boundary of an interest area for which imagery is requested"""
+    
     south: float
+    """Southern boundary of an interest area for which imagery is requested"""
+    
     east: float
+    """Eastern boundary of an interest area for which imagery is requested"""
+    
     west: float
+    """Western boundary of an interest area for which imagery is requested"""
+    
     polygon: Polygon
+    """Polygon demarking an interest area for which imagery is requested."""
+    
     supplier: str
+    """Restrict results to only the given (space separated) suppliers"""
+    
     off_nadir: float
+    """Only return imagery with the off nadir angle during capture less than the specified criteria"""
+    
     cloud: float
+    """Only return imagery with average total cloud percentage less than the specified criteria"""
+    
     sort_definition: SortDefinition[ArchiveSearchSortFields]
+    """The desired field to sort results by, and if that sort should be ascending or descending"""
 
     def __init__(self, start: date,
             gsd: float,
@@ -291,6 +367,7 @@ class SearchRequest():
         return self
 
     def set_supplier(self, supplier: str) -> "SearchRequest":
+        """Filter the suppliers to search. To set multiple, use a space separated list."""
         self.supplier = supplier
         return self
 
@@ -365,53 +442,74 @@ class SearchRequest():
 
         return remove_none(d)
 
-class OrderRequest(ArlulaObject):
+class ArchiveOrderRequest(ArlulaObject):
 
     id: str
+    """Unique ID of the imagery to purchase, provided in the search endpoint"""
+
     eula: str
+    """The eula string provided in the search results to confirm acceptance. (the href of the license of interest)"""
+
     bundle_key: str
+    """The key of the bundle you wish to purchase from the scene"""
+
     webhooks: typing.List[str]
+    """A list of http/https addresses that the order details will be sent to once the order is complete and ready for collection"""
+
     emails: typing.List[str]
+    """A list of email addresses (strings) that the order details will be sent to once the order is complete and ready for collection"""
+
     team: str
+    """The ID of the team to attach the order to, if other than the default team for the API (used to control shared access to the order)"""
+
     payment: str
+    """The ID of the payment method to charge this order to (if not free). If not specified, the APIs default billing method will be charged."""
 
     def __init__(self,
             id: str,
-            eula: str,
-            bundle_key: str,
+            license: typing.Union[str, License],
+            bundle: typing.Union[str, Bundle],
             webhooks: typing.Optional[typing.List[str]] = [],
             emails: typing.Optional[typing.List[str]] = [],
             team: typing.Optional[str] = None,
             payment: typing.Optional[str] = None):
         self.id = id
-        self.eula = eula
-        self.bundle_key = bundle_key
+        self.eula = get_license_href(license)
+        self.bundle_key = get_bundle_key(bundle)
         self.webhooks = webhooks
         self.emails = emails
         self.team = team
         self.payment = payment
+
+    def set_bundle(self, bundle: typing.Union[str, Bundle]) -> ArchiveOrderRequest:
+        self.bundle_key = get_bundle_key(bundle)
+        return self
     
-    def add_webhook(self, webhook: str) -> "OrderRequest":
+    def set_eula(self, license: typing.Union[str, License]) -> ArchiveOrderRequest:
+        self.eula = get_license_href(license)
+        return self
+    
+    def add_webhook(self, webhook: str) -> "ArchiveOrderRequest":
         self.webhooks.append(webhook)
         return self
     
-    def set_webhooks(self, webhooks: typing.List[str]) -> "OrderRequest":
+    def set_webhooks(self, webhooks: typing.List[str]) -> "ArchiveOrderRequest":
         self.webhooks = webhooks
         return self
 
-    def add_email(self, email: str) -> "OrderRequest":
+    def add_email(self, email: str) -> "ArchiveOrderRequest":
         self.emails.append(email)
         return self
     
-    def set_emails(self, emails: typing.List[str]) -> "OrderRequest":
+    def set_emails(self, emails: typing.List[str]) -> "ArchiveOrderRequest":
         self.emails = emails
         return self
 
-    def set_team(self, team: str) -> "OrderRequest":
+    def set_team(self, team: str) -> "ArchiveOrderRequest":
         self.team = team
         return self
     
-    def set_payment(self, payment: str) -> "OrderRequest":
+    def set_payment(self, payment: str) -> "ArchiveOrderRequest":
         self.payment = payment
         return payment
 
@@ -429,17 +527,26 @@ class OrderRequest(ArlulaObject):
             "payment": None if self.payment == "" else self.payment,
         })
 
-class BatchOrderRequest():
+class ArchiveBatchOrderRequest():
 
-    orders: typing.List[OrderRequest]
+    orders: typing.List[ArchiveOrderRequest]
+    """Orders to be placed in batch request."""
+
     webhooks: typing.List[str]
+    """A list of http/https addresses that the order details will be sent to once the order is complete and ready for collection"""
+
     emails: typing.List[str]
+    """A list of email addresses (strings) that the order details will be sent to once the order is complete and ready for collection"""
+
     team: str
+    """The ID of the team to attach the order to, if other than the default team for the API (used to control shared access to the order)"""
+
     payment: str
+    """The ID of the payment method to charge this order to (if not free). If not specified, the APIs default billing method will be charged."""
 
     def __init__(
         self, 
-        orders: typing.Optional[typing.List[OrderRequest]] = [],
+        orders: typing.Optional[typing.List[ArchiveOrderRequest]] = [],
         webhooks: typing.Optional[typing.List[str]] = [],
         emails: typing.Optional[typing.List[str]] = [],
         team: typing.Optional[str] = None,
@@ -451,35 +558,35 @@ class BatchOrderRequest():
         self.team = team
         self.payment = payment
 
-    def add_order(self, order: OrderRequest) -> "BatchOrderRequest":
+    def add_order(self, order: ArchiveOrderRequest) -> "ArchiveBatchOrderRequest":
         self.orders.append(order)
         return self
     
-    def set_orders(self, orders: typing.List[OrderRequest]) -> "BatchOrderRequest":
+    def set_orders(self, orders: typing.List[ArchiveOrderRequest]) -> "ArchiveBatchOrderRequest":
         self.orders = orders
         return self
 
-    def add_webhook(self, webhook: str) -> "BatchOrderRequest":
+    def add_webhook(self, webhook: str) -> "ArchiveBatchOrderRequest":
         self.webhooks.append(webhook)
         return self
     
-    def set_webhooks(self, webhooks: typing.List[str]) -> "BatchOrderRequest":
+    def set_webhooks(self, webhooks: typing.List[str]) -> "ArchiveBatchOrderRequest":
         self.webhooks = webhooks
         return self
 
-    def add_email(self, email: str) -> "BatchOrderRequest":
+    def add_email(self, email: str) -> "ArchiveBatchOrderRequest":
         self.emails.append(email)
         return self
     
-    def set_emails(self, emails: typing.List[str]) -> "BatchOrderRequest":
+    def set_emails(self, emails: typing.List[str]) -> "ArchiveBatchOrderRequest":
         self.emails = emails
         return self
 
-    def set_team(self, team: str) -> "BatchOrderRequest":
+    def set_team(self, team: str) -> "ArchiveBatchOrderRequest":
         self.team = team
         return self
     
-    def set_payment(self, payment: str) -> "BatchOrderRequest":
+    def set_payment(self, payment: str) -> "ArchiveBatchOrderRequest":
         self.payment = payment
         return self
 
@@ -526,7 +633,7 @@ class ArchiveAPI:
             # Construct an instance of `SearchResponse`
             return SearchResponse(resp_data)
 
-    def order(self, request: OrderRequest) -> DetailedOrderResult:
+    def order(self, request: ArchiveOrderRequest) -> Order:
         '''
             Order from the Arlula imagery archive
         '''
@@ -542,9 +649,9 @@ class ArchiveAPI:
         if response.status_code != 200:
             raise ArlulaAPIException(response)
         else:
-            return DetailedOrderResult(json.loads(response.text))
+            return Order(json.loads(response.text))
         
-    def batch_order(self, request: BatchOrderRequest) -> typing.List[DetailedOrderResult]:
+    def batch_order(self, request: ArchiveBatchOrderRequest) -> Order:
         '''
             Order multiple scenes from the Arlula imagery archive
         '''
@@ -561,4 +668,4 @@ class ArchiveAPI:
         if response.status_code != 200:
             raise ArlulaAPIException(response)
         else:
-            return [DetailedOrderResult(r) for r in json.loads(response.text)]
+            return Order(json.loads(response.text))

@@ -1,5 +1,5 @@
 '''
-    Objects specific to the orders api
+    Defines the OrdersAPI
 '''
 
 from datetime import datetime
@@ -10,217 +10,254 @@ import requests
 import sys
 import re
 
+from .list import ListRequest, ListResponse
 from .auth import Session
-from .exception import ArlulaAPIException, ArlulaSessionError
-from .common import ArlulaObject
+from .exception import ArlulaAPIException
 from .util import parse_rfc3339, simple_indent
+from .dataset import Dataset, get_dataset_id
+from .order import Order, get_order_id
+from .resource import Resource, get_resource_id
+from .campaign import Campaign, get_campaign_id
 
 disposition_name_regex = re.compile(r"\"([\w\.]+)\"")
 
-class Resource(ArlulaObject):
-    data: dict
-    id: str
-    created_at: datetime
-    updated_at: datetime
-    order: str
-    name: str
-    type: str
-    format: str
-    roles: typing.List[str]
-    size: int
-    checksum: str
-
-    def __init__(self, data):
-        self.data = data
-        self.id = data["id"]
-        self.created_at = parse_rfc3339(data["createdAt"])
-        self.updated_at = parse_rfc3339(data["updatedAt"])
-        self.order = data["order"]
-        self.name = data["name"]
-        self.type = data["type"]
-        self.format = data["format"]
-        self.roles = data["roles"]
-        self.size = data["size"]
-        self.checksum = data["checksum"]
-
-    def __str__(self) -> str:
-        text = simple_indent(
-            f"Resource ({self.id}):\n"\
-            # f"Created At: {self.created_at.isoformat()}\n"\
-            # f"Updated At: {self.updated_at.isoformat()}\n"\
-            # f"Order ID: {self.order}\n"\
-            f"Name: {self.name}\n"\
-            f"Type: {self.type}\n"\
-            f"Format: {self.format}\n"\
-            f"Roles: {', '.join(self.roles)}\n"\
-            f"Size: {self.size} Bytes\n"\
-            f"Checksum: {self.checksum}\n", 0, 2)
-        return text
-
-    def dict(self):
-        return self.data
-
-class OrderResult(ArlulaObject):
-    data: dict
-    id: str
-    created_at: datetime
-    updated_at: datetime
-    supplier: str
-    ordering_id: str
-    scene_id: str
-    status: str
-    total: int
-    type: str
-    expiration: typing.Optional[str]
-
-    def __init__(self, data):
-        self.data = data
-        self.id = data["id"]
-        self.created_at = parse_rfc3339(data["createdAt"])
-        self.updated_at = parse_rfc3339(data["updatedAt"])
-        self.supplier = data["supplier"]
-        self.ordering_id = data["orderingID"]
-        self.scene_id = data["sceneID"]
-        self.status = data["status"]
-        self.total = data["total"]
-        self.type = data["type"]
-        self.expiration = data["expiration"]
-
-    def __str__(self) -> str:
-        text = simple_indent(
-            f"Order ({self.id}):\n"\
-            # f"Created At: {self.created_at}\n"\
-            # f"Updated At: {self.updated_at}\n"\
-            f"Supplier: {self.supplier}\n"\
-            # f"Ordering ID: {self.ordering_id}\n"\
-            f"Scene ID: {self.scene_id}\n"\
-            f"Status: {self.status}\n"\
-            f"Total: {self.total}\n"\
-            f"Type: {self.type}\n"\
-            f"Expiration: {self.expiration}\n", 0, 2)
-        return text
-
-    def dict(self) -> dict:
-        return self.data
-
-class DetailedOrderResult(ArlulaObject):
-    data: dict
-    id: str
-    created_at: datetime
-    updated_at: datetime
-    supplier: str
-    ordering_id: str
-    scene_id: str
-    status: str
-    total: int
-    type: str
-    expiration: typing.Optional[str]
-    resources: typing.List[Resource]
-
-    def __init__(self, data):
-        self.data = data
-        self.id = data["id"]
-        self.created_at = parse_rfc3339(data["createdAt"])
-        self.updated_at = parse_rfc3339(data["updatedAt"])
-        self.supplier = data["supplier"]
-        self.ordering_id = data["orderingID"]
-        self.scene_id = data["sceneID"]
-        self.status = data["status"]
-        self.total = data["total"]
-        self.type = data["type"]
-        self.expiration = data["expiration"]
-        self.resources = [Resource(x) for x in data["resources"]] if "resources" in data else []
-    
-    def __str__(self) -> dict:
-        resources = simple_indent(''.join([str(r) for r in self.resources]), 2, 2)
-        text = simple_indent(
-            f"Detailed Order ({self.id}):\n"\
-            # f"Created At: {self.created_at}\n"\
-            # f"Updated At: {self.updated_at}\n"\
-            f"Supplier: {self.supplier}\n"\
-            # f"Ordering ID: {self.ordering_id}\n"\
-            f"Scene ID: {self.scene_id}\n"\
-            f"Status: {self.status}\n"\
-            f"Total: {self.total}\n"\
-            f"Type: {self.type}\n"\
-            f"Expiration: {self.expiration}\n"\
-            f"Resources:\n"\
-            f"{resources}", 0, 2)
-        return text
-
-    def dict(self) -> dict:
-        return self.data
-
 class OrdersAPI:
     '''
-        Orders is used to interface with the Arlula Orders API
+        Orders is used to interface with the Arlula Orders API.
+        Allows for access to Orders, Campaigns, Datasets, and Resources.
     '''
 
-    def __init__(self,
-                 session: Session):
+    def __init__(self, session: Session):
         self.session = session
-        self.url = self.session.baseURL + "/api/order"
+        self.url = self.session.baseURL + "/api"
+    
+    def list_orders(self, 
+        req: typing.Optional[ListRequest] = None,
+    ) -> ListResponse[Order]:
+        """
+            List all orders that the API account making this request has access to.
+            The orders will not have their campaigns or datasets populated.
+        """
 
-    def get(self,
-            id: str) -> DetailedOrderResult:
-        '''
-            Get details on a prior order by it's id.
-        '''
-
-        url = self.url + "/get"
-
-        querystring = {"id": id}
-
+        url = self.url + "/orders"
         response = requests.request(
             "GET",
             url,
             headers=self.session.header,
-            params=querystring)
+            params=req.__dict__() if req != None else None,
+        )
 
         if response.status_code != 200:
             raise ArlulaAPIException(response)
         else:
-            return DetailedOrderResult(json.loads(response.text))
+            d = json.loads(response.text)
+            orders = [Order(c) for c in d["content"]]
+            l = ListResponse[Order](d, orders)
+            return l
+    
+    def list_datasets(self, 
+        req: typing.Optional[ListRequest] = None,
+    ) -> ListResponse[Dataset]:
+        """
+            List all datasets that the API account making this request has access to.
+            The datasets will not have their resources populated.
+        """
 
-    def list(self) -> typing.List[OrderResult]:
-        '''
-            List all orders made
-        '''
-
-        url = self.url+"/list"
-
+        url = self.url + "/datasets"
         response = requests.request(
             "GET",
             url,
-            headers=self.session.header)
+            headers=self.session.header,
+            params=req.__dict__() if req != None else None,
+        )
 
         if response.status_code != 200:
             raise ArlulaAPIException(response)
         else:
-            return [OrderResult(r) for r in json.loads(response.text)]
+            d = json.loads(response.text)
+            datasets = [Dataset(c) for c in d["content"]]
+            l = ListResponse[Dataset](d, datasets)
+            return l
+    
+    def list_campaigns(self, 
+        req: typing.Optional[ListRequest] = None,
+    ) -> ListResponse[Campaign]:
+        """
+            List all campaigns that the API account making this request has access to.
+            The campaigns will not have their datasets populated.
+        """
 
-    def download_order(self, id: str, directory: typing.Optional[str], suppress: typing.Optional[bool]=False) -> None:
-        order = self.get(id)
-        for r in order.resources:
-            self.get_resource_as_file(r.id, suppress=suppress, directory=directory).close()
+        url = self.url + "/campaigns"
+        response = requests.request(
+            "GET",
+            url,
+            headers=self.session.header,
+            params=req.__dict__() if req != None else None,
+        )
 
-    def get_resource_as_file(self,
-                     id: str,
-                     filepath: typing.Optional[str] = None,
-                     suppress: typing.Optional[bool] = False,
-                     progress_generator: typing.Optional[typing.Generator[typing.Optional[float], None, None]] = None,
-                     directory: typing.Optional[str] = None) -> typing.BinaryIO:
+        if response.status_code != 200:
+            raise ArlulaAPIException(response)
+        else:
+            d = json.loads(response.text)
+            campaigns = [Campaign(c) for c in d["content"]]
+            l = ListResponse[Campaign](d, campaigns)
+            return l
+
+    def list_order_campaigns(self, 
+        order: typing.Union[str, Order],
+    ) -> ListResponse[Campaign]:
+        """
+            List all campaigns for the specified order.
+            The campaigns will not have their datasets populated.
+        """
+
+        response = requests.request(
+            "GET",
+            self.url + f"/order/{get_order_id(order)}/campaigns",
+            headers=self.session.header,
+        )
+        if response.status_code != 200:
+            raise ArlulaAPIException(response)
+        else:
+            d = json.loads(response.text)
+            campaigns = [Campaign(c) for c in d["content"]]
+            l = ListResponse[Campaign](d, campaigns)
+            return l
+
+    def list_order_datasets(self, 
+        order: typing.Union[str, Order],
+    ) -> ListResponse[Dataset]:
+        """
+            List all datasets for the specified order.
+            Will return any archive datasets ordered and any datasets delivered to
+            campaigns within the order.
+            The datasets will not have their resources populated.
+        """
+
+        response = requests.request(
+            "GET",
+            self.url + f"/order/{get_order_id(order)}/datasets",
+            headers=self.session.header,
+        )
+        if response.status_code != 200:
+            raise ArlulaAPIException(response)
+        else:
+            d = json.loads(response.text)
+            datasets = [Dataset(c) for c in d["content"]]
+            l = ListResponse[Dataset](d, datasets)
+            return l
+
+    def list_campaign_datasets(self,
+        campaign: typing.Union[str, Campaign]                           
+    ) -> ListResponse[Dataset]:
+        """
+            List all datasets delivered for a specified campaign.
+            The datasets will not have their resources populated.
+        """
+
+        response = requests.request(
+            "GET",
+            self.url + f"/campaign/{get_campaign_id(campaign)}/datasets",
+            headers=self.session.header,
+        )
+        if response.status_code != 200:
+            raise ArlulaAPIException(response)
+        else:
+            d = json.loads(response.text)
+            campaigns = [Dataset(c) for c in d["content"]]
+            l = ListResponse[Dataset](d, campaigns)
+            return l
+        
+    def get_order(self, order: typing.Union[str, Order]) -> Order:
+        """
+            Get the specified order.
+            Guarantees campaigns and datasets are correct. 
+        """
+
+        response = requests.request(
+            "GET",
+            self.url + f"/order/{get_order_id(order)}",
+            headers=self.session.header,
+        )
+        if response.status_code != 200:
+            raise ArlulaAPIException(response)
+        else:
+            return Order(json.loads(response.text))
+        
+        
+    def get_campaign(self, campaign: typing.Union[str, Campaign]) -> Campaign:
+        """
+            Get the specified campaign.
+            Guarantees datasets are correct.
+        """
+
+        response = requests.request(
+            "GET",
+            self.url + f"/campaign/{get_campaign_id(campaign)}",
+            headers=self.session.header,
+        )
+        if response.status_code != 200:
+            raise ArlulaAPIException(response)
+        else:
+            return Campaign(json.loads(response.text))
+
+    def get_dataset(self, dataset: typing.Union[str, Dataset]) -> Dataset:
+        """
+            Get the specified dataset.
+            Guarantees the resources are correct.
+        """
+
+        response = requests.request(
+            "GET",
+            self.url + f"/dataset/{get_dataset_id(dataset)}",
+            headers=self.session.header,
+        )
+        if response.status_code != 200:
+            raise ArlulaAPIException(response)
+        else:
+            return Dataset(json.loads(response.text))
+        
+    def get_resource(self, resource: typing.Union[str, Resource]) -> Resource:
+        """
+            Get the specified resource.
+        """
+
+        response = requests.request(
+            "GET",
+            self.url + f"/resource/{get_resource_id(resource)}",
+            headers=self.session.header,
+        )
+        if response.status_code != 200:
+            raise ArlulaAPIException(response)
+        else:
+            return Resource(json.loads(response.text))
+
+
+    def download_dataset(self, 
+        dataset: typing.Union[str, Dataset], 
+        directory: typing.Optional[str], 
+        suppress: typing.Optional[bool]=False,
+    ) -> None:
+        dataset = self.get_dataset(dataset)
+        for r in dataset.resources:
+            self.download_resource_as_file(r.id, suppress=suppress, directory=directory).close()
+
+    def download_resource_as_file(self,
+            resource: typing.Union[str, Resource],
+            filepath: typing.Optional[str] = None,
+            suppress: typing.Optional[bool] = False,
+            progress_generator: typing.Optional[typing.Generator[typing.Optional[float], None, None]] = None,
+            directory: typing.Optional[str] = None,
+        ) -> typing.BinaryIO:
         '''
-            Get a resource and stream it to the specified file. If supress is true, it will output extra information to standard output.
+            Get a resource and stream it to the specified file. If supress is False, it will output extra information to standard output.
             If filename is not supplied, it will use the file specified by the supplier through the Content-Disposition header. If a filename
             is not supplied and a directory is then the default named file will be placed in the specified directory, otherwise it is ignored.
             This is recommended for large files. Returns the file, which must be closed. The returned file is seeked back to it's beginning.
         '''
 
-        url = self.url + "/resource/get"
+        url = self.url + f"/resource/{get_resource_id(resource)}/data"
 
-        
-        querystring = {"id": id}
         if progress_generator is not None:
             next(progress_generator)
 
@@ -229,7 +266,6 @@ class OrdersAPI:
             "GET",
             url,
             headers=self.session.header,
-            params=querystring,
             stream=True)
         
         if response.status_code != 200:
@@ -276,19 +312,19 @@ class OrdersAPI:
         
         return f
 
-    def get_resource_as_memory(self, id: str) -> bytes:
+    def download_resource_as_memory(self, resource: typing.Union[str, Resource]) -> bytes:
         '''
             Get a resource. If filepath is specified, it will be streamed to that file. If filepath is omitted it will
             be stored in memory (not recommended for large files).
         '''
-        url = self.url + "/resource/get"
-
-        querystring = {"id": id}
+        url = self.url + f"/resource/{get_resource_id(resource)}/data"
 
         response = requests.request(
             "GET",
             url,
-            headers=self.session.header,
-            params=querystring)
+            headers=self.session.header)
         
+        if response.status_code != 200:
+            raise ArlulaAPIException(response)
+
         return response.content

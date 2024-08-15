@@ -1,5 +1,6 @@
 import math
 import re
+import typing
 import requests
 
 from datetime import datetime, timezone, timedelta
@@ -25,6 +26,11 @@ def simple_indent(s: str, first_amount: int, following_amount: int) -> str:
     return '\n'.join(out) + '\n'
 
 def parse_rfc3339(dt_str: str) -> datetime:
+    """
+        Parses the provided string as an RFC3339 timestamp. 
+        Included as the core python behaviour does not parse RFC3339 timestamps
+        correctly and common libraries are massive.
+    """
     try:
         result = re.search(__date_rx__, dt_str)
 
@@ -64,18 +70,29 @@ def parse_rfc3339(dt_str: str) -> datetime:
     except:
         return None
 
-def calculate_price(bundle_price: int, loading_percent: float, loading_amount: int) -> int:
+def calculate_price(
+    bundle_price: int, 
+    license_loading_percent: float, 
+    license_loading_amount: int,
+    cloud_loading_percent: typing.Optional[float] = 0,
+    cloud_loading_amount: typing.Optional[int] = 0,
+    priority_loading_percent: typing.Optional[float] = 0,
+    priority_loading_amount: typing.Optional[int] = 0,
+) -> int:
     """
-    Calculates the price for a scene in US Cents.
-
-    Parameters:
-        bundle_price (int): The price of the bundle (taken from a Bundle)
-        loading_percent (float): The percentage loading of the license (taken from a License)
-        loading_amoutn (int): The flat loading of the license (taken from a License)
+        Calculates the price for purchasing archive and tasking results.
+        cloud and priority fields are only required if tasking.
+        ***Return value is in US cents, rounded UP to nearest whole dollar.***
+    """
     
-    Returns:
-        price (int): The price in US Cents
-    """
-    price = bundle_price * (1 + (loading_percent/100))
-    price = price + loading_amount
+    percentages = (1 + license_loading_percent/100)
+    percentages = percentages + (priority_loading_percent/100)
+    percentages = percentages + (cloud_loading_percent/100)
+    
+    loadings = license_loading_amount
+    loadings = loadings + priority_loading_amount
+    loadings = loadings + cloud_loading_amount
+    
+    price = bundle_price * percentages + loadings
+    
     return math.ceil(price/100)*100
