@@ -365,53 +365,82 @@ class SearchRequest():
 
         return remove_none(d)
 
-class OrderRequest(ArlulaObject):
+class ArchiveOrderRequest(ArlulaObject):
 
     id: str
+    """The ordering id from the archive search result being purchased"""
+
     eula: str
+    """
+        The Href of the license of interest. 
+        By adding this to the order you are accepting to it's terms
+    """
+
     bundle_key: str
+    """The bundle/processing level you would like to order"""
+
     webhooks: typing.List[str]
+    """
+        Any webhooks to notify of order completion (in addition to those on the 
+        API account making the request) 
+    """
+
     emails: typing.List[str]
+    """
+        Any emails to notify of order completion (in addition to those on the 
+        API account making the request) 
+    """
+
     team: str
+    """Identifier for team to assign order to """
+
     payment: str
 
     def __init__(self,
             id: str,
-            eula: str,
-            bundle_key: str,
+            license: typing.Union[str, License],
+            bundle: typing.Union[str, Bundle],
             webhooks: typing.Optional[typing.List[str]] = [],
             emails: typing.Optional[typing.List[str]] = [],
             team: typing.Optional[str] = None,
             payment: typing.Optional[str] = None):
         self.id = id
-        self.eula = eula
-        self.bundle_key = bundle_key
+        self.eula = get_license_href(license)
+        self.bundle_key = get_bundle_key(bundle)
         self.webhooks = webhooks
         self.emails = emails
         self.team = team
         self.payment = payment
+
+    def set_bundle(self, bundle: typing.Union[str, Bundle]) -> ArchiveOrderRequest:
+        self.bundle_key = get_bundle_key(bundle)
+        return self
     
-    def add_webhook(self, webhook: str) -> "OrderRequest":
+    def set_eula(self, license: typing.Union[str, License]) -> ArchiveOrderRequest:
+        self.eula = get_license_href(license)
+        return self
+    
+    def add_webhook(self, webhook: str) -> "ArchiveOrderRequest":
         self.webhooks.append(webhook)
         return self
     
-    def set_webhooks(self, webhooks: typing.List[str]) -> "OrderRequest":
+    def set_webhooks(self, webhooks: typing.List[str]) -> "ArchiveOrderRequest":
         self.webhooks = webhooks
         return self
 
-    def add_email(self, email: str) -> "OrderRequest":
+    def add_email(self, email: str) -> "ArchiveOrderRequest":
         self.emails.append(email)
         return self
     
-    def set_emails(self, emails: typing.List[str]) -> "OrderRequest":
+    def set_emails(self, emails: typing.List[str]) -> "ArchiveOrderRequest":
         self.emails = emails
         return self
 
-    def set_team(self, team: str) -> "OrderRequest":
+    def set_team(self, team: str) -> "ArchiveOrderRequest":
         self.team = team
         return self
     
-    def set_payment(self, payment: str) -> "OrderRequest":
+    def set_payment(self, payment: str) -> "ArchiveOrderRequest":
         self.payment = payment
         return payment
 
@@ -429,9 +458,9 @@ class OrderRequest(ArlulaObject):
             "payment": None if self.payment == "" else self.payment,
         })
 
-class BatchOrderRequest():
+class ArchiveBatchOrderRequest():
 
-    orders: typing.List[OrderRequest]
+    orders: typing.List[ArchiveOrderRequest]
     webhooks: typing.List[str]
     emails: typing.List[str]
     team: str
@@ -439,7 +468,7 @@ class BatchOrderRequest():
 
     def __init__(
         self, 
-        orders: typing.Optional[typing.List[OrderRequest]] = [],
+        orders: typing.Optional[typing.List[ArchiveOrderRequest]] = [],
         webhooks: typing.Optional[typing.List[str]] = [],
         emails: typing.Optional[typing.List[str]] = [],
         team: typing.Optional[str] = None,
@@ -451,35 +480,35 @@ class BatchOrderRequest():
         self.team = team
         self.payment = payment
 
-    def add_order(self, order: OrderRequest) -> "BatchOrderRequest":
+    def add_order(self, order: ArchiveOrderRequest) -> "ArchiveBatchOrderRequest":
         self.orders.append(order)
         return self
     
-    def set_orders(self, orders: typing.List[OrderRequest]) -> "BatchOrderRequest":
+    def set_orders(self, orders: typing.List[ArchiveOrderRequest]) -> "ArchiveBatchOrderRequest":
         self.orders = orders
         return self
 
-    def add_webhook(self, webhook: str) -> "BatchOrderRequest":
+    def add_webhook(self, webhook: str) -> "ArchiveBatchOrderRequest":
         self.webhooks.append(webhook)
         return self
     
-    def set_webhooks(self, webhooks: typing.List[str]) -> "BatchOrderRequest":
+    def set_webhooks(self, webhooks: typing.List[str]) -> "ArchiveBatchOrderRequest":
         self.webhooks = webhooks
         return self
 
-    def add_email(self, email: str) -> "BatchOrderRequest":
+    def add_email(self, email: str) -> "ArchiveBatchOrderRequest":
         self.emails.append(email)
         return self
     
-    def set_emails(self, emails: typing.List[str]) -> "BatchOrderRequest":
+    def set_emails(self, emails: typing.List[str]) -> "ArchiveBatchOrderRequest":
         self.emails = emails
         return self
 
-    def set_team(self, team: str) -> "BatchOrderRequest":
+    def set_team(self, team: str) -> "ArchiveBatchOrderRequest":
         self.team = team
         return self
     
-    def set_payment(self, payment: str) -> "BatchOrderRequest":
+    def set_payment(self, payment: str) -> "ArchiveBatchOrderRequest":
         self.payment = payment
         return self
 
