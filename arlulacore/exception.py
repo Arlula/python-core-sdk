@@ -14,6 +14,7 @@ class ArlulaSessionError(Exception):
 class ArlulaAPIException(Exception):
     def __init__(self, response: requests.Response):
         self.value = f"{response.status_code}: {response.text}"
+        self.response = response
 
     def __str__(self):
         return self.value
