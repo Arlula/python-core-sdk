@@ -37,9 +37,6 @@ jobs:
       TEST_API_TASKING_LICENSE_HREF_2: ${{ vars.TEST_API_TASKING_LICENSE_HREF_2}}
       TEST_API_TASKING_PRIORITY_KEY_2: ${{ vars.TEST_API_TASKING_PRIORITY_KEY_2}}
       TEST_API_TASKING_CLOUD_2: ${{ vars.TEST_API_TASKING_CLOUD_2}}
-    secrets:
-      API_PASS: ${{ secrets.TEST_API_PASS}}
-      API_KEY: ${{ secrets.TEST_API_KEY}}
   deploy:
     needs: test
     runs-on: ubuntu-latest
