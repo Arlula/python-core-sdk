@@ -1,3 +1,7 @@
+'''
+    Defines the CollectionsAPI and relevant structures.
+'''
+
 import abc
 import json
 import typing

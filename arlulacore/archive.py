@@ -1,3 +1,7 @@
+'''
+    Defines the ArchiveAPI and relevant search/order entities.
+'''
+
 from __future__ import annotations
 import enum
 import json
@@ -17,7 +21,10 @@ Polygon = typing.List[typing.List[typing.List[float]]]
 class CenterPoint(ArlulaObject):
     data: dict
     long: float
+    """Center longitude"""
+
     lat: float
+    """Center latitude"""
 
     def __init__(self, data):
         self.data = data
@@ -33,7 +40,10 @@ class CenterPoint(ArlulaObject):
 class Percent(ArlulaObject):
     data: dict
     scene: float
+    """percent of the whole scene the polygon represents"""
+
     search: float
+    """percent of the original search area (if bounding box) the AOI represents. This will be -1 for a point search, and may be greater than 100% if the original search is less than the suppliers minimum order"""
 
     def __init__(self, data):
         self.data = data
@@ -49,8 +59,13 @@ class Percent(ArlulaObject):
 class Overlap(ArlulaObject):
     data: dict
     area: float
+    """area in sq km of the overlap between search and result"""
+
     percent: Percent
+    """details percentage coverage"""
+
     polygon: typing.List[typing.List[typing.List[float]]]
+    """polygon of overlap area. This polygon is what will be ordered if the supplier supports ordering an area of interest"""
 
     def __init__(self, data):
         self.data = data
@@ -71,23 +86,58 @@ class Overlap(ArlulaObject):
 class SearchResult(ArlulaObject):
     data: dict
     scene_id: str
+    """ID for the suppliers image capture, can be used to identify the same source imagery between searches"""
+
     supplier: str
+    """identifies the supplier of the imagery, used in ordering the imagery"""
+
     platform: str
+    """The platform which captured the imagery, generally identifies the constellation, or specific satellite that captured the imagery."""
+
     date: datetime
+    """date the imagery was captured"""
+
     thumbnail: str
+    """URL of a low resolution JPEG thumbnail of the imagery that will be provided"""
+
     cloud: float
+    """estimated percentage of the imagery that is cloud cover"""
+
     off_nadir: float
+    """The degrees away from Nadir (straight down) the satellite was oriented during capture"""
+
     gsd: float
+    """spatial resolution of the imagery in meters per pixel"""
+
     bands: typing.List[Band]
+    """List of the Spectral Bands captured in this scene"""
+
     area: float
+    """area the scene covers in square kilometers"""
+
     center: CenterPoint
+    """center coordinates of the imagery"""
+
     bounding: typing.List[typing.List[typing.List[float]]]
+    """bounding polygon of the imagery in the geoJSON ([long, lat]) notation"""
+
     overlap: Overlap
+    """overlap between the imagery and the interest area, or an area constructed from it to meet minimum order requirements"""
+
     fulfillment_time: float
+    """estimated time to fulfill an order of this imagery in hours, 0 is instant"""
+
     ordering_id: str
+    """ordering ID for this scene and Area Of Interest, used to order the imagery"""
+
     bundles: typing.List[Bundle]
+    """ordering bundles representing the available ways to order the imagery"""
+
     licenses: typing.List[License]
+    """License options this imagery may be purchased under, and the terms and pricing that apply"""
+
     annotations: typing.List[str]
+    """annotates result with information, such as what modifications were made to your search to make a valid order"""
 
     def __init__(self, data):
         self.data = data
@@ -182,6 +232,7 @@ class SearchResponse(ArlulaObject):
     errors: typing.List[str]
     warnings: typing.List[str]
     results: typing.List[SearchResult]
+    """Results for the search conducted."""
 
     def __init__(self, data):
         self.data = data
@@ -228,19 +279,46 @@ class ArchiveSearchSortFields(str, enum.Enum):
 
 class SearchRequest():
     start: date
+    """Date of interest, or start of an interest period"""
+
     gsd: float
+    """Desired ground sample distance of imagery, all imagery will be of this GSD or better"""
+    
     end: date
+    """End of an interest period"""
+
     lat: float
+    """Latitude of the point of interest for which imagery is requested"""
+    
     long: float
+    """Longitude of the point of interest for which imagery is requested"""
+
     north: float
+    """Northern boundary of an interest area for which imagery is requested"""
+    
     south: float
+    """Southern boundary of an interest area for which imagery is requested"""
+    
     east: float
+    """Eastern boundary of an interest area for which imagery is requested"""
+    
     west: float
+    """Western boundary of an interest area for which imagery is requested"""
+    
     polygon: Polygon
+    """Polygon demarking an interest area for which imagery is requested."""
+    
     supplier: str
+    """Restrict results to only the given (space separated) suppliers"""
+    
     off_nadir: float
+    """Only return imagery with the off nadir angle during capture less than the specified criteria"""
+    
     cloud: float
+    """Only return imagery with average total cloud percentage less than the specified criteria"""
+    
     sort_definition: SortDefinition[ArchiveSearchSortFields]
+    """The desired field to sort results by, and if that sort should be ascending or descending"""
 
     def __init__(self, start: date,
             gsd: float,
@@ -289,6 +367,7 @@ class SearchRequest():
         return self
 
     def set_supplier(self, supplier: str) -> "SearchRequest":
+        """Filter the suppliers to search. To set multiple, use a space separated list."""
         self.supplier = supplier
         return self
 
@@ -366,33 +445,25 @@ class SearchRequest():
 class ArchiveOrderRequest(ArlulaObject):
 
     id: str
-    """The ordering id from the archive search result being purchased"""
+    """Unique ID of the imagery to purchase, provided in the search endpoint"""
 
     eula: str
-    """
-        The Href of the license of interest. 
-        By adding this to the order you are accepting to it's terms
-    """
+    """The eula string provided in the search results to confirm acceptance. (the href of the license of interest)"""
 
     bundle_key: str
-    """The bundle/processing level you would like to order"""
+    """The key of the bundle you wish to purchase from the scene"""
 
     webhooks: typing.List[str]
-    """
-        Any webhooks to notify of order completion (in addition to those on the 
-        API account making the request) 
-    """
+    """A list of http/https addresses that the order details will be sent to once the order is complete and ready for collection"""
 
     emails: typing.List[str]
-    """
-        Any emails to notify of order completion (in addition to those on the 
-        API account making the request) 
-    """
+    """A list of email addresses (strings) that the order details will be sent to once the order is complete and ready for collection"""
 
     team: str
-    """Identifier for team to assign order to """
+    """The ID of the team to attach the order to, if other than the default team for the API (used to control shared access to the order)"""
 
     payment: str
+    """The ID of the payment method to charge this order to (if not free). If not specified, the APIs default billing method will be charged."""
 
     def __init__(self,
             id: str,
@@ -459,10 +530,19 @@ class ArchiveOrderRequest(ArlulaObject):
 class ArchiveBatchOrderRequest():
 
     orders: typing.List[ArchiveOrderRequest]
+    """Orders to be placed in batch request."""
+
     webhooks: typing.List[str]
+    """A list of http/https addresses that the order details will be sent to once the order is complete and ready for collection"""
+
     emails: typing.List[str]
+    """A list of email addresses (strings) that the order details will be sent to once the order is complete and ready for collection"""
+
     team: str
+    """The ID of the team to attach the order to, if other than the default team for the API (used to control shared access to the order)"""
+
     payment: str
+    """The ID of the payment method to charge this order to (if not free). If not specified, the APIs default billing method will be charged."""
 
     def __init__(
         self, 

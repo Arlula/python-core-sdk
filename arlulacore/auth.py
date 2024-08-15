@@ -1,3 +1,7 @@
+'''
+    Defines the Session class
+'''
+
 import sys
 import platform
 import base64

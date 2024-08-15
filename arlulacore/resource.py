@@ -1,4 +1,6 @@
-
+'''
+    Defines the Resource entity
+'''
 
 from datetime import datetime
 import typing

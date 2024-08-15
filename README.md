@@ -11,8 +11,8 @@ This package requires an active Arlula account and access to the API credentials
 ```bash
 pip install arlulacore
 ```
-## Initiation
-Instantiate a Session object using your API credentials as below. This will validate your credentials and store them for the remainder of the session. This can be re-used for numerous requests or be instantiated numerous times with different credentials for concurrent access to different sessions.
+## Instantiation
+Instantiate a Session object using your API credentials as below. This will validate your credentials and store them for the remainder of the session. This can be re-used for numerous requests or be instantiated numerous times with different API account credentials for concurrent access to different sessions.
 ```python
 import arlulacore
 
@@ -47,7 +47,7 @@ search_result = archive.search(
 # the eula that applies to you, the bundle you want, and (optionally) 
 # email jane.doe@gmail.com and john.smith@gmail.com when it is complete.
 order_result = archive.order(
-    arlulacore.OrderRequest(
+    arlulacore.ArchiveOrderRequest(
         id="eyJhb...AYTqwM",
         eula="Supplier's EULA",
         bundle_key="default",
@@ -79,10 +79,12 @@ search_result = tasking.search(
 # the eula that applies to you, the bundle you want, and (optionally) 
 # email jane.doe@gmail.com and john.smith@gmail.com when it is complete.
 order_result = tasking.order(
-    arlulacore.OrderRequest(
+    arlulacore.TaskingOrderRequest(
         id="eyJhb...AYTqwM",
         eula="Supplier's EULA",
         bundle_key="default",
+        priority="priority",
+        cloud=30,
     )
     .set_emails(["john.smith@gmail.com", "jane.doe@gmail.com"])
 )
@@ -90,28 +92,35 @@ order_result = tasking.order(
 
 ### Orders
 
-The Orders API provides the ability to list and get existing orders, as well as download resources associated with them. 
+The Orders API provides the ability to list and get entities within Arlula's Orders system.
+These include Orders, Datasets, Campaigns, and Resources. 
 
 ```python
-orders = api.ordersAPI()
+ordersAPI = api.ordersAPI()
 
-# Get the status and details of an order
-order = orders.get(
-    id="cade11f4-8b4d-43e1-8cb1-3bce85111a01",
-)
+# List all orders the authenticated API account has access to
+orders = ordersAPI.list_orders()
+
+# Get all campaigns delivered for an order
+campaigns = ordersAPI.list_campaigns_for_order("cade11f4-8b4d-43e1-8cb1-3bce85111a01")
+
+# Get all datasets delivered for an order
+datasets = ordersAPI.list_datasets_for_order("cade11f4-8b4d-43e1-8cb1-3bce85111a01")
+
+# Get the status and details of an order (will also populate datasets and campaigns)
+order = ordersAPI.get_order("cade11f4-8b4d-43e1-8cb1-3bce85111a01")
+
+# List all datasets the authenticated API account has access to
+datasets = ordersAPI.list_datasets()
 
 # Get a specific resource, for example thumbnails, tiffs, json metadata.
 # Streams to a file and returns the file handle.
-with orders.get_resource_as_file(id="b7adb198-3e6e-4217-9e67-fb26eb355cc4", filepath="downloads/thumbnail.jpg") as f:
+with ordersAPI.download_resource_as_file("b7adb198-3e6e-4217-9e67-fb26eb355cc4", filepath="downloads/thumbnail.jpg") as f:
     f.read()
 
 # Get a specific resource, for example thumbnails, tiffs, json metadata.
 # Returns the memory buffer of the requested resource.
 # Not recommended for large files.
-b = orders.get_resource_as_memory(
-    id="b7adb198-3e6e-4217-9e67-fb26eb355cc4",
-)
+b = ordersAPI.download_resource_as_memory("b7adb198-3e6e-4217-9e67-fb26eb355cc4")
 
-# List the details and status of all orders made
-order_list = orders.list_orders()
 ```

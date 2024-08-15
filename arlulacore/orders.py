@@ -1,5 +1,5 @@
 '''
-    Objects specific to the orders api
+    Defines the OrdersAPI
 '''
 
 from datetime import datetime

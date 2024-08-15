@@ -1,3 +1,7 @@
+'''
+    Defines helper base types for list endpoints
+'''
+
 import typing
 
 T = typing.TypeVar("T")

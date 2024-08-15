@@ -1,3 +1,7 @@
+'''
+    Defines misc. common structures
+'''
+
 import abc
 import json
 import typing

@@ -1,3 +1,6 @@
+'''
+    Defines the Dataset entity.
+'''
 
 from datetime import datetime
 import typing
@@ -8,24 +11,24 @@ from .common import ArlulaObject
 
 class Dataset(ArlulaObject):
     """
-        Datasets represent 
+        Datasets represent data (usually containing multiple files or "resources") that has been delivered to a customer from a supplier.
     """
 
     data: dict
     id: str
-    """Identifier for this dataset"""
+    """UUID to uniquely identify the dataset"""
 
     created_at: datetime
-    """Date of creation"""
+    """datetime the dataset was created at (UTC timezone)"""
 
     updated_at: datetime
-    """Date of last update"""
+    """datetime of the last update to the dataset (UTC timezone)"""
     
     type: str
     """Type of this dataset"""
 
     status: str
-    """Status of this dataset"""
+    """current status of the order"""
 
     supplier: str
     """Key of the supplier of this dataset"""
@@ -43,16 +46,16 @@ class Dataset(ArlulaObject):
     """URL to the eula for this dataset"""
 
     total: int
-    """Total amount (US Cents) paid for this dataset"""
+    """The total price of the dataset in US cents"""
 
     discount: int
-    """Discount (US Cents)"""
+    """The discount applied to the dataset by any order or user coupons"""
 
     tax: int
-    """Tax (US Cents)"""
+    """The tax paid on the dataset"""
 
     refunded: typing.Optional[int]
-    """Amount (US Cents) refunded for this order"""
+    """Amount in US cents refunded on this dataset."""
 
     order: str
     """Identifier for the order this dataset was placed under"""

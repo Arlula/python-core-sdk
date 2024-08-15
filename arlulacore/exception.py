@@ -1,8 +1,8 @@
-import requests
+'''
+    Custom Exception Classes
+'''
 
-'''
-    Custom Exception Class
-'''
+import requests
 
 class ArlulaSessionError(Exception):
     def __init__(self, value):

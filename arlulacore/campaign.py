@@ -1,3 +1,6 @@
+'''
+    Defines the Campaign Entity
+'''
 
 from datetime import datetime
 import typing
@@ -8,81 +11,82 @@ from .common import ArlulaObject
 
 class Campaign(ArlulaObject):
     """
-        A campaign represents 
+        Tasking orders are represented as a campaign for capture.
+        The campaign persists details of the requested coverage and capture conditions, and will present details of the campaign's status, and the datasets created from each capture in the campaign, representing delivered data.
     """
 
     data: dict
     id: str
-    """identifier for this campaign."""
+    """UUID to uniquely identify the campaign"""
 
     createdAt: datetime
-    """Creation timestamp"""
+    """datetime the campaign was created at (UTC timezone)"""
 
     updatedAt: datetime
-    """Last update timestamp"""
+    """datetime of the last update to the campaign (UTC timezone)"""
 
     status: str
-    """Campaign status"""
+    """	current status of the campaign"""
 
     orderingID: str
-    """OrderingID used to order this campaign"""
+    """ID used to order the campaign"""
 
     bundle: str
-    """Bundle/processing level identifier for data delivered from this campaign."""
+    """Key of the bundle ordered for this tasking campaign"""
 
     license: str
-    """URL to the license for data delivered from this campaign."""
+    """License this tasking campaign was ordered under"""
 
     priority: str
-    """Priority identifier for this campaign"""
+    """Priority code this campaign was ordered under"""
 
     total: int
-    """Total amount paid (US Cents)"""
+    """total price of the campaign in US cents"""
 
     discount: int
-    """Discount (US Cents)"""
+    """Amount in US cents discounted from this campaign by coupon usage"""
 
     tax: int
-    """Tax (US Cents)"""
+    """Tax collected on this tasking campaign in US cents"""
 
     refunded: typing.Optional[int]
-    """Amount refunded (US Cents)"""
+    """Amount in US cents refunded on this campaign."""
 
     order: str
-    """Identifier for the order this dataset was placed under"""
+    """UUID of the order the campaign belongs to"""
 
     site: typing.Optional[str]
-    """Idenfitier of site of this campaign"""
+    """UUID of the saved site the campaign is of (or null)"""
 
     monitor: typing.Optional[str]
     """Identifier for the monitor this campaign delivers data to"""
 
     start: datetime
-    """Start time of this campaign"""
+    """Datetime at which this capture campaign is to begin capture"""
 
     end: datetime
-    """End time of this campaign"""
+    """Datetime that this campaign will be considered complete"""
 
     aoi: typing.List[typing.List[typing.List[int]]]
-    """Region covered by this campaign"""
+    """The polygon defining the Area Of Interest that this campaign is targeting"""
 
     cloud: int
-    """Maximum cloud coverage purchased"""
+    """The maximum allowable cloud cover for captures in this campaign"""
 
     offNadir: float
-    """Maximum off nadir for this campaign"""
+    """The maximum allowable off nadir angle for captures in this campaign"""
 
     supplier: str
-    """Supplier delivering this campaign"""
+    """The supplier fulfilling this campaign"""
 
     platforms: typing.List[str]
-    """Platforms to be considered for capturing this campaign"""
+    """The list of acceptable capture platforms for this campaign"""
 
     gsd: float
-    """Maximum GSD acceptable for this campaign"""
+    """Ground sample distance requirement for captures in this campaign"""
 
     datasets: typing.List[Dataset]
-    """Currently delivered datasets. Not populated if this comes from a list endpoint."""
+    """The list of delivered datasets captured as part of this campaign"""
 
     def __init__(self, data: dict):
         self.data = data
@@ -92,7 +96,7 @@ class Campaign(ArlulaObject):
         self.status = data["status"]
         self.ordering_id = data["orderingID"]
         self.bundle = data["bundle"]
-        self.license = data["license"] if "license" in data else print("NOT THERE")
+        self.license = data["license"]
         self.priority = data["priority"]
         self.total = data["total"]
         self.discount = data["discount"]

@@ -1,3 +1,7 @@
+'''
+    Defines the TaskingAPI and relevant search and order entities.
+'''
+
 import enum
 import json
 import typing
@@ -242,39 +246,35 @@ class TaskingSearchFailure(ArlulaObject):
     """
 
     type: str
-    """The type of search failure this supplier/platform combination experienced"""
+    """The type of failure reported by the supplier"""
 
     message: str
-    """Human readable message indicating why this combination failed to return a result"""
+    """Human readable message for the reason why they were unable to satisfy the search"""
 
     supplier: str
-    """Supplier identifier this failure relates to"""
+    """The supplier that was unable to satisfy the search."""
 
     platforms: typing.List[str]
-    """List of platforms this failure relates to"""    
-    
-    detail: dict
-    """Dictionary of other details pertinent to the failure for programmatic access."""
+    """The platforms that were unable to satisfy the search."""
 
     def __init__(self, data):
         self.type = data["type"]
         self.message = data["message"]
         self.supplier = data["supplier"]
         self.platforms = data["platforms"]
-        self.detail = data["detail"]
 
 class TaskingMetrics(ArlulaObject):
     
     data: dict
 
     windowsAvailable: int
-    """The estimated number of capture opportunities between the start and end time."""
+    """The number of capture passes available in the requested period."""
 
     windowsRequired: int
-    """The estimated number of captures required to capture the entire aoi requested."""
+    """The number of capture passes required to capture the target aoi."""
 
     orderArea: float
-    """The total area being purchased."""
+    """The estimated deliverable scene size."""
 
     moq: float
     """The minimum order quantity for this purchase (the polygon will be inflated to this size if it is smaller than required)"""
@@ -294,19 +294,19 @@ class CloudLevel(ArlulaObject):
     data: dict
 
     name: str
-    """Human readable name for this cloud level"""
+    """A human readable name to refer to this cloud coverage level"""
 
     max: int
-    """Maximum cloud percentage (0-100%) offered for this cloud level. Must be passed when ordering"""
+    """The maximum cloud cover (0-100) a capture may have to be considered successful if ordered under this coverage level"""
     
     description: str
-    """Human readable description for this cloud level"""
+    """A brief description of this coverage level and any additional considerations it provides."""
 
     loadingPercent: float
-    """Percentage loading"""
+    """The percentage loading this coverage level applies to the bundle's price"""
 
     loadingAmount: int
-    """Absolute loading (US cents)"""
+    """The static amount (in US cents) this coverage level adds to the bundle's price"""
 
     def __init__(self, data: dict):
         self.data = data
@@ -334,19 +334,19 @@ def get_cloud(cloud_level: typing.Union[int, CloudLevel]) -> int:
 class Priority(ArlulaObject):
     data: dict
     key: str
-    """Key to pass when ordering"""
+    """The priority key that is to be provided to the order endpoint to purchase the bundle at this priority"""
 
     name: str
-    """Human readable name for this priority level"""
+    """A human readable name to refer to this priority level"""
     
     description: str
-    """Human readable description for this priority level"""
+    """A brief description of this priority level and any additional considerations it provides."""
 
     loadingPercent: float
-    """Percentage loading"""
+    """The percentage loading this priority applies to the bundle's price"""
 
     loadingAmount: int
-    """Absolute loading (US cents)"""
+    """The static amount (in US cents) this priority adds to the bundle's price"""
 
     def __init__(self, data: dict):
         self.data = data
@@ -373,16 +373,16 @@ def get_priority_key(priority: typing.Union[str, Priority]) -> str:
 
 class TaskingSearchResult(ArlulaObject):
     polygon: typing.List[typing.List[typing.List[float]]]
-    """The area of interest to be captured if ordered"""
+    """Polygon representing the area to be ordered from the supplier, inflated to meet any supplier minimum order requirements as a valid order."""
     
     start: datetime
-    """The start time for a campaign created from this result."""
+    """The start time for an order created from this result."""
 
     end: datetime
     """The end time for a campaign created from this result."""
 
     metrics: TaskingMetrics
-    """Container for metrics about the order area and capturing opportunities."""
+    """Container for metrics about the request such as the number of captures needed for coverage and the total area to be ordered."""
 
     gsd: float
     """The highest nadir GSD for this result."""
@@ -405,11 +405,11 @@ class TaskingSearchResult(ArlulaObject):
     licenses: typing.List[License]
     """License options this imagery may be purchased under, and the terms and pricing that apply"""
 
-    cloud: typing.List[CloudLevel]
-    """Cloud levels available for this order."""
-
     priorities: typing.List[Priority]
-    """Priority levels available for this order."""
+    """Options for order priority relevant to your order. Only those available for your order criteria will be presented."""
+
+    cloud: typing.List[CloudLevel]
+    """Requirement options the supplier provides, guaranteeing capture of a cloud coverage of this percentage or less. Options vary by supplier, and lower guarantees may reduce the likelihood of capture being successful in the required period."""
 
     platforms: typing.List[str]
     """A list indicating the satellites and/or constellations that will fulfil this request."""
@@ -438,13 +438,13 @@ class TaskingSearchResult(ArlulaObject):
 class TaskingSearchResponse(ArlulaObject):
     results: typing.List[TaskingSearchResult]
     """
-        Each result indicates a supplier, platform combination that can capture the requested specification.
-        Results for a specific combination will only be available if the combination meets the requirements
-        of the search and has sufficient line of sight.
+        Details candidate tasking opportunities.
     """
 
     failures: typing.List[TaskingSearchFailure]
-    """The tasking errors. Details which supplier, platform combinations are unable to fulfil the requested specification."""
+    """
+        Details reasons why suppliers could not fulfil the requested tasking.
+    """
 
     def __init__(self, data):
         self.results = [TaskingSearchResult(x) for x in data["results"]] if "results" in data else []
@@ -453,14 +453,31 @@ class TaskingSearchResponse(ArlulaObject):
 class TaskingOrderRequest(ArlulaObject):
 
     id: str
+    """Unique ID of the imagery to purchase, provided in the search endpoint"""
+
     eula: str
+    """The eula string provided in the search results to confirm acceptance. (the href of the license of interest)"""
+
     bundle_key: str
+    """The key of the bundle you wish to purchase from the scene"""
+
     priority: str
+    """Priority code to order this tasking campaign at. Must be chosen from those available in the corresponding result's priorities list."""
+
     cloud: int
+    """Maximum cloudiness (0-100) acceptable for this scene. Must be chosen from those available in the corresponding result's clouds list."""
+
     webhooks: typing.List[str]
+    """A list of http/https addresses that the order details will be sent to once the order is complete and ready for collection"""
+
     emails: typing.List[str]
+    """A list of email addresses (strings) that the order details will be sent to once the order is complete and ready for collection"""
+
     team: str
+    """The ID of the team to attach the order to, if other than the default team for the API (used to control shared access to the order)"""
+
     payment: str
+    """The ID of the payment method to charge this order to (if not free). If not specified, the APIs default billing method will be charged."""
 
     def __init__(self,
             id: str,
@@ -542,10 +559,19 @@ class TaskingOrderRequest(ArlulaObject):
 class TaskingBatchOrderRequest():
 
     orders: typing.List[TaskingOrderRequest]
+    """Orders to be placed in batch request."""
+
     webhooks: typing.List[str]
+    """A list of http/https addresses that the order details will be sent to once the order is complete and ready for collection"""
+
     emails: typing.List[str]
+    """A list of email addresses (strings) that the order details will be sent to once the order is complete and ready for collection"""
+
     team: str
+    """The ID of the team to attach the order to, if other than the default team for the API (used to control shared access to the order)"""
+
     payment: str
+    """The ID of the payment method to charge this order to (if not free). If not specified, the APIs default billing method will be charged."""
 
     def __init__(
         self, 
