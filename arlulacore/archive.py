@@ -1,17 +1,15 @@
 from __future__ import annotations
 import enum
 import json
-import string
-import textwrap
 import typing
 import requests
 
-from dataclasses import dataclass
 from datetime import date, datetime
-from .common import ArlulaObject, Band, Bundle, License, SortDefinition
+
+from .order import Order
+from .common import ArlulaObject, Band, Bundle, License, SortDefinition, get_bundle_key, get_license_href
 from .auth import Session
 from .exception import ArlulaAPIException
-from .orders import DetailedOrderResult
 from .util import parse_rfc3339, calculate_price, remove_none, simple_indent
 
 Polygon = typing.List[typing.List[typing.List[float]]]
@@ -123,7 +121,7 @@ class SearchResult(ArlulaObject):
         if "annotations" in data:
             self.annotations = data["annotations"]
 
-    def calculate_price(self, license_href: string, bundle_key: string) -> int:
+    def calculate_price(self, license_href: str, bundle_key: str) -> int:
         '''
             Wrapper for util.calculate_price, returns price in US Cents. Raises error in the case of invalid license_name or bundle_key
         '''
@@ -180,7 +178,7 @@ class SearchResult(ArlulaObject):
 
 class SearchResponse(ArlulaObject):
     data: dict
-    state: string
+    state: str
     errors: typing.List[str]
     warnings: typing.List[str]
     results: typing.List[SearchResult]
@@ -555,7 +553,7 @@ class ArchiveAPI:
             # Construct an instance of `SearchResponse`
             return SearchResponse(resp_data)
 
-    def order(self, request: OrderRequest) -> DetailedOrderResult:
+    def order(self, request: ArchiveOrderRequest) -> Order:
         '''
             Order from the Arlula imagery archive
         '''
@@ -571,9 +569,9 @@ class ArchiveAPI:
         if response.status_code != 200:
             raise ArlulaAPIException(response)
         else:
-            return DetailedOrderResult(json.loads(response.text))
+            return Order(json.loads(response.text))
         
-    def batch_order(self, request: BatchOrderRequest) -> typing.List[DetailedOrderResult]:
+    def batch_order(self, request: ArchiveBatchOrderRequest) -> Order:
         '''
             Order multiple scenes from the Arlula imagery archive
         '''
@@ -590,4 +588,4 @@ class ArchiveAPI:
         if response.status_code != 200:
             raise ArlulaAPIException(response)
         else:
-            return [DetailedOrderResult(r) for r in json.loads(response.text)]
+            return Order(json.loads(response.text))
