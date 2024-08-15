@@ -3,6 +3,7 @@ import json
 import os
 import unittest
 import arlulacore
+
 from .util import create_test_session
 
 class TestSearchRequest(unittest.TestCase):
@@ -119,19 +120,6 @@ class TestSearchRequest(unittest.TestCase):
         self.assertTrue(
             len(result.results) > 0
         )
-
-    # def test_search_polygon_wkt(self):
-    #     session = create_test_session()
-    #     api = arlulacore.ArlulaAPI(session)
-    #     result = api.archiveAPI().search(
-    #         arlulacore.SearchRequest(date(2020, 1, 1), 100)
-    #         .set_polygon("POLYGON((151.17454501612775 -33.90059831814348,151.16355868800275 -33.91769420996655,151.18724795802228 -33.93549878391787,151.19531604273908 -33.90700967940383,151.19359942896955 -33.89247656841645,151.17454501612775 -33.90059831814348))")
-    #         .set_end(date(2020, 2, 1))
-    #     )
-                
-    #     self.assertTrue(
-    #         len(result.results) > 0
-    #     )
     
     def test_search_polygon_array(self):
         session = create_test_session()
@@ -151,9 +139,9 @@ class TestOrderRequest(unittest.TestCase):
     def test_dumps(self):
         
         orders = [
-            arlulacore.OrderRequest("id", "eula", "bundle_key"),
-            arlulacore.OrderRequest("id", "eula", "bundle_key", ["https://test1.com", "https://test2.com"], ["test1@gmail.com", "test2@gmail.com"]),
-            arlulacore.OrderRequest("id", "eula", "bundle_key", ["https://test1.com"], ["test1@gmail.com"]).add_email("test2@gmail.com").add_webhook("https://test2.com"),
+            arlulacore.ArchiveOrderRequest("id", "eula", "bundle_key"),
+            arlulacore.ArchiveOrderRequest("id", "eula", "bundle_key", ["https://test1.com", "https://test2.com"], ["test1@gmail.com", "test2@gmail.com"]),
+            arlulacore.ArchiveOrderRequest("id", "eula", "bundle_key", ["https://test1.com"], ["test1@gmail.com"]).add_email("test2@gmail.com").add_webhook("https://test2.com"),
         ]
 
         expected = [
@@ -184,9 +172,38 @@ class TestOrderRequest(unittest.TestCase):
             self.assertEqual(json.dumps(o.dict()), json.dumps(expected[i]))
 
     
-    def test_order(self):
+    def test_order_success(self):
 
         # This will throw an exception on failure
         session = create_test_session()
         api = arlulacore.ArlulaAPI(session)
-        response = api.archiveAPI().order(arlulacore.OrderRequest(os.getenv("API_ORDERING_ID"), os.getenv("API_ORDER_LICENSE_HREF"), os.getenv("API_ORDER_BUNDLE_KEY"), team=os.getenv("API_TEAM_ID")))
+        order = api.archiveAPI().order(arlulacore.ArchiveOrderRequest(
+            os.getenv("API_ARCHIVE_ORDERING_ID_1"), 
+            os.getenv("API_ARCHIVE_LICENSE_HREF_1"), 
+            os.getenv("API_ARCHIVE_BUNDLE_KEY_1"), 
+        ))
+
+        self.assertEqual(len(order.datasets), 1)
+    
+    def test_order_batch_success(self):
+        # This will throw an exception on failure
+        session = create_test_session()
+        api = arlulacore.ArlulaAPI(session)
+
+        batch = arlulacore.ArchiveBatchOrderRequest(orders=[
+            arlulacore.ArchiveOrderRequest(
+                os.getenv("API_ARCHIVE_ORDERING_ID_1"),
+                os.getenv("API_ARCHIVE_LICENSE_HREF_1"),
+                os.getenv("API_ARCHIVE_BUNDLE_KEY_1"),
+            ),
+        ])
+
+        batch.add_order(arlulacore.ArchiveOrderRequest(
+            os.getenv("API_ARCHIVE_ORDERING_ID_2"),
+            os.getenv("API_ARCHIVE_LICENSE_HREF_2"),
+            os.getenv("API_ARCHIVE_BUNDLE_KEY_2"),
+        ))
+
+        order = api.archiveAPI().batch_order(batch)
+
+        self.assertEqual(len(order.datasets), 2)
