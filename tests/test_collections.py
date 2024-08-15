@@ -199,7 +199,7 @@ class TestCollectionItem(unittest.TestCase):
         """
             Test importing a predefined order
         """
-        self._api.collectionsAPI().import_order(os.getenv("API_COLLECTION_ID"), os.getenv("API_ORDER_ID"))
+        self._api.collectionsAPI().import_order(os.getenv("API_COLLECTION_ID"), os.getenv("API_DATASET_ID"))
 
 
 class TestCollections(unittest.TestCase):
