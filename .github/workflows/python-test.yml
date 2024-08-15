@@ -8,55 +8,6 @@ on:
         required: true
       TEST_API_SECRET:
         required: true
-    env:
-      TEST_API_HOST:
-        required: true
-      TEST_API_ARCHIVE_ORDERING_ID_1:
-        required: true
-      TEST_API_ARCHIVE_LICENSE_HREF_1:
-        required: true
-      TEST_API_ARCHIVE_BUNDLE_KEY_1:
-        required: true
-      TEST_API_ARCHIVE_ORDERING_ID_2:
-        required: true
-      TEST_API_ARCHIVE_LICENSE_HREF_2:
-        required: true
-      TEST_API_ARCHIVE_BUNDLE_KEY_2:
-        required: true
-      TEST_API_ORDER_ID_CAMPAIGNS:
-        required: true
-      TEST_API_ORDER_ID_DATASETS:
-        required: true
-      TEST_API_CAMPAIGN_ID:
-        required: true
-      TEST_API_DATASET_ID:
-        required: true
-      TEST_API_RESOURCE_ID:
-        required: true
-      TEST_API_COLLECTION_ID:
-        required: true
-      TEST_API_COLLECTION_ITEM_ID:
-        required: true
-      TEST_API_TASKING_ORDERING_ID_1:
-        required: true
-      TEST_API_TASKING_BUNDLE_KEY_1:
-        required: true
-      TEST_API_TASKING_LICENSE_HREF_1:
-        required: true
-      TEST_API_TASKING_PRIORITY_KEY_1:
-        required: true
-      TEST_API_TASKING_CLOUD_1:
-        required: true
-      TEST_API_TASKING_ORDERING_ID_2:
-        required: true
-      TEST_API_TASKING_BUNDLE_KEY_2:
-        required: true
-      TEST_API_TASKING_LICENSE_HREF_2:
-        required: true
-      TEST_API_TASKING_PRIORITY_KEY_2:
-        required: true
-      TEST_API_TASKING_CLOUD_2:
-        required: true
       
   pull_request:
     types: [opened,edited,synchronize,reopened,ready_for_review,review_requested,]
@@ -72,9 +23,9 @@ jobs:
       - run: pip3 install -r requirements.txt
       - run: python3 -m unittest tests/test_setup.py
         env:
-          API_HOST: ${{ secrets.TEST_API_HOST}}
           API_KEY: ${{ secrets.TEST_API_KEY}}
-          API_SECRET: ${{ env.TEST_API_SECRET}}
+          API_SECRET: ${{ secrets.TEST_API_SECRET}}
+          API_HOST: ${{ env.TEST_API_HOST}}
           API_ARCHIVE_ORDERING_ID_1: ${{ env.TEST_API_ARCHIVE_ORDERING_ID_1}}
           API_ARCHIVE_LICENSE_HREF_1: ${{ env.TEST_API_ARCHIVE_LICENSE_HREF_1}}
           API_ARCHIVE_BUNDLE_KEY_1: ${{ env.TEST_API_ARCHIVE_BUNDLE_KEY_1}}
@@ -100,9 +51,9 @@ jobs:
           API_TASKING_CLOUD_2: ${{ env.TEST_API_TASKING_CLOUD_2}}
       - run: python3 -m unittest tests/test_archive.py tests/test_auth.py tests/test_collections.py tests/test_list.py tests/test_orders.py tests/test_price.py tests/test_rfc3339.py tests/test_tasking.py
         env:
-          API_HOST: ${{ secrets.TEST_API_HOST}}
           API_KEY: ${{ secrets.TEST_API_KEY}}
-          API_SECRET: ${{ env.TEST_API_SECRET}}
+          API_SECRET: ${{ secrets.TEST_API_SECRET}}
+          API_HOST: ${{ env.TEST_API_HOST}}
           API_ARCHIVE_ORDERING_ID_1: ${{ env.TEST_API_ARCHIVE_ORDERING_ID_1}}
           API_ARCHIVE_LICENSE_HREF_1: ${{ env.TEST_API_ARCHIVE_LICENSE_HREF_1}}
           API_ARCHIVE_BUNDLE_KEY_1: ${{ env.TEST_API_ARCHIVE_BUNDLE_KEY_1}}

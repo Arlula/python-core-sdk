@@ -11,7 +11,9 @@ jobs:
   test:
     uses: Arlula/python-core-sdk/.github/workflows/python-test.yml@master
     env:
-      TEST_API_HOST: ${{ secrets.TEST_API_HOST}}
+      TEST_API_KEY: ${{ secrets.TEST_API_KEY}}
+      TEST_API_SECRET: ${{ secrets.TEST_API_SECRET}}
+      TEST_API_HOST: ${{ env.TEST_API_HOST}}
       TEST_API_ARCHIVE_ORDERING_ID_1: ${{ env.TEST_API_ARCHIVE_ORDERING_ID_1}}
       TEST_API_ARCHIVE_LICENSE_HREF_1: ${{ env.TEST_API_ARCHIVE_LICENSE_HREF_1}}
       TEST_API_ARCHIVE_BUNDLE_KEY_1: ${{ env.TEST_API_ARCHIVE_BUNDLE_KEY_1}}
@@ -36,7 +38,7 @@ jobs:
       TEST_API_TASKING_PRIORITY_KEY_2: ${{ env.TEST_API_TASKING_PRIORITY_KEY_2}}
       TEST_API_TASKING_CLOUD_2: ${{ env.TEST_API_TASKING_CLOUD_2}}
     secrets:
-      API_HOST: ${{ secrets.TEST_API_HOST}}
+      API_PASS: ${{ secrets.TEST_API_PASS}}
       API_KEY: ${{ secrets.TEST_API_KEY}}
   deploy:
     needs: test
