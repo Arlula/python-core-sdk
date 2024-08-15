@@ -13,6 +13,7 @@ jobs:
     secrets:
       TEST_API_KEY: ${{ secrets.TEST_API_KEY}}
       TEST_API_SECRET: ${{ secrets.TEST_API_SECRET}}
+    inputs:
       TEST_API_HOST: ${{ vars.TEST_API_HOST }}
       TEST_API_ARCHIVE_ORDERING_ID_1: ${{ vars.TEST_API_ARCHIVE_ORDERING_ID_1 }}
       TEST_API_ARCHIVE_LICENSE_HREF_1: ${{ vars.TEST_API_ARCHIVE_LICENSE_HREF_1 }}
