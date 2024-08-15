@@ -1,5 +1,6 @@
 import math
 import re
+import typing
 import requests
 
 from datetime import datetime, timezone, timedelta
@@ -25,6 +26,11 @@ def simple_indent(s: str, first_amount: int, following_amount: int) -> str:
     return '\n'.join(out) + '\n'
 
 def parse_rfc3339(dt_str: str) -> datetime:
+    """
+        Parses the provided string as an RFC3339 timestamp. 
+        Included as the core python behaviour does not parse RFC3339 timestamps
+        correctly and common libraries are massive.
+    """
     try:
         result = re.search(__date_rx__, dt_str)
 
