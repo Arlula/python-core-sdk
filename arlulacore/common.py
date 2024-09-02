@@ -10,7 +10,7 @@ from .util import remove_none, simple_indent
 
 class ArlulaObject(abc.ABC):
     def __repr__(self):
-        return str(['{}: {}'.format(attr, value) for attr, value in self.__dict__.items()])[1:-1].replace('\'', '')
+        return str(['{}: {}'.format(attr, value) for attr, value in self.__dict__().items()])[1:-1].replace('\'', '')
 
     def format(self, format: str) -> str:
         if format == "json":
